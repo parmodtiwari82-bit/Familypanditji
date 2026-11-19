@@ -57,7 +57,7 @@ async def security_headers(request, call_next):
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(self), geolocation=()")
     if request.url.path.startswith("/api/") or request.url.path == "/health":
         response.headers["Cache-Control"] = "no-store"
     if request.url.scheme == "https":
@@ -234,7 +234,7 @@ def trust_status():
 
     return {
         "service": "ai-family-pandit-ji",
-        "environment": "development_beta",
+        "environment": APP_ENV,
         "ai_provider_configured": bool(AI_API_KEY and AI_MODEL),
         "content_review": {
             "status": "acharya_review_required",
