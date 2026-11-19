@@ -55,7 +55,7 @@ def check_records(records: Any, label: str, errors: list[str], required: tuple[s
             value = record.get(key)
             if not isinstance(value, str) or not value.strip():
                 errors.append(f"{where}: missing non-empty {key}")
-        if record.get("review_required") is not True:
+        if require_review and record.get("review_required") is not True:
             errors.append(f"{where}: starter content must retain review_required=true")
 
 
