@@ -86,3 +86,11 @@ Use `GET /api/search?q=Gayatri&language=en` to search the starter knowledge libr
 ## Trust and release status
 
 The `GET /api/trust/status` endpoint reports whether the optional AI provider is configured, counts draft knowledge assets, shows beta versus planned module counts, and explicitly lists major capabilities that are not implemented. It always reports production release readiness as false until the missing integrations, expert review, security work and deployment checks are completed. This endpoint is a transparency summary, not a certification or security audit.
+
+
+## Panchang, Jyotish and Pandit directory foundations
+
+- `GET /api/panchang/overview` is an educational explanation only; it does not calculate a live Panchang or muhurta.
+- `GET /api/jyotish/guide` documents the consent-based birth details required by a future chart engine. No kundli or prediction calculations are performed.
+- `GET /api/pandits` reads the verified-first directory catalogue. It currently returns an empty list and does not accept bookings. No sample or fictional pandit profiles are displayed.
+- Directory verification, secure birth-data handling, a validated ephemeris/calculation engine, and expert review are prerequisites before these become live services.
