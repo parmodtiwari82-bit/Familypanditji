@@ -1,0 +1,40 @@
+# Deployment guide
+
+This repository now includes a Dockerfile for a portable container build. A successful image build is not the same as a live deployment; a hosting account, domain, environment secrets and operator approval are still required.
+
+## Container build
+
+From the repository root:
+
+```bash
+docker build -t ai-family-pandit-ji .
+docker run --rm -p 8000:8000 \
+  -e AI_API_KEY="$AI_API_KEY" \
+  -e AI_MODEL="$AI_MODEL" \
+  -e ALLOWED_ORIGINS="https://your-domain.example" \
+  ai-family-pandit-ji
+```
+
+Open `/health` to confirm the API process responds. The image runs as a non-root user and includes a container health check.
+
+## Required hosting configuration
+
+- Set `PORT` to the port supplied by the hosting platform (the container command reads it).
+- Set `ALLOWED_ORIGINS` to the exact HTTPS origin serving the frontend. Do not use `*` for a public production deployment.
+- Configure `AI_API_KEY` and `AI_MODEL` as hosting secrets if AI-provider answers are required. Never commit real keys.
+- Keep provider usage limits, billing alerts and key rotation under the account owner's control.
+- Enable HTTPS, platform logs, backups and uptime monitoring.
+
+## Before public launch
+
+1. Complete expert acharya review and source verification for all religious content.
+2. Perform a security/privacy review, including abuse controls, rate limiting and data-retention decisions.
+3. Integrate and validate real Panchang and Jyotish calculation services before exposing time-sensitive results.
+4. Verify pandit identities and qualifications before enabling listings or booking.
+5. Integrate payment provider webhooks, refunds and order controls before accepting money.
+6. Test voice behavior on supported Android, iOS and desktop browsers.
+7. Deploy to a staging environment, run smoke tests, then approve production release.
+
+## Current release status
+
+Development beta only. No live hosting provider, production domain, provider secrets, expert sign-off, payment gateway, booking workflow or production voice service is configured by this repository alone.
