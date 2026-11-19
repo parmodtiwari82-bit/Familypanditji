@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TEMP_JS="$(mktemp)"
+TEMP_JS="$(mktemp --suffix=.js)"
 trap 'rm -f "$TEMP_JS"' EXIT
 
 python - "$ROOT/index.html" "$TEMP_JS" <<'PY'
