@@ -272,3 +272,38 @@ def test_frontend_displays_trust_and_release_status():
     assert 'id="trustStatus"' in frontend
     assert 'id="trustList"' in frontend
     assert "loadTrustStatus();" in frontend
+
+
+def test_runtime_config_rejects_wildcard_origins_in_production():
+    from main import validate_runtime_config
+    import pytest
+
+    with pytest.raises(ValueError, match="ALLOWED_ORIGINS"):
+        validate_runtime_config("production", ["*"], "https://api.example.com/v1", 25)
+
+
+def test_runtime_config_requires_https_ai_endpoint_in_production():
+    from main import validate_runtime_config
+    import pytest
+
+    with pytest.raises(ValueError, match="HTTPS"):
+        validate_runtime_config("production", ["https://app.example.com"], "http://api.example.com/v1", 25)
+
+
+def test_runtime_config_rejects_invalid_timeout_and_environment():
+    from main import validate_runtime_config
+    import pytest
+
+    with pytest.raises(ValueError, match="timeout"):
+        validate_runtime_config("development", ["*"], "https://api.example.com/v1", 0)
+    with pytest.raises(ValueError, match="APP_ENV"):
+        validate_runtime_config("local", ["*"], "https://api.example.com/v1", 25)
+
+
+def test_runtime_config_accepts_explicit_production_settings():
+    from main import validate_runtime_config
+
+    validate_runtime_config(
+        "production", ["https://app.example.com"],
+        "https://api.example.com/v1", 25,
+    )
