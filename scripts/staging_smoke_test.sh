@@ -9,10 +9,26 @@ if [[ -z "$BASE_URL" ]]; then
   exit 2
 fi
 BASE_URL="${BASE_URL%/}"
-if [[ "$BASE_URL" != https://* && "$BASE_URL" != http://127.0.0.1* && "$BASE_URL" != http://localhost* ]]; then
-  echo "ERROR: use HTTPS for staging (HTTP is allowed only for localhost)." >&2
-  exit 2
-fi
+# Permit plain HTTP only for exact loopback hosts; prefix matching would also
+# accept lookalike hosts such as localhost.attacker.example.
+python3 - "$BASE_URL" <<'PY'
+import sys
+from urllib.parse import urlsplit
+
+value = sys.argv[1]
+try:
+    parsed = urlsplit(value)
+    hostname = (parsed.hostname or "").lower()
+    _ = parsed.port  # Force validation of malformed ports.
+except ValueError:
+    raise SystemExit("ERROR: BASE_URL is not a valid URL.")
+if parsed.scheme not in {"https", "http"} or not hostname:
+    raise SystemExit("ERROR: BASE_URL must be an absolute HTTP(S) URL.")
+if parsed.username or parsed.password or parsed.query or parsed.fragment:
+    raise SystemExit("ERROR: BASE_URL must not contain credentials, query or fragment.")
+if parsed.scheme == "http" and hostname not in {"localhost", "127.0.0.1", "::1"}:
+    raise SystemExit("ERROR: use HTTPS for staging (HTTP is allowed only for exact loopback hosts).")
+PY
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -32,8 +48,9 @@ request() {
 }
 
 for path in /health /api/trust/status /api/release/readiness /api/modules \
-  /api/panchang/overview /api/mantras /api/puja-guides /api/samskaras \
-  /api/content/review-policy /privacy /terms; do
+  /api/panchang/overview /api/jyotish/guide /api/pandits /api/search?q=Gayatri\&language=en \
+  /api/mantras /api/puja-guides /api/samskaras /api/content/review-policy \
+  /manifest.webmanifest /sw.js /icons/panditji.svg /privacy /terms; do
   safe_name="${path//\//_}"
   request GET "$path" 200 "$TMP_DIR/$safe_name"
 done
