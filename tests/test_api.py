@@ -411,3 +411,17 @@ def test_content_review_policy_is_read_only_and_has_no_public_approval_route():
     response = client.get("/api/content/review-policy")
     assert response.status_code == 200
     assert client.post("/api/content/review-policy", json={"decision": "approved"}).status_code == 405
+
+
+
+def test_frontend_has_device_local_sadhana_tracker():
+    frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    assert 'id="sadhanaPanel"' in frontend
+    assert 'id="sadhanaName"' in frontend
+    assert 'id="sadhanaGoal"' in frontend
+    assert 'id="sadhanaCount"' in frontend
+    assert 'id="sadhanaAdd108"' in frontend
+    assert "familyPanditJiSadhanaV1" in frontend
+    assert "localStorage.setItem(sadhanaKey" in frontend
+    assert "No network requests" in frontend
+    assert "दैनिक साधना एवं संकल्प" in frontend
