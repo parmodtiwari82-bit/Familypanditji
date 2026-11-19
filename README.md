@@ -4,17 +4,18 @@ A mobile-first Hindi/Sanskrit/English spiritual guidance platform.
 
 ## Implemented in this repository
 
-- Responsive browser interface with text chat and device-dependent speech input/output.
-- FastAPI backend with `GET /health`, `GET /api/knowledge`, `GET /api/knowledge/topics` (category and multilingual text filters), `GET /api/samskaras` (sixteen-samskara draft catalogue), `GET /api/puja-guides` (bilingual puja/aarti draft guides with filters), `GET /api/modules`, and `POST /api/ask`.
+- Responsive browser interface with text chat, searchable mantra cards and device-dependent speech input/output.
+- Installable Progressive Web App shell (manifest, app icon and service worker); the static app shell can be cached, while live chat/API calls still require a network connection.
+- FastAPI backend with `GET /health`, `GET /api/knowledge`, `GET /api/knowledge/topics` (category and multilingual text filters), `GET /api/samskaras` (sixteen-samskara draft catalogue), `GET /api/puja-guides` (bilingual puja/aarti draft guides with filters), `GET /api/modules`, `GET /api/mantras` (multilingual mantra catalogue and search), `GET /api/panchang/overview` (educational five-limbs overview only), `GET /manifest.webmanifest`, `GET /sw.js`, and `POST /api/ask`.
 - Frontend-to-backend chat integration when the page is served from the same host as the API.
 - Optional OpenAI-compatible chat-completions provider configured only through environment secrets.
 - Safe fallback to the starter curated knowledge library when no provider is configured or the provider is unavailable.
-- Ecosystem roadmap catalogue and a searchable, category-filtered knowledge-card browser with Hindi/English/Sanskrit draft display; a sixteen-samskara overview in Hindi and English, plus bilingual puja/aarti guide cards; all clearly label draft content requiring acharya review.
+- Ecosystem roadmap catalogue and a searchable, category-filtered knowledge-card browser with Hindi/English/Sanskrit draft display; a sixteen-samskara overview in Hindi and English, bilingual puja/aarti guide cards, a searchable multilingual mantra library, and an educational Panchang five-limbs section; all clearly label draft content requiring acharya review.
 - Language selection (Hindi, Sanskrit, English), request validation and basic API smoke tests.
 
 ## Important current limitations
 
-This is a development beta, not a production-ready religious service. The five starter knowledge entries, sixteen-samskara overview and puja/aarti guide catalogue are drafts and require acharya review. AI-generated responses are not scripture-verified and are marked for human review. No real Panchang calculation, horoscope/kundli engine, verified pandit directory, booking, e-commerce, payment, user accounts, admin console, or production voice-cloning/TTS service is integrated. Browser speech depends on the device and browser; it does not yet provide the requested dedicated deep spiritual voice.
+This is a development beta, not a production-ready religious service. The five starter knowledge entries, sixteen-samskara overview and puja/aarti guide catalogue are drafts and require acharya review. AI-generated responses are not scripture-verified and are marked for human review. The PWA caches only the app shell; live chat/API calls require connectivity. The Panchang endpoint is educational and does not calculate today's Panchang or muhurta. No real Panchang calculation, horoscope/kundli engine, verified pandit directory, booking, e-commerce, payment, user accounts, admin console, or production voice-cloning/TTS service is integrated. Browser speech depends on the device and browser; it does not yet provide the requested dedicated deep spiritual voice.
 
 ## Run locally
 
@@ -70,3 +71,8 @@ Religious practices vary by sampradaya, region, family tradition and source text
 
 
 The knowledge topics endpoint supports combined category filtering and text search with `?category=mantra&q=Gayatri` or `?q=panchang`. The frontend exposes these filters, displays language-specific draft answers, and reports empty search results. Starter topics include Hindi, English and Sanskrit answer drafts plus transliterated search aliases; all remain marked for acharya review.
+
+
+## Install the web app
+
+Serve the app over HTTPS (or localhost during development), open it in a supported mobile/desktop browser, and use the browser's **Install app** or **Add to Home Screen** option. The service worker caches the app shell only; API responses, AI chat and voice recognition are not guaranteed to work offline.
