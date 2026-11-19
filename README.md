@@ -6,12 +6,16 @@ A mobile-first Hindi/Sanskrit/English spiritual guidance platform.
 
 - Responsive browser interface with text chat, searchable mantra cards, device-dependent speech input/output, selectable installed speech voices and native answer sharing.
 - Installable Progressive Web App shell (manifest, app icon and service worker); the static app shell can be cached, while live chat/API calls still require a network connection.
-- FastAPI backend with `GET /health`, `GET /api/knowledge`, `GET /api/knowledge/topics` (category and multilingual text filters), `GET /api/samskaras` (sixteen-samskara draft catalogue), `GET /api/puja-guides` (bilingual puja/aarti draft guides with filters), `GET /api/modules`, `GET /api/trust/status` (transparent beta, content-review and missing-capability status), `GET /api/mantras` (multilingual mantra catalogue and search), `GET /api/search` (unified search across knowledge, mantras and puja guides), `GET /api/panchang/overview` (educational five-limbs overview only), `GET /manifest.webmanifest`, `GET /sw.js`, and `POST /api/ask`.
+- FastAPI backend with `GET /health`, `GET /api/knowledge`, `GET /api/knowledge/topics` (category and multilingual text filters), `GET /api/samskaras` (sixteen-samskara draft catalogue), `GET /api/puja-guides` (bilingual puja/aarti draft guides with filters), `GET /api/modules`, `GET /api/trust/status` (transparent beta, content-review and missing-capability status), `GET /api/mantras` (multilingual mantra catalogue and search), `GET /api/search` (unified search across knowledge, mantras and puja guides), `GET /api/panchang/overview` (educational five-limbs overview only), `GET /manifest.webmanifest`, `GET /sw.js`, `GET /privacy`, `GET /terms`, and `POST /api/ask`.
 - Frontend-to-backend chat integration when the page is served from the same host as the API.
 - Optional OpenAI-compatible chat-completions provider configured only through environment secrets.
 - Safe fallback to the starter curated knowledge library when no provider is configured or the provider is unavailable.
 - Ecosystem roadmap catalogue and a searchable, category-filtered knowledge-card browser with Hindi/English/Sanskrit draft display; a sixteen-samskara overview in Hindi and English, bilingual puja/aarti guide cards, a searchable multilingual mantra library, and an educational Panchang five-limbs section; all clearly label draft content requiring acharya review.
 - Language selection (Hindi, Sanskrit, English), request validation and basic API smoke tests. Baseline HTTP security headers are applied to responses, and API responses use `Cache-Control: no-store`.
+
+## Privacy and responsible use
+
+The app footer links to `/privacy` and `/terms`. These are preliminary beta notices describing the current no-account/no-payment implementation, AI-provider data flow, device speech caveats and religious-content limitations. They are not a substitute for legal review. Before public launch, identify the legal operator, add a contact and grievance channel, confirm hosting/provider retention terms, and obtain jurisdiction-specific privacy/consumer-law review.
 
 ## Important current limitations
 
