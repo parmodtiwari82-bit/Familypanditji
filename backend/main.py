@@ -40,6 +40,9 @@ app = FastAPI(
     title="AI Family Pandit Ji API",
     description="Multilingual Sanatan guidance API with reviewed-knowledge-first fallback.",
     version=APP_VERSION,
+    docs_url="/docs" if APP_ENV != "production" else None,
+    redoc_url="/redoc" if APP_ENV != "production" else None,
+    openapi_url="/openapi.json" if APP_ENV != "production" else None,
 )
 app.add_middleware(
     CORSMiddleware,
