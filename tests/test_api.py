@@ -190,6 +190,6 @@ def test_knowledge_topics_searches_sanskrit_answer_text():
 
 
 def test_puja_guides_search_ignores_punctuation_and_spacing():
-    response = client.get("/api/puja-guides", params={"q": "दीप   प्रज्वलन"})
+    response = client.get("/api/puja-guides", params={"q": "दीप   प्रज्वलित"})
     assert response.status_code == 200
     assert response.json()["count"] >= 1
