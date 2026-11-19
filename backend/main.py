@@ -122,6 +122,20 @@ async def ask_ai(question: str, language: str, context: str) -> str | None:
 def home():
     return FileResponse(PROJECT_ROOT / "index.html")
 
+@app.get("/manifest.webmanifest", include_in_schema=False)
+def web_manifest():
+    return FileResponse(PROJECT_ROOT / "manifest.webmanifest", media_type="application/manifest+json")
+
+
+@app.get("/sw.js", include_in_schema=False)
+def service_worker():
+    return FileResponse(PROJECT_ROOT / "sw.js", media_type="application/javascript", headers={"Cache-Control": "no-cache"})
+
+
+@app.get("/icons/panditji.svg", include_in_schema=False)
+def app_icon():
+    return FileResponse(PROJECT_ROOT / "icons" / "panditji.svg", media_type="image/svg+xml")
+
 @app.get("/health")
 def health():
     return {
