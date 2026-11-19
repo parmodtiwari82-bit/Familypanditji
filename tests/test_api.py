@@ -212,3 +212,5 @@ def test_frontend_exposes_voice_picker_and_registers_app_shell():
     assert 'id="voiceChoice"' in frontend
     assert "voiceschanged" in frontend
     assert "navigator.serviceWorker.register('/sw.js')" in frontend
+    assert 'id="installApp"' in frontend
+    assert "beforeinstallprompt" in frontend
