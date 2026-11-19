@@ -17,6 +17,7 @@
 <button class="tile secondary" data-prompt="व्रत और त्योहार की तैयारी कैसे करें?">🕉️<b>व्रत-त्योहार</b><span class="hint">परंपरा और तैयारी</span></button>
 <button class="tile secondary" data-prompt="तीर्थ यात्रा की योजना बनाने में मदद करें">🚩<b>तीर्थ यात्रा</b><span class="hint">यात्रा योजना</span></button>
 </section>
+<section class="panel"><div class="section-title">सनातन धर्म डिजिटल इकोसिस्टम</div><p class="hint">हर सेवा की वास्तविक स्थिति स्पष्ट रूप से दिखाई जाएगी। नियोजित सेवा को चालू सुविधा न समझें।</p><div id="moduleList" class="grid"><div class="hint">सेवाओं की सूची लोड हो रही है…</div></div></section>
 <section class="panel"><div class="row"><div class="section-title" style="flex:1">पंडित जी से पूछें</div><label for="lang" class="hint">भाषा</label><select id="lang"><option value="hi">हिंदी</option><option value="sa">संस्कृत</option><option value="en">English</option></select></div>
 <div id="chatlog" class="chatlog" aria-live="polite"><div class="msg bot">नमस्कार! 🙏 मैं AI Family Pandit Ji का डिजिटल सहायक हूँ। पूजा, मंत्र, संस्कार और सनातन परंपराओं के बारे में अपना प्रश्न लिखें। महत्वपूर्ण धार्मिक निर्णय में अपनी परंपरा के विद्वान आचार्य से पुष्टि अवश्य करें।</div></div>
 <div class="composer"><input id="question" placeholder="अपना प्रश्न लिखें…" aria-label="अपना प्रश्न"><button id="send">पूछें</button><button id="speak" class="secondary" type="button" title="आवाज़ से प्रश्न">🎙️</button></div>
@@ -27,7 +28,9 @@
 </main>
 <script>
 const log=document.getElementById('chatlog'),q=document.getElementById('question'),lang=document.getElementById('lang');
+async function loadModules(){const target=document.getElementById('moduleList');try{const response=await fetch('/api/modules');if(!response.ok)throw new Error('API unavailable');const data=await response.json();target.replaceChildren();for(const module of data.modules){const card=document.createElement('article');card.className='tile';card.style.cursor='default';const title=document.createElement('b');title.textContent=module.name_hi;const english=document.createElement('div');english.className='hint';english.textContent=module.name_en;const desc=document.createElement('p');desc.className='hint';desc.textContent=module.description;const status=document.createElement('span');status.className='pill';status.style.borderColor='var(--gold)';status.style.color='var(--saffron)';status.textContent=module.status==='beta'?'बीटा संस्करण':'आगामी चरण';card.append(title,english,desc,status);target.append(card)}}catch(error){target.textContent='सेवाओं की सूची अभी उपलब्ध नहीं है।'}}
 let lastAnswer='';
+loadModules();
 function add(text,who){const d=document.createElement('div');d.className='msg '+who;d.textContent=text;log.appendChild(d);log.scrollTop=log.scrollHeight}
 async function send(text){const v=(text||q.value).trim();if(!v)return;add(v,'user');q.value='';lastAnswer='उत्तर तैयार किया जा रहा है…';const pending=(()=>{const d=document.createElement('div');d.className='msg bot';d.textContent=lastAnswer;log.appendChild(d);log.scrollTop=log.scrollHeight;return d})();document.getElementById('send').disabled=true;
 try{const response=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:v,language:lang.value})});if(!response.ok)throw new Error('API '+response.status);const data=await response.json();lastAnswer=data.answer;pending.textContent=data.answer+'\n\n('+data.mode+(data.needs_acharya_review?' • आचार्य पुष्टि अपेक्षित':'')+')'}
