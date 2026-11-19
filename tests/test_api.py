@@ -28,3 +28,13 @@ def test_empty_question_rejected():
 def test_invalid_language_rejected():
     response = client.post("/api/ask", json={"question": "hello", "language": "fr"})
     assert response.status_code == 422
+
+
+def test_ecosystem_module_catalogue_is_explicit_about_status():
+    response = client.get("/api/modules")
+    assert response.status_code == 200
+    payload = response.json()
+    ids = {item["id"] for item in payload["modules"]}
+    assert {"ai-pandit", "panchang", "jyotish", "pandit-directory", "puja-store"} <= ids
+    assert next(item for item in payload["modules"] if item["id"] == "ai-pandit")["status"] == "beta"
+    assert next(item for item in payload["modules"] if item["id"] == "panchang")["status"] == "planned"
