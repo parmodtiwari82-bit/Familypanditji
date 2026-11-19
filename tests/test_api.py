@@ -74,3 +74,17 @@ def test_knowledge_topics_exposes_localized_drafts():
     gayatri = next(x for x in response.json()["topics"] if x["id"] == "gayatri-mantra")
     assert "We meditate" in gayatri["answer_en"]
     assert "ॐ भूर्भुवः" in gayatri["answer_sa"]
+
+
+def test_knowledge_topics_searches_multilingual_keywords():
+    response = client.get("/api/knowledge/topics", params={"q": "panchang"})
+    assert response.status_code == 200
+    topics = response.json()["topics"]
+    assert len(topics) == 1
+    assert topics[0]["id"] == "panchang-five-limbs"
+
+
+def test_knowledge_topics_searches_sanskrit_alias():
+    response = client.get("/api/knowledge/topics", params={"q": "पञ्चाङ्ग"})
+    assert response.status_code == 200
+    assert response.json()["topics"][0]["id"] == "panchang-five-limbs"
