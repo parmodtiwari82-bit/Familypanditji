@@ -61,8 +61,8 @@ def normalize_search_text(value: str) -> str:
     import unicodedata
 
     normalized = unicodedata.normalize("NFKC", value).casefold()
-    normalized = re.sub(r"[\\u200b\\u200c\\u200d\\ufeff]", "", normalized)
-    normalized = re.sub(r"[^\\w\\s]", " ", normalized, flags=re.UNICODE)
+    normalized = re.sub(r"[\u200b\u200c\u200d\ufeff]", "", normalized)
+    normalized = re.sub(r"[^\w\s]", " ", normalized, flags=re.UNICODE)
     return " ".join(normalized.split())
 
 
