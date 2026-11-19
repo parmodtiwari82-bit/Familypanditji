@@ -6,7 +6,7 @@ A mobile-first Hindi/Sanskrit/English spiritual guidance platform.
 
 - Responsive browser interface with text chat, searchable mantra cards, device-dependent speech input/output, selectable installed speech voices and native answer sharing.
 - Installable Progressive Web App shell (manifest, app icon and service worker); the static app shell can be cached, while live chat/API calls still require a network connection.
-- FastAPI backend with `GET /health`, `GET /api/knowledge`, `GET /api/knowledge/topics` (category and multilingual text filters), `GET /api/samskaras` (sixteen-samskara draft catalogue), `GET /api/puja-guides` (bilingual puja/aarti draft guides with filters), `GET /api/modules`, `GET /api/mantras` (multilingual mantra catalogue and search), `GET /api/search` (unified search across knowledge, mantras and puja guides), `GET /api/panchang/overview` (educational five-limbs overview only), `GET /manifest.webmanifest`, `GET /sw.js`, and `POST /api/ask`.
+- FastAPI backend with `GET /health`, `GET /api/knowledge`, `GET /api/knowledge/topics` (category and multilingual text filters), `GET /api/samskaras` (sixteen-samskara draft catalogue), `GET /api/puja-guides` (bilingual puja/aarti draft guides with filters), `GET /api/modules`, `GET /api/trust/status` (transparent beta, content-review and missing-capability status), `GET /api/mantras` (multilingual mantra catalogue and search), `GET /api/search` (unified search across knowledge, mantras and puja guides), `GET /api/panchang/overview` (educational five-limbs overview only), `GET /manifest.webmanifest`, `GET /sw.js`, and `POST /api/ask`.
 - Frontend-to-backend chat integration when the page is served from the same host as the API.
 - Optional OpenAI-compatible chat-completions provider configured only through environment secrets.
 - Safe fallback to the starter curated knowledge library when no provider is configured or the provider is unavailable.
@@ -81,3 +81,8 @@ Serve the app over HTTPS (or localhost during development), open it in a support
 ## Unified search
 
 Use `GET /api/search?q=Gayatri&language=en` to search the starter knowledge library, mantra entries and puja/aarti guides together. Supported languages are `hi`, `sa` and `en`; results are capped at 50 and every result remains explicitly marked as a draft requiring acharya review. This is catalogue search, not a source-verification service.
+
+
+## Trust and release status
+
+The `GET /api/trust/status` endpoint reports whether the optional AI provider is configured, counts draft knowledge assets, shows beta versus planned module counts, and explicitly lists major capabilities that are not implemented. It always reports production release readiness as false until the missing integrations, expert review, security work and deployment checks are completed. This endpoint is a transparency summary, not a certification or security audit.
