@@ -373,3 +373,20 @@ def test_release_readiness_reports_all_check_keys():
         "payment_gateway", "acharya_content_signoff", "production_voice_service",
         "live_hosting_verified",
     }
+
+
+
+def test_privacy_and_terms_pages_are_served_from_app():
+    privacy = client.get("/privacy")
+    terms = client.get("/terms")
+    assert privacy.status_code == terms.status_code == 200
+    assert "गोपनीयता सूचना" in privacy.text
+    assert "संवेदनशील जानकारी न भेजें" in privacy.text
+    assert "उपयोग की शर्तें" in terms.text
+    assert "आचार्य" in terms.text
+
+
+def test_frontend_links_to_privacy_and_terms_pages():
+    frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    assert 'href="/privacy"' in frontend
+    assert 'href="/terms"' in frontend
