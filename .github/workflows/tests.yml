@@ -26,3 +26,12 @@ jobs:
       - name: Run API tests
         working-directory: backend
         run: PYTHONPATH=. pytest -q ../tests
+
+  container-build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Build production container image
+        run: docker build --tag ai-family-pandit-ji:ci .
