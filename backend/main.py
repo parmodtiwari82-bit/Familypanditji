@@ -15,8 +15,26 @@ KNOWLEDGE_PATH = PROJECT_ROOT / "data" / "knowledge_hi.json"
 AI_API_KEY = os.getenv("AI_API_KEY", "").strip()
 AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 AI_MODEL = os.getenv("AI_MODEL", "").strip()
+APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
 AI_TIMEOUT_SECONDS = float(os.getenv("AI_TIMEOUT_SECONDS", "25"))
 ALLOWED_ORIGINS = [x.strip() for x in os.getenv("ALLOWED_ORIGINS", "*").split(",") if x.strip()]
+
+
+def validate_runtime_config(environment: str, allowed_origins: list[str],
+                            ai_base_url: str, timeout_seconds: float) -> None:
+    """Fail fast on unsafe or invalid runtime settings, especially in production."""
+    if environment not in {"development", "staging", "production"}:
+        raise ValueError("APP_ENV must be development, staging or production.")
+    if not 1 <= timeout_seconds <= 120:
+        raise ValueError("AI_TIMEOUT_SECONDS must be between 1 and 120.")
+    if environment == "production":
+        if not allowed_origins or "*" in allowed_origins:
+            raise ValueError("Production requires explicit ALLOWED_ORIGINS; wildcard is not allowed.")
+        if not ai_base_url.startswith("https://"):
+            raise ValueError("Production AI_BASE_URL must use HTTPS.")
+
+
+validate_runtime_config(APP_ENV, ALLOWED_ORIGINS, AI_BASE_URL, AI_TIMEOUT_SECONDS)
 
 app = FastAPI(
     title="AI Family Pandit Ji API",
