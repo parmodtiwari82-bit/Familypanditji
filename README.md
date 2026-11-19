@@ -5,10 +5,11 @@ A mobile-first Hindi/Sanskrit/English spiritual guidance platform.
 ## Implemented in this repository
 
 - Responsive browser interface with text chat and device-dependent speech input/output.
-- FastAPI backend with `GET /health`, `GET /api/knowledge`, and `POST /api/ask`.
+- FastAPI backend with `GET /health`, `GET /api/knowledge`, `GET /api/knowledge/topics` (optional category filter), `GET /api/modules`, and `POST /api/ask`.
 - Frontend-to-backend chat integration when the page is served from the same host as the API.
 - Optional OpenAI-compatible chat-completions provider configured only through environment secrets.
 - Safe fallback to the starter curated knowledge library when no provider is configured or the provider is unavailable.
+- Ecosystem roadmap catalogue and a starter knowledge-card browser in the frontend; both clearly label planned/draft content.
 - Language selection (Hindi, Sanskrit, English), request validation and basic API smoke tests.
 
 ## Important current limitations
@@ -60,7 +61,7 @@ pytest -q
 8. Puja samagri catalogue and e-commerce — not integrated.
 9. Payments, orders, refunds and notifications — not integrated.
 10. Admin console, moderation, audit logs, analytics and security — not integrated.
-11. Automated tests, deployment, monitoring and beta release — tests authored; execution and deployment remain.
+11. Automated tests, deployment, monitoring and beta release — automated API tests run in GitHub Actions; deployment and monitoring remain.
 
 ## Safety and trust
 
