@@ -34,7 +34,7 @@ def load_json(path: Path, errors: list[str]) -> dict[str, Any] | None:
     return value
 
 
-def check_records(records: Any, label: str, errors: list[str], required: tuple[str, ...]) -> None:
+def check_records(records: Any, label: str, errors: list[str], required: tuple[str, ...], require_review: bool = True) -> None:
     if not isinstance(records, list):
         errors.append(f"{label}: expected an array")
         return
@@ -96,7 +96,7 @@ def validate() -> list[str]:
 
     modules = catalogues["ecosystem_modules.json"]
     if modules is not None:
-        check_records(modules.get("modules"), "ecosystem_modules.modules", errors, ("name_hi", "name_en", "group", "status", "description"))
+        check_records(modules.get("modules"), "ecosystem_modules.modules", errors, ("name_hi", "name_en", "group", "status", "description"), require_review=False)
         if isinstance(modules.get("modules"), list):
             allowed = {"beta", "planned", "in_development", "paused", "retired"}
             for index, module in enumerate(modules["modules"]):
