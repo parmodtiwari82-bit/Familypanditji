@@ -142,6 +142,32 @@ def ecosystem_modules():
         raise HTTPException(status_code=503, detail="Ecosystem module catalogue is unavailable.")
 
 
+@app.get("/api/panchang/overview")
+def panchang_overview():
+    """Provide a static educational explanation, not live date/location calculations."""
+    entry = next((item for item in load_knowledge() if item.get("id") == "panchang-five-limbs"), None)
+    if not entry:
+        raise HTTPException(status_code=503, detail="Panchang reference is unavailable.")
+    limbs = [
+        {"id": "tithi", "name_hi": "तिथि", "name_en": "Tithi", "name_sa": "तिथिः", "description_hi": "चन्द्र-सूर्य के कोणीय अन्तर पर आधारित चन्द्र दिवस।", "description_en": "A lunar day based on the angular relationship between the Sun and Moon."},
+        {"id": "vara", "name_hi": "वार", "name_en": "Vara", "name_sa": "वारः", "description_hi": "सप्ताह का दिन।", "description_en": "The weekday."},
+        {"id": "nakshatra", "name_hi": "नक्षत्र", "name_en": "Nakshatra", "name_sa": "नक्षत्रम्", "description_hi": "चन्द्रमा की नक्षत्र-पथ में स्थिति से सम्बद्ध खण्ड।", "description_en": "The lunar mansion associated with the Moon's position along the nakshatra belt."},
+        {"id": "yoga", "name_hi": "योग", "name_en": "Yoga", "name_sa": "योगः", "description_hi": "सूर्य और चन्द्रमा के दीर्घांशों के योग पर आधारित अंग।", "description_en": "A limb calculated from the sum of the Sun's and Moon's longitudes."},
+        {"id": "karana", "name_hi": "करण", "name_en": "Karana", "name_sa": "करणम्", "description_hi": "तिथि का आधा भाग।", "description_en": "Half of a Tithi."},
+    ]
+    return {
+        "status": "educational_reference_only",
+        "title": entry.get("title", "पंचांग के पाँच अंग"),
+        "summary_hi": entry.get("answer", ""),
+        "summary_en": entry.get("answer_en", ""),
+        "summary_sa": entry.get("answer_sa", ""),
+        "limbs": limbs,
+        "live_calculation_available": False,
+        "review_required": True,
+        "note": "यह स्थिर शैक्षिक परिचय है, आज का पंचांग या मुहूर्त गणना नहीं। सटीक विवरण के लिए स्थान, समय-क्षेत्र, सूर्योदय और मान्य गणना-पद्धति आवश्यक हैं।",
+    }
+
+
 @app.get("/api/puja-guides")
 def puja_guides(category: str | None = None, q: str | None = None):
     """Return introductory puja/aarti guides, all explicitly marked as drafts."""
