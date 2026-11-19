@@ -10,7 +10,7 @@ From the repository root, run the checked-in smoke-test script against the deplo
 BASE_URL="https://staging.example.com" bash scripts/staging_smoke_test.sh
 ```
 
-The script checks required GET routes, a valid Hindi chat request, invalid-language rejection, and baseline API security headers. It is non-destructive and does not exercise payments or real personal data.
+The script checks the health/trust/release endpoints, ecosystem catalogues, Jyotish and Pandit-directory disclosures, unified search, static PWA assets, privacy/terms, a valid Hindi chat request, invalid-language rejection, and baseline API security headers. It validates the staging URL: HTTPS is required except for exact loopback hosts (localhost, 127.0.0.1 or ::1). It is non-destructive and does not exercise payments or real personal data.
 
 ## Manual API checks
 
