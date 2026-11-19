@@ -31,6 +31,11 @@ def test_invalid_language_rejected():
     assert response.status_code == 422
 
 
+def test_question_over_maximum_length_is_rejected():
+    response = client.post("/api/ask", json={"question": "x" * 4001, "language": "en"})
+    assert response.status_code == 422
+
+
 def test_ecosystem_module_catalogue_is_explicit_about_status():
     response = client.get("/api/modules")
     assert response.status_code == 200
