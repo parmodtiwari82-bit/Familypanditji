@@ -489,3 +489,14 @@ def test_static_privacy_page_has_security_headers():
     assert response.status_code == 200
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert response.headers["X-Frame-Options"] == "DENY"
+
+
+def test_puja_guides_provide_private_daily_step_checklists():
+    frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    assert "function pujaChecklistKey(id)" in frontend
+    assert "function readPujaChecklist(id,count)" in frontend
+    assert "function savePujaChecklist(id,values)" in frontend
+    assert "familyPanditPuja:" in frontend
+    assert "आज की तैयारी:" in frontend
+    assert "input.type='checkbox'" in frontend
+    assert "localStorage.setItem(pujaChecklistKey(id),JSON.stringify(values))" in frontend
