@@ -55,13 +55,28 @@ def localized_answer(entry: dict[str, Any], language: str) -> str:
     return str(entry.get(field) or entry.get("answer", ""))
 
 
+def normalize_search_text(value: str) -> str:
+    """Normalize Unicode and punctuation for Hindi, Sanskrit and English lookup."""
+    import re
+    import unicodedata
+
+    normalized = unicodedata.normalize("NFKC", value).casefold()
+    normalized = re.sub(r"[\\u200b\\u200c\\u200d\\ufeff]", "", normalized)
+    normalized = re.sub(r"[^\\w\\s]", " ", normalized, flags=re.UNICODE)
+    return " ".join(normalized.split())
+
+
 def find_curated_answer(question: str) -> dict[str, Any] | None:
-    folded = question.casefold()
+    folded = f" {normalize_search_text(question)} "
+    matches: list[tuple[int, dict[str, Any]]] = []
     for entry in load_knowledge():
         keywords = entry.get("keywords", [])
-        if any(str(keyword).casefold() in folded for keyword in keywords):
-            return entry
-    return None
+        for keyword in keywords:
+            normalized_keyword = normalize_search_text(str(keyword))
+            if normalized_keyword and f" {normalized_keyword} " in folded:
+                matches.append((len(normalized_keyword), entry))
+    # Prefer the most specific phrase when a question contains multiple aliases.
+    return max(matches, key=lambda item: item[0])[1] if matches else None
 
 def language_instruction(language: str) -> str:
     return {
