@@ -11,6 +11,7 @@ docker build -t ai-family-pandit-ji .
 docker run --rm -p 8000:8000 \
   -e AI_API_KEY="$AI_API_KEY" \
   -e AI_MODEL="$AI_MODEL" \
+  -e APP_ENV=production \
   -e ALLOWED_ORIGINS="https://your-domain.example" \
   ai-family-pandit-ji
 ```
@@ -20,7 +21,8 @@ Open `/health` to confirm the API process responds. The image runs as a non-root
 ## Required hosting configuration
 
 - Set `PORT` to the port supplied by the hosting platform (the container command reads it).
-- Set `ALLOWED_ORIGINS` to the exact HTTPS origin serving the frontend. Do not use `*` for a public production deployment.
+- Set `APP_ENV=production` and `ALLOWED_ORIGINS` to exact frontend origins. Production startup rejects wildcard origins and non-HTTPS AI endpoints.
+- Keep `AI_TIMEOUT_SECONDS` between 1 and 120 seconds; the default is 25 seconds.
 - Configure `AI_API_KEY` and `AI_MODEL` as hosting secrets if AI-provider answers are required. Never commit real keys.
 - Keep provider usage limits, billing alerts and key rotation under the account owner's control.
 - Enable HTTPS, platform logs, backups and uptime monitoring.
