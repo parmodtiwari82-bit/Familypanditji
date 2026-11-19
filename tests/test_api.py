@@ -217,3 +217,28 @@ def test_frontend_exposes_voice_picker_and_registers_app_shell():
     assert "beforeinstallprompt" in frontend
     assert 'id="shareAnswer"' in frontend
     assert "navigator.share" in frontend
+
+
+
+def test_unified_search_finds_mantra_and_marks_draft_review_status():
+    response = client.get("/api/search", params={"q": "Gayatri", "language": "en"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["count"] >= 1
+    assert any(item["type"] == "mantra" and item["id"] == "gayatri-mantra"
+               for item in payload["results"])
+    assert all(item["review_required"] is True for item in payload["results"])
+
+
+def test_unified_search_finds_puja_guides_and_knowledge():
+    guide = client.get("/api/search", params={"q": "दीप", "language": "hi"})
+    knowledge = client.get("/api/search", params={"q": "पञ्चाङ्ग", "language": "sa"})
+    assert guide.status_code == knowledge.status_code == 200
+    assert any(item["type"] == "puja-guide" for item in guide.json()["results"])
+    assert any(item["type"] == "knowledge" for item in knowledge.json()["results"])
+
+
+def test_unified_search_validates_query_language_and_limit():
+    assert client.get("/api/search", params={"q": "   "}).status_code == 422
+    assert client.get("/api/search", params={"q": "puja", "language": "fr"}).status_code == 422
+    assert client.get("/api/search", params={"q": "puja", "limit": 100}).status_code == 422
