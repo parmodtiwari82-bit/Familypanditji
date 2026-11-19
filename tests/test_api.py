@@ -63,7 +63,7 @@ def test_curated_gayatri_answer_supports_english():
 
 
 def test_curated_panchang_answer_supports_sanskrit():
-    response = client.post("/api/ask", json={"question": "पञ्चाङ्गस्य पञ्च अङ्गानि", "language": "sa"})
+    response = client.post("/api/ask", json={"question": "पंचांग के पांच अंग बताइए", "language": "sa"})
     assert response.status_code == 200
     assert "पञ्चाङ्गस्य पञ्चाङ्गानि" in response.json()["answer"]
 
