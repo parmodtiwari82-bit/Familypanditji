@@ -25,4 +25,4 @@ jobs:
           pip install -r requirements.txt
       - name: Run API tests
         working-directory: backend
-        run: pytest -q ../tests
+        run: PYTHONPATH=. pytest -q ../tests
