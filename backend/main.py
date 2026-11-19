@@ -209,6 +209,37 @@ def samskara_catalogue():
         raise HTTPException(status_code=503, detail="Samskara catalogue is unavailable.")
 
 
+@app.get("/api/mantras")
+def mantra_library(q: str | None = None):
+    """Expose mantra-category knowledge entries with their review status."""
+    entries = [entry for entry in load_knowledge() if entry.get("category") == "mantra"]
+    if q and q.strip():
+        query = normalize_search_text(q)
+        entries = [
+            entry for entry in entries
+            if query in normalize_search_text(entry.get("title", ""))
+            or any(query in normalize_search_text(str(keyword)) for keyword in entry.get("keywords", []))
+            or query in normalize_search_text(entry.get("answer", ""))
+            or query in normalize_search_text(entry.get("answer_en", ""))
+        ]
+    return {
+        "status": "draft_requires_acharya_review",
+        "count": len(entries),
+        "mantras": [
+            {
+                "id": entry.get("id"),
+                "title": entry.get("title", ""),
+                "keywords": entry.get("keywords", []),
+                "text_hi": entry.get("answer", ""),
+                "text_en": entry.get("answer_en", ""),
+                "text_sa": entry.get("answer_sa", ""),
+                "review_required": entry.get("review_required", True),
+            }
+            for entry in entries
+        ],
+    }
+
+
 @app.get("/api/knowledge/topics")
 def knowledge_topics(category: str | None = None, q: str | None = None):
     """Expose starter knowledge cards with explicit review status."""
