@@ -10,6 +10,15 @@ def test_health_reports_service_and_ai_configuration():
     assert response.json()["service"] == "ai-family-pandit-ji"
     assert "ai_configured" in response.json()
 
+
+def test_security_headers_are_present_and_api_responses_are_not_cached():
+    response = client.get("/health")
+    assert response.headers["X-Content-Type-Options"] == "nosniff"
+    assert response.headers["X-Frame-Options"] == "DENY"
+    assert response.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
+    assert response.headers["Permissions-Policy"] == "camera=(), microphone=(), geolocation=()"
+    assert response.headers["Cache-Control"] == "no-store"
+
 def test_knowledge_status_has_categories():
     response = client.get("/api/knowledge")
     assert response.status_code == 200
