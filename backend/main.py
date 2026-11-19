@@ -163,11 +163,11 @@ def panchang_overview():
     if not entry:
         raise HTTPException(status_code=503, detail="Panchang reference is unavailable.")
     limbs = [
-        {"id": "tithi", "name_hi": "तिथि", "name_en": "Tithi", "name_sa": "तिथिः", "description_hi": "चन्द्र-सूर्य के कोणीय अन्तर पर आधारित चन्द्र दिवस।", "description_en": "A lunar day based on the angular relationship between the Sun and Moon."},
-        {"id": "vara", "name_hi": "वार", "name_en": "Vara", "name_sa": "वारः", "description_hi": "सप्ताह का दिन।", "description_en": "The weekday."},
-        {"id": "nakshatra", "name_hi": "नक्षत्र", "name_en": "Nakshatra", "name_sa": "नक्षत्रम्", "description_hi": "चन्द्रमा की नक्षत्र-पथ में स्थिति से सम्बद्ध खण्ड।", "description_en": "The lunar mansion associated with the Moon's position along the nakshatra belt."},
-        {"id": "yoga", "name_hi": "योग", "name_en": "Yoga", "name_sa": "योगः", "description_hi": "सूर्य और चन्द्रमा के दीर्घांशों के योग पर आधारित अंग।", "description_en": "A limb calculated from the sum of the Sun's and Moon's longitudes."},
-        {"id": "karana", "name_hi": "करण", "name_en": "Karana", "name_sa": "करणम्", "description_hi": "तिथि का आधा भाग।", "description_en": "Half of a Tithi."},
+        {"id": "tithi", "name_hi": "तिथि", "name_en": "Tithi", "name_sa": "तिथिः", "description_hi": "चन्द्र-सूर्य के कोणीय अन्तर पर आधारित चन्द्र दिवस।", "description_en": "A lunar day based on the angular relationship between the Sun and Moon.", "description_sa": "सूर्यचन्द्रयोः कोणान्तराधारितः चन्द्रदिवसः।"},
+        {"id": "vara", "name_hi": "वार", "name_en": "Vara", "name_sa": "वारः", "description_hi": "सप्ताह का दिन।", "description_en": "The weekday.", "description_sa": "सप्ताहस्य दिनम्।"},
+        {"id": "nakshatra", "name_hi": "नक्षत्र", "name_en": "Nakshatra", "name_sa": "नक्षत्रम्", "description_hi": "चन्द्रमा की नक्षत्र-पथ में स्थिति से सम्बद्ध खण्ड।", "description_en": "The lunar mansion associated with the Moon's position along the nakshatra belt.", "description_sa": "चन्द्रस्य स्थित्या सम्बद्धं नक्षत्रम्।"},
+        {"id": "yoga", "name_hi": "योग", "name_en": "Yoga", "name_sa": "योगः", "description_hi": "सूर्य और चन्द्रमा के दीर्घांशों के योग पर आधारित अंग।", "description_en": "A limb calculated from the sum of the Sun's and Moon's longitudes.", "description_sa": "सूर्यचन्द्रयोः दीर्घांशयोगेन गणितः पञ्चाङ्गाङ्गविशेषः।"},
+        {"id": "karana", "name_hi": "करण", "name_en": "Karana", "name_sa": "करणम्", "description_hi": "तिथि का आधा भाग।", "description_en": "Half of a Tithi.", "description_sa": "तिथेः अर्धभागः।"},
     ]
     return {
         "status": "educational_reference_only",
