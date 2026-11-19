@@ -112,3 +112,21 @@ def test_samskara_catalogue_returns_sixteen_review_labelled_drafts():
     assert all(item["review_required"] is True for item in payload["samskaras"])
     assert payload["samskaras"][0]["id"] == "garbhadhana"
     assert payload["samskaras"][-1]["id"] == "antyeshti"
+
+
+def test_puja_guides_are_review_labelled_and_have_bilingual_steps():
+    response = client.get("/api/puja-guides")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["count"] >= 4
+    assert all(item["review_required"] is True for item in payload["guides"])
+    assert all(item["steps_hi"] and item["steps_en"] for item in payload["guides"])
+
+
+def test_puja_guides_support_category_and_text_filters():
+    response = client.get("/api/puja-guides", params={"category": "aarti", "q": "lamp"})
+    assert response.status_code == 200
+    guides = response.json()["guides"]
+    assert len(guides) == 1
+    assert guides[0]["id"] == "aarti-etiquette"
