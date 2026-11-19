@@ -250,3 +250,17 @@ def test_frontend_exposes_unified_ecosystem_search():
     assert 'id="globalSearch"' in frontend
     assert "runGlobalSearch" in frontend
     assert "fetch('/api/search?'" in frontend
+
+
+
+def test_trust_status_is_transparent_about_beta_and_missing_capabilities():
+    response = client.get("/api/trust/status")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["environment"] == "development_beta"
+    assert payload["content_review"]["all_content_is_draft"] is True
+    assert payload["content_review"]["status"] == "acharya_review_required"
+    assert payload["capabilities"]["panchang_live_calculation"] is False
+    assert payload["capabilities"]["kundli_calculation"] is False
+    assert payload["production_release_ready"] is False
+    assert payload["modules"]["beta"] >= 1
