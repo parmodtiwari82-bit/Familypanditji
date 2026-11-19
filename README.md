@@ -4,7 +4,7 @@ A mobile-first Hindi/Sanskrit/English spiritual guidance platform.
 
 ## Implemented in this repository
 
-- Responsive browser interface with text chat, searchable mantra cards and device-dependent speech input/output.
+- Responsive browser interface with text chat, searchable mantra cards, device-dependent speech input/output, selectable installed speech voices and native answer sharing.
 - Installable Progressive Web App shell (manifest, app icon and service worker); the static app shell can be cached, while live chat/API calls still require a network connection.
 - FastAPI backend with `GET /health`, `GET /api/knowledge`, `GET /api/knowledge/topics` (category and multilingual text filters), `GET /api/samskaras` (sixteen-samskara draft catalogue), `GET /api/puja-guides` (bilingual puja/aarti draft guides with filters), `GET /api/modules`, `GET /api/mantras` (multilingual mantra catalogue and search), `GET /api/panchang/overview` (educational five-limbs overview only), `GET /manifest.webmanifest`, `GET /sw.js`, and `POST /api/ask`.
 - Frontend-to-backend chat integration when the page is served from the same host as the API.
@@ -15,7 +15,7 @@ A mobile-first Hindi/Sanskrit/English spiritual guidance platform.
 
 ## Important current limitations
 
-This is a development beta, not a production-ready religious service. The five starter knowledge entries, sixteen-samskara overview and puja/aarti guide catalogue are drafts and require acharya review. AI-generated responses are not scripture-verified and are marked for human review. The PWA caches only the app shell; live chat/API calls require connectivity. The Panchang endpoint is educational and does not calculate today's Panchang or muhurta. No real Panchang calculation, horoscope/kundli engine, verified pandit directory, booking, e-commerce, payment, user accounts, admin console, or production voice-cloning/TTS service is integrated. Browser speech depends on the device and browser; it does not yet provide the requested dedicated deep spiritual voice.
+This is a development beta, not a production-ready religious service. The five starter knowledge entries, sixteen-samskara overview and puja/aarti guide catalogue are drafts and require acharya review. AI-generated responses are not scripture-verified and are marked for human review. The PWA caches only the app shell; live chat/API calls require connectivity. The Panchang endpoint is educational and does not calculate today's Panchang or muhurta. No real Panchang calculation, horoscope/kundli engine, verified pandit directory, booking, e-commerce, payment, user accounts, admin console, or production voice-cloning/TTS service is integrated. Browser speech and available voice choices depend on the device and browser; pitch is adjusted, but this does not guarantee a dedicated deep spiritual voice or production voice service.
 
 ## Run locally
 
