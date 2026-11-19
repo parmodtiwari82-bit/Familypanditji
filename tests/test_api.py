@@ -214,3 +214,5 @@ def test_frontend_exposes_voice_picker_and_registers_app_shell():
     assert "navigator.serviceWorker.register('/sw.js')" in frontend
     assert 'id="installApp"' in frontend
     assert "beforeinstallprompt" in frontend
+    assert 'id="shareAnswer"' in frontend
+    assert "navigator.share" in frontend
