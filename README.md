@@ -98,3 +98,11 @@ The `GET /api/trust/status` endpoint reports whether the optional AI provider is
 - `GET /api/jyotish/guide` documents the consent-based birth details required by a future chart engine. No kundli or prediction calculations are performed.
 - `GET /api/pandits` reads the verified-first directory catalogue. It currently returns an empty list and does not accept bookings. No sample or fictional pandit profiles are displayed.
 - Directory verification, secure birth-data handling, a validated ephemeris/calculation engine, and expert review are prerequisites before these become live services.
+
+
+## Acharya content review workflow foundation
+
+- `GET /api/content/review-policy` describes the source/provenance metadata and human review steps required before religious content can be approved.
+- It reports the current catalogue sizes for knowledge, puja guides, samskaras and mantras where available.
+- Required evidence includes source title, author/tradition, edition/publication, page/section, reviewer identity and qualification, review date, decision and notes.
+- This is deliberately a read-only workflow blueprint. It does not authenticate reviewers, accept submissions, or approve content. All starter content remains draft until a secure editorial system and genuine acharya sign-off exist.
