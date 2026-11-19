@@ -127,12 +127,21 @@ def ecosystem_modules():
         raise HTTPException(status_code=503, detail="Ecosystem module catalogue is unavailable.")
 
 @app.get("/api/knowledge/topics")
-def knowledge_topics(category: str | None = None):
+def knowledge_topics(category: str | None = None, q: str | None = None):
     """Expose starter knowledge cards with explicit review status."""
     entries = load_knowledge()
     if category:
         wanted = category.strip().casefold()
         entries = [entry for entry in entries if entry.get("category", "").casefold() == wanted]
+    if q and q.strip():
+        query = q.strip().casefold()
+        entries = [
+            entry for entry in entries
+            if query in str(entry.get("title", "")).casefold()
+            or any(query in str(keyword).casefold() for keyword in entry.get("keywords", []))
+            or query in str(entry.get("answer", "")).casefold()
+            or query in str(entry.get("answer_en", "")).casefold()
+        ]
     return {
         "status": "draft_requires_acharya_review",
         "count": len(entries),
