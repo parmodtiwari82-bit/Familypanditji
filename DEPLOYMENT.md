@@ -27,6 +27,10 @@ Open `/health` to confirm the API process responds. Use `/api/release/readiness`
 - Keep provider usage limits, billing alerts and key rotation under the account owner's control.
 - Enable HTTPS, platform logs, backups and uptime monitoring.
 
+## Public-facing notices
+
+The app exposes preliminary beta notices at `/privacy` and `/terms`. Before public release, replace/approve these drafts with the legal operator's identity, a monitored contact and grievance channel, actual AI/hosting provider details, retention periods, user-rights process, refund/consumer terms (if commerce is enabled), and jurisdiction-specific legal review. Do not claim privacy or data-retention guarantees that the selected providers and hosting configuration do not support.
+
 ## Before public launch
 
 1. Complete expert acharya review and source verification for all religious content.
