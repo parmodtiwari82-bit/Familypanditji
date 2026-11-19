@@ -31,7 +31,7 @@
 <div class="row" style="margin-top:9px"><button id="read" class="secondary">🔊 उत्तर सुनें</button><button id="shareAnswer" class="secondary" type="button">उत्तर साझा करें</button><button id="stop" class="secondary">आवाज़ रोकें</button><select id="voiceChoice" aria-label="उत्तर की आवाज़ चुनें"><option value="auto">डिवाइस की उपयुक्त आवाज़</option></select><span id="voiceStatus" class="status">आवाज़ सुविधा डिवाइस/ब्राउज़र पर निर्भर है</span></div>
 <p class="hint">उत्तर सेवा API उपलब्ध होने पर backend से जुड़ती है। AI provider configured न होने पर सीमित प्रारंभिक ज्ञान-संग्रह से उत्तर मिलेगा।</p></section>
 <section class="panel" id="acharyaReviewPanel"><div class="section-title">आचार्य समीक्षा एवं सामग्री नियंत्रण</div><p class="hint">यह सार्वजनिक read-only स्थिति है। यहाँ कोई सामग्री approve या publish नहीं की जा सकती। सभी धार्मिक सामग्री आचार्य की दर्ज समीक्षा तक प्रारूप रहेगी।</p><p id="reviewPolicyStatus" class="hint" aria-live="polite">समीक्षा नीति लोड हो रही है…</p><div id="reviewPolicyList" class="grid"></div><p class="hint"><a href="https://github.com/parmodtiwari82-bit/Familypanditji/blob/main/ADMIN_CONTENT_WORKFLOW.md">सुरक्षित Admin workflow की आवश्यकताएँ</a> · <a href="https://github.com/parmodtiwari82-bit/Familypanditji/blob/main/schemas/content-review.schema.json">Review metadata schema</a></p></section>
-<section class="panel" id="sadhanaPanel"><div class="section-title">दैनिक साधना एवं संकल्प</div><p class="hint">अपना दैनिक जप-संकल्प दर्ज करें और आज की प्रगति देखें। जानकारी केवल इसी डिवाइस के ब्राउज़र में सेव होगी; सर्वर पर नहीं भेजी जाती। साझा डिवाइस पर उपयोग के बाद स्थानीय डेटा साफ़ कर दें।</p><div class="row"><label for="sadhanaName" class="hint">मंत्र / साधना</label><input id="sadhanaName" maxlength="80" placeholder="जैसे गायत्री मंत्र" style="flex:1;min-width:180px"></div><div class="row" style="margin-top:9px"><label for="sadhanaGoal" class="hint">दैनिक लक्ष्य (जप)</label><input id="sadhanaGoal" type="number" min="1" max="100000" value="108" inputmode="numeric" style="width:120px"><label for="sadhanaCount" class="hint">आज पूरे जप</label><input id="sadhanaCount" type="number" min="0" max="100000" value="0" inputmode="numeric" style="width:120px"></div><div class="row" style="margin-top:10px"><button id="sadhanaAdd" type="button">+1 जप</button><button id="sadhanaAdd108" class="secondary" type="button">+108 जप</button><button id="sadhanaSave" class="secondary" type="button">संकल्प सेव करें</button><button id="sadhanaReset" class="secondary" type="button">आज का काउंटर रीसेट</button><button id="sadhanaClear" class="secondary" type="button">सेव किया डेटा मिटाएँ</button></div><p id="sadhanaProgress" class="hint" aria-live="polite">आज की साधना की प्रगति यहाँ दिखेगी।</p><progress id="sadhanaBar" value="0" max="108" style="width:100%;height:16px"></progress><p id="sadhanaDate" class="hint"></p><p class="hint">यह व्यक्तिगत अभ्यास-ट्रैकर है, धार्मिक अनुष्ठान की प्रमाणित विधि या फल की गारंटी नहीं।</p></section>
+<section class="panel" id="sadhanaPanel"><div class="section-title">दैनिक साधना एवं संकल्प</div><p class="hint">अपना दैनिक जप-संकल्प दर्ज करें और आज की प्रगति देखें। जानकारी केवल इसी डिवाइस के ब्राउज़र में सेव होगी; सर्वर पर नहीं भेजी जाती। साझा डिवाइस पर उपयोग के बाद स्थानीय डेटा साफ़ कर दें।</p><div class="row"><label for="sadhanaName" class="hint">मंत्र / साधना</label><input id="sadhanaName" maxlength="80" placeholder="जैसे गायत्री मंत्र" style="flex:1;min-width:180px"></div><div class="row" style="margin-top:9px"><label for="sadhanaGoal" class="hint">दैनिक लक्ष्य (जप)</label><input id="sadhanaGoal" type="number" min="1" max="100000" value="108" inputmode="numeric" style="width:120px"><label for="sadhanaCount" class="hint">आज पूरे जप</label><input id="sadhanaCount" type="number" min="0" max="100000" value="0" inputmode="numeric" style="width:120px"></div><div class="row" style="margin-top:10px"><button id="sadhanaAdd" type="button">+1 जप</button><button id="sadhanaAdd108" class="secondary" type="button">+108 जप</button><button id="sadhanaSave" class="secondary" type="button">संकल्प सेव करें</button><button id="sadhanaReset" class="secondary" type="button">आज का काउंटर रीसेट</button><button id="sadhanaClear" class="secondary" type="button">सेव किया डेटा मिटाएँ</button><button id="exportLocalData" class="secondary" type="button">डेटा बैकअप डाउनलोड</button><button id="importLocalData" class="secondary" type="button">बैकअप वापस लाएँ</button><input id="localDataFile" type="file" accept="application/json,.json" hidden></div><p id="localDataStatus" class="hint" aria-live="polite">साधना और पूजा checklist का backup इसी डिवाइस से export/import करें।</p><p id="sadhanaProgress" class="hint" aria-live="polite">आज की साधना की प्रगति यहाँ दिखेगी।</p><progress id="sadhanaBar" value="0" max="108" style="width:100%;height:16px"></progress><p id="sadhanaDate" class="hint"></p><p class="hint">यह व्यक्तिगत अभ्यास-ट्रैकर है, धार्मिक अनुष्ठान की प्रमाणित विधि या फल की गारंटी नहीं।</p></section>
 <section class="panel"><div class="section-title">हमारा संकल्प</div><p>परिवारों तक सरल भाषा में सनातन ज्ञान, पूजा मार्गदर्शन और भारतीय आध्यात्मिक परंपराओं की जानकारी पहुँचाना।</p><p class="foot">AI द्वारा दी गई जानकारी में मतभेद या त्रुटि संभव है। स्थानीय रीति, संप्रदाय और योग्य आचार्य के मार्गदर्शन को प्राथमिकता दें।</p></section>
 <footer class="foot" style="text-align:center;padding:18px">AI Family Pandit Ji • विकास बीटा<br><a href="/privacy">गोपनीयता सूचना</a> · <a href="/terms">उपयोग की शर्तें</a></footer>
 </main>
@@ -82,6 +82,54 @@ document.getElementById('sadhanaClear').onclick=()=>{if(!window.confirm('इस 
 [sadhanaName,sadhanaGoal,sadhanaCount].forEach(input=>input.addEventListener('change',()=>{renderSadhana();saveSadhana()}));
 renderSadhana();
 
+function exportLocalBackup(){
+ const entries={};
+ try{
+  for(let i=0;i<localStorage.length;i++){
+   const key=localStorage.key(i);
+   if(key===sadhanaKey||/^familyPanditPuja:\\d{4}-\\d{2}-\\d{2}:[a-z0-9-]{1,100}$/.test(key||'')){
+    const raw=localStorage.getItem(key);
+    if(raw!==null)entries[key]=JSON.parse(raw);
+   }
+  }
+  const payload={format:'family-pandit-ji-local-backup',version:1,exportedAt:new Date().toISOString(),entries};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download='family-pandit-ji-backup-'+localDay()+'.json';
+  document.body.append(link);link.click();link.remove();URL.revokeObjectURL(url);
+  document.getElementById('localDataStatus').textContent='Backup file तैयार है। इसे सुरक्षित जगह रखें; इसमें आपकी निजी साधना जानकारी हो सकती है।';
+ }catch(error){document.getElementById('localDataStatus').textContent='Backup नहीं बन पाया। Browser storage में मौजूद डेटा जाँचें।'}
+}
+function validateLocalBackup(payload){
+ if(!payload||payload.format!=='family-pandit-ji-local-backup'||payload.version!==1||!payload.entries||typeof payload.entries!=='object'||Array.isArray(payload.entries))return false;
+ const keys=Object.keys(payload.entries);
+ if(keys.length>500)return false;
+ return keys.every(key=>{
+  const value=payload.entries[key];
+  if(key===sadhanaKey)return value&&typeof value==='object'&&!Array.isArray(value)&&typeof value.name==='string'&&value.name.length<=80&&/^\\d{4}-\\d{2}-\\d{2}$/.test(value.date)&&Number.isInteger(value.goal)&&value.goal>=1&&value.goal<=100000&&Number.isInteger(value.count)&&value.count>=0&&value.count<=100000;
+  if(!/^familyPanditPuja:\\d{4}-\\d{2}-\\d{2}:[a-z0-9-]{1,100}$/.test(key))return false;
+  return Array.isArray(value)&&value.length<=100&&value.every(item=>typeof item==='boolean');
+ });
+}
+async function importLocalBackup(file){
+ const status=document.getElementById('localDataStatus');
+ if(!file)return;
+ if(file.size>1024*1024){status.textContent='Backup file 1 MB से बड़ी है; import रोक दिया गया।';return}
+ try{
+  const payload=JSON.parse(await file.text());
+  if(!validateLocalBackup(payload))throw new Error('Invalid backup');
+  const entries=Object.entries(payload.entries);
+  for(const [key,value] of entries)localStorage.setItem(key,JSON.stringify(value));
+  const saved=payload.entries[sadhanaKey];
+  if(saved){sadhanaName.value=saved.name;sadhanaGoal.value=saved.goal;sadhanaCount.value=saved.date===localDay()?saved.count:0;renderSadhana()}
+  loadPujaGuides();
+  status.textContent=entries.length+' local records restore हुए। पुराने records overwrite हो सकते हैं।';
+ }catch(error){status.textContent='Backup मान्य नहीं है या restore असफल हुआ। कोई बदलाव करने से पहले file जाँचें।'}
+}
+document.getElementById('exportLocalData').onclick=exportLocalBackup;
+document.getElementById('importLocalData').onclick=()=>document.getElementById('localDataFile').click();
+document.getElementById('localDataFile').addEventListener('change',event=>{importLocalBackup(event.target.files&&event.target.files[0]);event.target.value=''});
+ 
 function add(text,who){const d=document.createElement('div');d.className='msg '+who;d.textContent=text;log.appendChild(d);log.scrollTop=log.scrollHeight}
 async function send(text){if(isSending)return;const v=(text||q.value).trim();if(!v)return;if(v.length>4000){add('प्रश्न 4000 अक्षरों से छोटा रखें।','bot');return}isSending=true;const sendButton=document.getElementById('send');sendButton.disabled=true;add(v,'user');q.value='';lastAnswer='उत्तर तैयार किया जा रहा है…';const pending=(()=>{const d=document.createElement('div');d.className='msg bot';d.textContent=lastAnswer;log.appendChild(d);log.scrollTop=log.scrollHeight;return d})();
 try{const response=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:v,language:lang.value})});if(!response.ok)throw new Error('API '+response.status);const data=await response.json();lastAnswer=data.answer;pending.textContent=data.answer+'\n\n('+data.mode+(data.needs_acharya_review?' • आचार्य पुष्टि अपेक्षित':'')+')'}
