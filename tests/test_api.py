@@ -101,3 +101,14 @@ def test_knowledge_topics_empty_search_keeps_all_drafts():
     response = client.get("/api/knowledge/topics", params={"q": "   "})
     assert response.status_code == 200
     assert response.json()["count"] >= 5
+
+
+def test_samskara_catalogue_returns_sixteen_review_labelled_drafts():
+    response = client.get("/api/samskaras")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "draft_requires_acharya_review"
+    assert len(payload["samskaras"]) == 16
+    assert all(item["review_required"] is True for item in payload["samskaras"])
+    assert payload["samskaras"][0]["id"] == "garbhadhana"
+    assert payload["samskaras"][-1]["id"] == "antyeshti"
