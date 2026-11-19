@@ -425,3 +425,28 @@ def test_frontend_has_device_local_sadhana_tracker():
     assert "localStorage.setItem(sadhanaKey" in frontend
     assert "No network requests" in frontend
     assert "दैनिक साधना एवं संकल्प" in frontend
+
+
+
+def test_frontend_shows_read_only_acharya_review_policy():
+    frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    assert 'id="acharyaReviewPanel"' in frontend
+    assert 'id="reviewPolicyStatus"' in frontend
+    assert 'id="reviewPolicyList"' in frontend
+    assert "loadReviewPolicy();" in frontend
+    assert "approval_enabled" in frontend
+    assert "केवल read-only blueprint" in frontend
+
+
+def test_content_review_schema_and_admin_workflow_docs_exist():
+    import json
+    root = Path(__file__).resolve().parent.parent
+    schema = json.loads((root / "schemas" / "content-review.schema.json").read_text(encoding="utf-8"))
+    assert schema["type"] == "object"
+    assert schema["additionalProperties"] is False
+    assert "reviewer_qualification" in schema["required"]
+    assert schema["properties"]["decision"]["enum"] == ["pending", "approved", "revision_required", "rejected"]
+    workflow = (root / "ADMIN_CONTENT_WORKFLOW.md").read_text(encoding="utf-8")
+    assert "no public create, update, approve" in workflow
+    assert "author cannot approve own revision" in workflow
+    assert "append-only audit" in workflow
