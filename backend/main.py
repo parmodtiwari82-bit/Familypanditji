@@ -126,6 +126,17 @@ def ecosystem_modules():
     except (OSError, json.JSONDecodeError):
         raise HTTPException(status_code=503, detail="Ecosystem module catalogue is unavailable.")
 
+@app.get("/api/samskaras")
+def samskara_catalogue():
+    """Return the draft sixteen-samskara reference with explicit acharya review status."""
+    catalog_path = PROJECT_ROOT / "data" / "samskaras.json"
+    try:
+        with catalog_path.open(encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        raise HTTPException(status_code=503, detail="Samskara catalogue is unavailable.")
+
+
 @app.get("/api/knowledge/topics")
 def knowledge_topics(category: str | None = None, q: str | None = None):
     """Expose starter knowledge cards with explicit review status."""
