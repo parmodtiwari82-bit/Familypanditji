@@ -390,3 +390,24 @@ def test_frontend_links_to_privacy_and_terms_pages():
     frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
     assert 'href="/privacy"' in frontend
     assert 'href="/terms"' in frontend
+
+
+
+def test_content_review_policy_defines_source_and_acharya_signoff_workflow():
+    response = client.get("/api/content/review-policy")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "workflow_blueprint_only"
+    assert payload["approval_enabled"] is False
+    assert set(payload["catalogue_counts"]) == {"knowledge", "puja_guides", "samskaras", "mantras"}
+    assert all(count is None or count >= 0 for count in payload["catalogue_counts"].values())
+    assert {"source_title", "page_or_section", "reviewer_qualification", "reviewed_at"} <= set(payload["required_metadata"])
+    assert payload["allowed_decisions"] == ["pending", "approved", "revision_required", "rejected"]
+    assert "draft_requires_acharya_review" in payload["publication_rule"]
+    assert "admin login" in payload["security_note"]
+
+
+def test_content_review_policy_is_read_only_and_has_no_public_approval_route():
+    response = client.get("/api/content/review-policy")
+    assert response.status_code == 200
+    assert client.post("/api/content/review-policy", json={"decision": "approved"}).status_code == 405
