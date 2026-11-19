@@ -54,3 +54,23 @@ def test_knowledge_topics_can_filter_by_category():
     topics = response.json()["topics"]
     assert len(topics) == 1
     assert topics[0]["category"] == "mantra"
+
+def test_curated_gayatri_answer_supports_english():
+    response = client.post("/api/ask", json={"question": "Tell me the Gayatri mantra", "language": "en"})
+    assert response.status_code == 200
+    assert "We meditate" in response.json()["answer"]
+    assert response.json()["needs_acharya_review"] is True
+
+
+def test_curated_panchang_answer_supports_sanskrit():
+    response = client.post("/api/ask", json={"question": "पञ्चाङ्गस्य पञ्च अङ्गानि", "language": "sa"})
+    assert response.status_code == 200
+    assert "पञ्चाङ्गस्य पञ्चाङ्गानि" in response.json()["answer"]
+
+
+def test_knowledge_topics_exposes_localized_drafts():
+    response = client.get("/api/knowledge/topics")
+    assert response.status_code == 200
+    gayatri = next(x for x in response.json()["topics"] if x["id"] == "gayatri-mantra")
+    assert "We meditate" in gayatri["answer_en"]
+    assert "ॐ भूर्भुवः" in gayatri["answer_sa"]
