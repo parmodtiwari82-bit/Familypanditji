@@ -500,3 +500,14 @@ def test_puja_guides_provide_private_daily_step_checklists():
     assert "आज की तैयारी:" in frontend
     assert "input.type='checkbox'" in frontend
     assert "localStorage.setItem(pujaChecklistKey(id),JSON.stringify(values))" in frontend
+
+
+def test_frontend_has_validated_local_backup_and_restore_controls():
+    frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    assert 'id="exportLocalData"' in frontend
+    assert 'id="importLocalData"' in frontend
+    assert "family-pandit-ji-local-backup" in frontend
+    assert "function validateLocalBackup(payload)" in frontend
+    assert "file.size>1024*1024" in frontend
+    assert "URL.createObjectURL(blob)" in frontend
+    assert "loadPujaGuides()" in frontend
