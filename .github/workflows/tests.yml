@@ -34,6 +34,12 @@ jobs:
             echo "Plain HTTP staging host was accepted." >&2
             exit 1
           fi
+      - name: Set up Node.js for frontend validation
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Validate frontend JavaScript syntax
+        run: bash scripts/check_frontend.sh
       - name: Run API tests
         working-directory: backend
         run: PYTHONPATH=. pytest -q ../tests
