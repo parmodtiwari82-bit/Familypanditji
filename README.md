@@ -17,7 +17,7 @@ A mobile-first Hindi/Sanskrit/English spiritual guidance platform.
 
 This is a development beta, not a production-ready religious service. The five starter knowledge entries, sixteen-samskara overview and puja/aarti guide catalogue are drafts and require acharya review. AI-generated responses are not scripture-verified and are marked for human review. The PWA caches only the app shell; live chat/API calls require connectivity. The Panchang endpoint is educational and does not calculate today's Panchang or muhurta. No real Panchang calculation, horoscope/kundli engine, verified pandit directory, booking, e-commerce, payment, user accounts, admin console, or production voice-cloning/TTS service is integrated. Browser speech and available voice choices depend on the device and browser; pitch is adjusted, but this does not guarantee a dedicated deep spiritual voice or production voice service.
 
-## Run locally
+## Deployment\n\nSee [DEPLOYMENT.md](DEPLOYMENT.md) for the Docker build, hosting configuration and pre-launch checklist. A container build does not itself deploy the application.\n\n## Run locally
 
 From the repository root:
 
