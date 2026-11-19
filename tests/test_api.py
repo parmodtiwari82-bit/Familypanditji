@@ -193,3 +193,14 @@ def test_puja_guides_search_ignores_punctuation_and_spacing():
     response = client.get("/api/puja-guides", params={"q": "दीप   प्रज्वलित"})
     assert response.status_code == 200
     assert response.json()["count"] >= 1
+
+
+def test_installable_app_assets_are_served():
+    manifest = client.get("/manifest.webmanifest")
+    worker = client.get("/sw.js")
+    icon = client.get("/icons/panditji.svg")
+    assert manifest.status_code == worker.status_code == icon.status_code == 200
+    assert manifest.json()["display"] == "standalone"
+    assert manifest.json()["start_url"] == "/"
+    assert "APP_SHELL" in worker.text
+    assert "<svg" in icon.text
