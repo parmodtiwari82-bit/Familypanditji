@@ -1,3 +1,4 @@
+from pathlib import Path
 from fastapi.testclient import TestClient
 from main import app
 
@@ -204,3 +205,10 @@ def test_installable_app_assets_are_served():
     assert manifest.json()["start_url"] == "/"
     assert "APP_SHELL" in worker.text
     assert "<svg" in icon.text
+
+
+def test_frontend_exposes_voice_picker_and_registers_app_shell():
+    frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    assert 'id="voiceChoice"' in frontend
+    assert "voiceschanged" in frontend
+    assert "navigator.serviceWorker.register('/sw.js')" in frontend
