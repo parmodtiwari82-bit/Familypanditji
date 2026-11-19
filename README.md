@@ -5,6 +5,8 @@ A mobile-first Hindi/Sanskrit/English spiritual guidance platform.
 ## Implemented in this repository
 
 - Responsive browser interface with text chat, searchable mantra cards, device-dependent speech input/output, selectable installed speech voices and native answer sharing.
+- Device-local daily Sadhana/Sankalp tracker with a configurable mantra, daily japa goal, +1/+108 counters and progress indicator; its data stays in the browser and is not sent to the API.
+- Public read-only Acharya review status panel; secure admin workflow specification and JSON Schema for source provenance, reviewer qualification, independent checks and review decisions. No public approval/write endpoint is exposed.
 - Installable Progressive Web App shell (manifest, app icon and service worker); the static app shell can be cached, while live chat/API calls still require a network connection.
 - FastAPI backend with `GET /health`, `GET /api/knowledge`, `GET /api/knowledge/topics` (category and multilingual text filters), `GET /api/samskaras` (sixteen-samskara draft catalogue), `GET /api/puja-guides` (bilingual puja/aarti draft guides with filters), `GET /api/modules`, `GET /api/trust/status` (transparent beta, content-review and missing-capability status), `GET /api/mantras` (multilingual mantra catalogue and search), `GET /api/search` (unified search across knowledge, mantras and puja guides), `GET /api/panchang/overview` (educational five-limbs overview only), `GET /manifest.webmanifest`, `GET /sw.js`, `GET /privacy`, `GET /terms`, and `POST /api/ask`.
 - Frontend-to-backend chat integration when the page is served from the same host as the API.
@@ -99,6 +101,14 @@ The `GET /api/trust/status` endpoint reports whether the optional AI provider is
 - `GET /api/pandits` reads the verified-first directory catalogue. It currently returns an empty list and does not accept bookings. No sample or fictional pandit profiles are displayed.
 - Directory verification, secure birth-data handling, a validated ephemeris/calculation engine, and expert review are prerequisites before these become live services.
 
+
+## Daily Sadhana and Sankalp
+
+The home page includes a private, device-local japa tracker. It supports a custom practice name, daily target, +1 and +108 counters and a progress indicator. Data is stored in that browser's local storage; it is not synchronized across devices or sent to the backend. Clearing browser data or changing devices may remove it.
+
+## Admin and Acharya review specification
+
+See [ADMIN_CONTENT_WORKFLOW.md](ADMIN_CONTENT_WORKFLOW.md) and [schemas/content-review.schema.json](schemas/content-review.schema.json). The home page shows the public read-only review policy and catalogue counts. These artifacts specify a future secure workflow; they do not create admin accounts, authenticate reviewers, store approvals or publish content. No public write/approval route is available.
 
 ## Acharya content review workflow foundation
 
