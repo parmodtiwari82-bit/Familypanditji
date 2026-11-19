@@ -87,7 +87,7 @@ function exportLocalBackup(){
  try{
   for(let i=0;i<localStorage.length;i++){
    const key=localStorage.key(i);
-   if(key===sadhanaKey||/^familyPanditPuja:\\d{4}-\\d{2}-\\d{2}:[a-z0-9-]{1,100}$/.test(key||'')){
+   if(key===sadhanaKey||/^familyPanditPuja:\d{4}-\d{2}-\d{2}:[a-z0-9-]{1,100}$/.test(key||'')){
     const raw=localStorage.getItem(key);
     if(raw!==null)entries[key]=JSON.parse(raw);
    }
@@ -106,8 +106,8 @@ function validateLocalBackup(payload){
  if(keys.length>500)return false;
  return keys.every(key=>{
   const value=payload.entries[key];
-  if(key===sadhanaKey)return value&&typeof value==='object'&&!Array.isArray(value)&&typeof value.name==='string'&&value.name.length<=80&&/^\\d{4}-\\d{2}-\\d{2}$/.test(value.date)&&Number.isInteger(value.goal)&&value.goal>=1&&value.goal<=100000&&Number.isInteger(value.count)&&value.count>=0&&value.count<=100000;
-  if(!/^familyPanditPuja:\\d{4}-\\d{2}-\\d{2}:[a-z0-9-]{1,100}$/.test(key))return false;
+  if(key===sadhanaKey)return value&&typeof value==='object'&&!Array.isArray(value)&&typeof value.name==='string'&&value.name.length<=80&&/^\d{4}-\d{2}-\d{2}$/.test(value.date)&&Number.isInteger(value.goal)&&value.goal>=1&&value.goal<=100000&&Number.isInteger(value.count)&&value.count>=0&&value.count<=100000;
+  if(!/^familyPanditPuja:\d{4}-\d{2}-\d{2}:[a-z0-9-]{1,100}$/.test(key))return false;
   return Array.isArray(value)&&value.length<=100&&value.every(item=>typeof item==='boolean');
  });
 }
