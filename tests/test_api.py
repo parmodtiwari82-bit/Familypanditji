@@ -87,3 +87,17 @@ def test_knowledge_topics_searches_sanskrit_alias():
     response = client.get("/api/knowledge/topics", params={"q": "पञ्चाङ्ग"})
     assert response.status_code == 200
     assert response.json()["topics"][0]["id"] == "panchang-five-limbs"
+
+
+def test_knowledge_topics_combines_category_and_search_filters():
+    response = client.get("/api/knowledge/topics", params={"category": "mantra", "q": "Gayatri"})
+    assert response.status_code == 200
+    topics = response.json()["topics"]
+    assert len(topics) == 1
+    assert topics[0]["id"] == "gayatri-mantra"
+
+
+def test_knowledge_topics_empty_search_keeps_all_drafts():
+    response = client.get("/api/knowledge/topics", params={"q": "   "})
+    assert response.status_code == 200
+    assert response.json()["count"] >= 5
