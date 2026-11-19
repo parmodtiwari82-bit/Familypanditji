@@ -126,6 +126,37 @@ def ecosystem_modules():
     except (OSError, json.JSONDecodeError):
         raise HTTPException(status_code=503, detail="Ecosystem module catalogue is unavailable.")
 
+
+@app.get("/api/puja-guides")
+def puja_guides(category: str | None = None, q: str | None = None):
+    """Return introductory puja/aarti guides, all explicitly marked as drafts."""
+    catalog_path = PROJECT_ROOT / "data" / "puja_guides.json"
+    try:
+        with catalog_path.open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        raise HTTPException(status_code=503, detail="Puja guide catalogue is unavailable.")
+    guides = payload.get("guides", [])
+    if category:
+        wanted = category.strip().casefold()
+        guides = [item for item in guides if item.get("category", "").casefold() == wanted]
+    if q and q.strip():
+        query = q.strip().casefold()
+        guides = [
+            item for item in guides
+            if query in str(item.get("title_hi", "")).casefold()
+            or query in str(item.get("title_en", "")).casefold()
+            or query in str(item.get("summary_hi", "")).casefold()
+            or query in str(item.get("summary_en", "")).casefold()
+            or any(query in str(step).casefold() for step in item.get("steps_hi", []) + item.get("steps_en", []))
+        ]
+    return {
+        "status": payload.get("status", "draft_requires_acharya_review"),
+        "note": payload.get("note", ""),
+        "count": len(guides),
+        "guides": guides,
+    }
+
 @app.get("/api/samskaras")
 def samskara_catalogue():
     """Return the draft sixteen-samskara reference with explicit acharya review status."""
