@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "notice": "यह उत्पाद-रोडमैप कैटलॉग है; listed services को live सुविधा न मानें जब तक उनका implementation और परीक्षण पूरा न हो।",
+  "modules": [
+    {"id":"ai-pandit","name_hi":"AI Family Pandit Ji","name_en":"AI Family Pandit Ji","group":"core","status":"beta","description":"हिंदी, संस्कृत और अंग्रेज़ी में धार्मिक प्रश्नोत्तर; AI उत्तरों पर आचार्य समीक्षा आवश्यक।"},
+    {"id":"puja-guides","name_hi":"पूजा एवं आरती","name_en":"Puja and Aarti Guides","group":"knowledge","status":"planned","description":"विभिन्न परंपराओं के अनुसार स्रोत-सहित पूजा विधियाँ और आरती।"},
+    {"id":"mantra-library","name_hi":"मंत्र एवं स्तोत्र","name_en":"Mantra and Stotra Library","group":"knowledge","status":"planned","description":"मंत्र, अर्थ, उच्चारण और सत्यापित स्रोत।"},
+    {"id":"samskara","name_hi":"16 संस्कार","name_en":"Sixteen Samskaras","group":"knowledge","status":"planned","description":"गर्भाधान से अंत्येष्टि तक संस्कारों का परंपरा-संवेदी मार्गदर्शन।"},
+    {"id":"panchang","name_hi":"पंचांग एवं मुहूर्त","name_en":"Panchang and Muhurta","group":"tools","status":"planned","description":"स्थान और तिथि-आधारित गणना; विश्वसनीय पंचांग स्रोतों से सत्यापन।"},
+    {"id":"jyotish","name_hi":"ज्योतिष एवं कुंडली","name_en":"Jyotish and Kundli","group":"tools","status":"planned","description":"जन्म विवरण की सहमति-आधारित प्रविष्टि और गणना की पारदर्शिता।"},
+    {"id":"pandit-directory","name_hi":"पंडित खोज एवं बुकिंग","name_en":"Pandit Discovery and Booking","group":"marketplace","status":"planned","description":"पहचान और योग्यता सत्यापन, उपलब्धता, बुकिंग और समीक्षा।"},
+    {"id":"temples","name_hi":"मंदिर एवं तीर्थ","name_en":"Temples and Pilgrimage","group":"discovery","status":"planned","description":"मंदिर, दर्शन नियम, यात्रा और आधिकारिक संपर्क जानकारी।"},
+    {"id":"puja-store","name_hi":"पूजा सामग्री स्टोर","name_en":"Puja Samagri Store","group":"commerce","status":"planned","description":"सामग्री सूची, विक्रेता, मूल्य, ऑर्डर और डिलीवरी।"},
+    {"id":"community","name_hi":"सनातन परिवार समुदाय","name_en":"Sanatan Family Community","group":"community","status":"planned","description":"मॉडरेटेड प्रश्न, कार्यक्रम और परिवार-केंद्रित सीखने के संसाधन।"},
+    {"id":"admin-trust","name_hi":"एडमिन एवं भरोसा केंद्र","name_en":"Admin and Trust Center","group":"platform","status":"planned","description":"आचार्य समीक्षा, रिपोर्टिंग, गोपनीयता, ऑडिट और सुरक्षा नियंत्रण।"}
+  ]
+}
