@@ -110,6 +110,16 @@ def health():
         "ai_configured": bool(AI_API_KEY and AI_MODEL),
     }
 
+@app.get("/api/modules")
+def ecosystem_modules():
+    """Return the product module catalogue and clearly-labelled implementation status."""
+    catalog_path = PROJECT_ROOT / "data" / "ecosystem_modules.json"
+    try:
+        with catalog_path.open(encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        raise HTTPException(status_code=503, detail="Ecosystem module catalogue is unavailable.")
+
 @app.get("/api/knowledge")
 def knowledge_status():
     entries = load_knowledge()
