@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "AI Family Pandit Ji",
+  "short_name": "Family Pandit",
+  "description": "हिंदी, संस्कृत और English में सनातन ज्ञान एवं पूजा मार्गदर्शन",
+  "lang": "hi",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff8ed",
+  "theme_color": "#6b3418",
+  "icons": [
+    {
+      "src": "/icons/panditji.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
