@@ -1,50 +1,67 @@
 # AI Family Pandit Ji — Sanatan Dharma Digital Ecosystem
 
-A mobile-first Hindi/Sanskrit/English spiritual guidance platform, planned as a complete ecosystem rather than a single chat screen.
+A mobile-first Hindi/Sanskrit/English spiritual guidance platform.
 
-## Current repository milestone
+## Implemented in this repository
 
-- Responsive web beta interface: `index.html`
-- Starter FastAPI service: `backend/main.py`
-- Health endpoint: `GET /health`
-- Placeholder question endpoint: `POST /api/ask`
-- Browser speech input/output where supported by the device
+- Responsive browser interface with text chat and device-dependent speech input/output.
+- FastAPI backend with `GET /health`, `GET /api/knowledge`, and `POST /api/ask`.
+- Frontend-to-backend chat integration when the page is served from the same host as the API.
+- Optional OpenAI-compatible chat-completions provider configured only through environment secrets.
+- Safe fallback to the starter curated knowledge library when no provider is configured or the provider is unavailable.
+- Language selection (Hindi, Sanskrit, English), request validation and basic API smoke tests.
 
-**Important:** this is an early technical foundation, not a production-ready AI service. The current question endpoint is explicitly a placeholder. Live LLM responses, curated/cited religious knowledge, real Panchang calculations, astrology, bookings, commerce, payments, authentication, admin controls, and production voice are not yet integrated or tested.
+## Important current limitations
 
-## Run the web beta
+This is a development beta, not a production-ready religious service. The five starter knowledge entries are drafts and require acharya review. AI-generated responses are not scripture-verified and are marked for human review. No real Panchang calculation, horoscope/kundli engine, verified pandit directory, booking, e-commerce, payment, user accounts, admin console, or production voice-cloning/TTS service is integrated. Browser speech depends on the device and browser; it does not yet provide the requested dedicated deep spiritual voice.
 
-Open `index.html` in a modern browser. For microphone access, serve it from localhost or HTTPS and grant microphone permission.
+## Run locally
 
-## Run the API
+From the repository root:
+
+```bash
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
+pip install -r backend/requirements.txt
+uvicorn backend.main:app --reload
+```
+
+Open `http://127.0.0.1:8000`. API docs are at `http://127.0.0.1:8000/docs`.
+
+## Optional AI provider configuration
+
+Set these environment variables on the server (do not put secrets in Git):
+
+- `AI_API_KEY`: provider API key
+- `AI_BASE_URL`: OpenAI-compatible API base URL (default `https://api.openai.com/v1`)
+- `AI_MODEL`: model identifier supported by that provider
+- `AI_TIMEOUT_SECONDS`: request timeout (default 25)
+- `ALLOWED_ORIGINS`: comma-separated production frontend origins; use `*` only for local development
+
+The backend calls `/chat/completions`. If the key/model is missing or the provider errors, it falls back to the local knowledge library. The API health endpoint reveals only whether credentials are configured, never the key.
+
+## Tests
 
 ```bash
 cd backend
-python -m venv .venv
-pip install -r requirements.txt
-uvicorn main:app --reload
+pytest -q
 ```
 
-Health check: `GET http://127.0.0.1:8000/health`
+## Product roadmap
 
-## Product modules / roadmap
-
-1. Core platform, responsive UX, language and accessibility
-2. AI Pandit conversation engine with deep spiritual voice and safe escalation
-3. Reviewed knowledge library: puja, mantra, aarti, vrata, festivals, stories
-4. Sixteen samskaras and life-event guidance
-5. Panchang, muhurta, horoscope and kundli with location/time accuracy
-6. Pandit discovery, profiles, verification and booking workflow
-7. Temple, pilgrimage and seva discovery
-8. Puja samagri catalogue and e-commerce
-9. Payments, order management, refunds and notifications
-10. Admin console, moderation, audit logs, analytics and security
-11. Automated tests, deployment, monitoring and beta release
+1. Core platform, responsive UX, language and accessibility — starter beta implemented; needs device testing.
+2. AI Pandit conversation engine — optional provider adapter implemented; credentials, provider validation and safety evaluation remain.
+3. Reviewed knowledge library — starter drafts only; acharya review and source citations remain.
+4. Sixteen samskaras and life-event guidance — basic list only.
+5. Panchang, muhurta, horoscope and kundli — not integrated.
+6. Pandit discovery, profiles, verification and booking — not integrated.
+7. Temple, pilgrimage and seva discovery — static guidance only.
+8. Puja samagri catalogue and e-commerce — not integrated.
+9. Payments, orders, refunds and notifications — not integrated.
+10. Admin console, moderation, audit logs, analytics and security — not integrated.
+11. Automated tests, deployment, monitoring and beta release — tests authored; execution and deployment remain.
 
 ## Safety and trust
 
-Religious practices vary by sampradaya, region, family tradition and source text. The platform must show source/context, avoid presenting disputed practice as universal, and recommend qualified human acharya review for consequential questions. Astrology and Panchang features must disclose calculation method, location and timezone.
-
-## Configuration
-
-Copy `.env.example` to `.env` for local development. Never commit real API keys, payment secrets, passwords, or private user data.
+Religious practices vary by sampradaya, region, family tradition and source text. The platform must show source/context, avoid presenting disputed practice as universal, and recommend qualified human acharya review for consequential questions. Never rely on this beta for time-critical Panchang or astrological decisions.
