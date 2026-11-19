@@ -286,6 +286,9 @@ def test_frontend_displays_trust_and_release_status():
     assert 'id="trustStatus"' in frontend
     assert 'id="trustList"' in frontend
     assert "loadTrustStatus();" in frontend
+    assert 'id="releaseStatus"' in frontend
+    assert 'id="releaseChecklist"' in frontend
+    assert "loadReleaseReadiness();" in frontend
 
 
 def test_runtime_config_rejects_wildcard_origins_in_production():
