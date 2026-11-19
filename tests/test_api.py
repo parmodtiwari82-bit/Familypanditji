@@ -334,3 +334,25 @@ def test_pandit_directory_does_not_fabricate_profiles_or_claim_booking():
 def test_pandit_directory_validates_verification_filter():
     assert client.get("/api/pandits", params={"status": "unverified"}).status_code == 422
     assert client.get("/api/pandits", params={"status": "all"}).status_code == 200
+
+
+def test_release_readiness_never_claims_beta_is_production_ready():
+    response = client.get("/api/release/readiness")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["release_status"] == "development_beta_not_production_ready"
+    assert payload["production_release_ready"] is False
+    assert payload["checks_total"] == 10
+    assert "live_panchang_engine" in payload["pending"]
+    assert "acharya_content_signoff" in payload["pending"]
+    assert "live_hosting_verified" in payload["pending"]
+
+
+def test_release_readiness_reports_all_check_keys():
+    payload = client.get("/api/release/readiness").json()
+    assert set(payload["checks"]) == {
+        "production_environment", "ai_provider_configured", "explicit_cors_origins",
+        "live_panchang_engine", "validated_jyotish_engine", "verified_pandit_booking",
+        "payment_gateway", "acharya_content_signoff", "production_voice_service",
+        "live_hosting_verified",
+    }
