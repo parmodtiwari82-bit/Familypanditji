@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6b3418"><meta name="description" content="AI Family Pandit Ji — पूजा, मंत्र, संस्कार और सनातन ज्ञान के लिए डिजिटल सहायक">
+<title>AI Family Pandit Ji</title>
+<style>
+:root{--saffron:#a64b19;--gold:#d6a64f;--cream:#fff9ef;--ink:#2d2119;--muted:#76685d;--line:#eadbc8}*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#fff8ed,#f7ead8);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans Devanagari",sans-serif}.wrap{max-width:960px;margin:auto;padding:18px}.hero{background:linear-gradient(120deg,#6b3418,#a64b19);color:#fff;border-radius:22px;padding:25px;box-shadow:0 12px 32px #6b341822}.brand{font-size:clamp(25px,5vw,38px);font-weight:800}.sub{opacity:.9}.pill{display:inline-block;border:1px solid #ffffff66;border-radius:30px;padding:5px 10px;font-size:12px;margin-top:12px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:16px 0}.tile,.panel{background:#fffdf9;border:1px solid var(--line);border-radius:16px;padding:15px}.tile{cursor:pointer;text-align:left;color:var(--ink);font:inherit}.tile:hover{border-color:var(--gold);transform:translateY(-1px)}.tile b{display:block;margin:6px 0}.panel{margin-top:14px}.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}select,input,button{font:inherit;border-radius:11px;padding:11px;border:1px solid var(--line)}select,input{background:white;color:var(--ink)}button{cursor:pointer;background:var(--saffron);color:white;border:0;font-weight:650}button.secondary{background:#f4e7d6;color:var(--ink);border:1px solid var(--line)}.chatlog{height:280px;overflow:auto;background:#fffaf2;border:1px solid var(--line);border-radius:13px;padding:12px;margin:12px 0}.msg{padding:10px 12px;border-radius:13px;margin:8px 0;max-width:88%;white-space:pre-wrap}.bot{background:#f2e5d4}.user{background:#f8e3c0;margin-left:auto}.composer{display:flex;gap:8px}.composer input{flex:1;min-width:0}.hint,.foot{font-size:12px;color:var(--muted);line-height:1.5}.section-title{font-size:19px;font-weight:750;margin:4px 0 10px}.status{font-size:12px;color:#4e6b37}.hide{display:none}@media(max-width:520px){.wrap{padding:12px}.hero{padding:19px}.composer{flex-wrap:wrap}.composer input{width:100%;flex-basis:100%}.chatlog{height:250px}}
+</style></head>
+<body><main class="wrap">
+<header class="hero"><div class="brand">🙏 AI Family Pandit Ji</div><div class="sub">आपका डिजिटल सनातन सहायक</div><div class="pill">हिंदी • संस्कृत • English</div></header>
+<section class="grid" aria-label="मुख्य सेवाएँ">
+<button class="tile secondary" data-prompt="दैनिक पूजा की सरल विधि बताइए">🪔<b>पूजा विधि</b><span class="hint">दैनिक पूजा और आरती</span></button>
+<button class="tile secondary" data-prompt="गायत्री मंत्र अर्थ सहित बताइए">📿<b>मंत्र एवं अर्थ</b><span class="hint">मंत्र, जप और उच्चारण</span></button>
+<button class="tile secondary" data-prompt="16 संस्कारों की सूची और संक्षिप्त जानकारी दें">🌺<b>16 संस्कार</b><span class="hint">जीवन संस्कार मार्गदर्शन</span></button>
+<button class="tile secondary" data-prompt="आज के पंचांग में कौन-कौन सी बातें देखनी चाहिए?">📅<b>पंचांग</b><span class="hint">तिथि, वार, नक्षत्र</span></button>
+<button class="tile secondary" data-prompt="व्रत और त्योहार की तैयारी कैसे करें?">🕉️<b>व्रत-त्योहार</b><span class="hint">परंपरा और तैयारी</span></button>
+<button class="tile secondary" data-prompt="तीर्थ यात्रा की योजना बनाने में मदद करें">🚩<b>तीर्थ यात्रा</b><span class="hint">यात्रा योजना</span></button>
+</section>
+<section class="panel"><div class="row"><div class="section-title" style="flex:1">पंडित जी से पूछें</div><label for="lang" class="hint">भाषा</label><select id="lang"><option value="hi-IN">हिंदी</option><option value="sa-IN">संस्कृत</option><option value="en-IN">English</option></select></div>
+<div id="chatlog" class="chatlog" aria-live="polite"><div class="msg bot">नमस्कार! 🙏 मैं AI Family Pandit Ji का प्रारंभिक डिजिटल सहायक हूँ। पूजा, मंत्र, संस्कार और सनातन परंपराओं के बारे में अपना प्रश्न लिखें। महत्वपूर्ण धार्मिक निर्णय में अपनी परंपरा के विद्वान आचार्य से पुष्टि अवश्य करें।</div></div>
+<div class="composer"><input id="question" placeholder="अपना प्रश्न लिखें…" aria-label="अपना प्रश्न"><button id="send">पूछें</button><button id="speak" class="secondary" type="button" title="आवाज़ से प्रश्न">🎙️</button></div>
+<div class="row" style="margin-top:9px"><button id="read" class="secondary">🔊 उत्तर सुनें</button><button id="stop" class="secondary">आवाज़ रोकें</button><span id="voiceStatus" class="status">आवाज़ सुविधा डिवाइस/ब्राउज़र पर निर्भर है</span></div>
+<p class="hint">यह बीटा इंटरफेस है। अभी लाइव AI मॉडल, प्रमाणित पंचांग गणना, ज्योतिषीय गणना, बुकिंग और भुगतान सेवाएँ कनेक्ट नहीं हैं।</p></section>
+<section class="panel"><div class="section-title">हमारा संकल्प</div><p>परिवारों तक सरल भाषा में सनातन ज्ञान, पूजा मार्गदर्शन और भारतीय आध्यात्मिक परंपराओं की जानकारी पहुँचाना।</p><p class="foot">AI द्वारा दी गई जानकारी में मतभेद या त्रुटि संभव है। स्थानीय रीति, संप्रदाय और योग्य आचार्य के मार्गदर्शन को प्राथमिकता दें।</p></section>
+<footer class="foot" style="text-align:center;padding:18px">AI Family Pandit Ji • प्रारंभिक बीटा</footer>
+</main>
+<script>
+const log=document.getElementById('chatlog'),q=document.getElementById('question'),lang=document.getElementById('lang');
+let lastAnswer='';
+function add(text,who){const d=document.createElement('div');d.className='msg '+who;d.textContent=text;log.appendChild(d);log.scrollTop=log.scrollHeight}
+function answerFor(question){const s=question.toLowerCase();
+if(/गायत्री|gayatri/.test(s))return 'गायत्री मंत्र:\nॐ भूर्भुवः स्वः । तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि । धियो यो नः प्रचोदयात् ॥\nभावार्थ: हम उस दिव्य प्रकाश का ध्यान करते हैं जो हमारी बुद्धि को सद्मार्ग की प्रेरणा दे। उच्चारण गुरु/आचार्य से सीखना श्रेष्ठ है।';
+if(/पूजा|आरती|पूजन/.test(s))return 'सामान्य दैनिक पूजा का सरल क्रम:\n1. स्थान और पूजा सामग्री स्वच्छ रखें।\n2. दीप प्रज्वलित कर संकल्प लें।\n3. इष्टदेव का ध्यान और आवाहन करें।\n4. पुष्प, जल, धूप-दीप और नैवेद्य अर्पित करें।\n5. अपनी परंपरा के अनुसार मंत्र/आरती करें।\n6. क्षमा-प्रार्थना और प्रसाद वितरण करें।\nविधि देवता, क्षेत्र और परिवार की परंपरा के अनुसार बदल सकती है।';
+if(/16 संस्कार|षोडश|sanskar/.test(s))return 'षोडश संस्कारों की प्रचलित सूची में गर्भाधान, पुंसवन, सीमन्तोन्नयन, जातकर्म, नामकरण, निष्क्रमण, अन्नप्राशन, चूड़ाकर्म, कर्णवेध, उपनयन, वेदारम्भ, केशान्त, समावर्तन, विवाह, वानप्रस्थ और अन्त्येष्टि जैसे संस्कार बताए जाते हैं। अलग-अलग गृह्यसूत्रों और परंपराओं में सूची/क्रम में अंतर मिल सकता है।';
+if(/पंचांग|तिथि|नक्षत्र/.test(s))return 'पंचांग के पाँच अंग हैं: तिथि, वार, नक्षत्र, योग और करण। किसी दिन का सटीक पंचांग स्थान और सूर्योदय के आधार पर बदलता है। इस बीटा में अभी लाइव स्थान-आधारित पंचांग गणना उपलब्ध नहीं है।';
+if(/व्रत|त्योहार|उपवास/.test(s))return 'व्रत/त्योहार की तैयारी में तिथि का स्थानीय पंचांग से सत्यापन, स्वास्थ्य के अनुसार उपवास, पूजा सामग्री की सूची और परिवार की परंपरा का ध्यान रखें। व्रत के नियम अलग-अलग परंपराओं में भिन्न होते हैं।';
+if(/तीर्थ|यात्रा|मंदिर/.test(s))return 'तीर्थ यात्रा के लिए स्थान, तिथि, यात्रा अवधि, बजट, वरिष्ठ नागरिकों की सुविधा और मंदिर के आधिकारिक दर्शन नियम पहले जाँचें। अभी इस बीटा में लाइव बुकिंग या मंदिर समय-सारणी कनेक्ट नहीं है।';
+return 'आपका प्रश्न दर्ज हुआ। इस प्रारंभिक बीटा में सीमित मार्गदर्शक सामग्री उपलब्ध है; लाइव AI उत्तर सेवा अभी कनेक्ट नहीं है। कृपया प्रश्न को पूजा, मंत्र, संस्कार, व्रत या पंचांग के संदर्भ में थोड़ा स्पष्ट करें। किसी विशिष्ट विधि के लिए अपनी पारिवारिक/क्षेत्रीय परंपरा के आचार्य से पुष्टि करें।'}
+function send(text){const v=(text||q.value).trim();if(!v)return;add(v,'user');lastAnswer=answerFor(v);add(lastAnswer,'bot');q.value=''}
+document.getElementById('send').onclick=()=>send();q.addEventListener('keydown',e=>{if(e.key==='Enter')send()});
+document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>send(b.dataset.prompt));
+document.getElementById('read').onclick=()=>{if(!lastAnswer)return; if(!('speechSynthesis'in window)){document.getElementById('voiceStatus').textContent='इस ब्राउज़र में टेक्स्ट-टू-स्पीच उपलब्ध नहीं';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(lastAnswer);u.lang=lang.value;u.rate=.88;speechSynthesis.speak(u)};
+document.getElementById('stop').onclick=()=>speechSynthesis?.cancel();
+document.getElementById('speak').onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){document.getElementById('voiceStatus').textContent='वॉइस इनपुट इस ब्राउज़र में उपलब्ध नहीं';return}const r=new SR();r.lang=lang.value;r.onresult=e=>{q.value=e.results[0][0].transcript;send()};r.onerror=()=>document.getElementById('voiceStatus').textContent='माइक अनुमति/वॉइस सेवा जाँचें';r.start()};
+</script></body></html>
