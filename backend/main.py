@@ -154,6 +154,34 @@ def service_worker():
 def app_icon():
     return FileResponse(PROJECT_ROOT / "icons" / "panditji.svg", media_type="image/svg+xml")
 
+@app.get("/api/release/readiness")
+def release_readiness():
+    """Return an honest production checklist; beta code must not self-certify as launched."""
+    checks = {
+        "production_environment": APP_ENV == "production",
+        "ai_provider_configured": bool(AI_API_KEY and AI_MODEL),
+        "explicit_cors_origins": bool(ALLOWED_ORIGINS) and "*" not in ALLOWED_ORIGINS,
+        "live_panchang_engine": False,
+        "validated_jyotish_engine": False,
+        "verified_pandit_booking": False,
+        "payment_gateway": False,
+        "acharya_content_signoff": False,
+        "production_voice_service": False,
+        "live_hosting_verified": False,
+    }
+    passed = [name for name, ok in checks.items() if ok]
+    pending = [name for name, ok in checks.items() if not ok]
+    return {
+        "release_status": "production_ready" if not pending else "development_beta_not_production_ready",
+        "production_release_ready": not pending,
+        "checks_passed": len(passed),
+        "checks_total": len(checks),
+        "checks": checks,
+        "pending": pending,
+        "note_hi": "यह स्वचालित कॉन्फ़िगरेशन चेक है, सुरक्षा ऑडिट या आचार्य प्रमाणन नहीं। सभी बाहरी सेवाओं और मानवीय अनुमोदनों के बिना सार्वजनिक लॉन्च न करें।",
+    }
+
+
 @app.get("/health")
 def health():
     return {
