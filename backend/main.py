@@ -293,6 +293,78 @@ def knowledge_topics(category: str | None = None, q: str | None = None):
     }
 
 
+@app.get("/api/search")
+def unified_search(q: str, language: str = "hi", limit: int = 20):
+    """Search knowledge, mantra and puja-guide drafts from one endpoint."""
+    query = normalize_search_text(q)
+    if not query:
+        raise HTTPException(status_code=422, detail="Search query cannot be blank.")
+    if len(query) > 120:
+        raise HTTPException(status_code=422, detail="Search query must be 120 characters or fewer.")
+    if language not in {"hi", "sa", "en"}:
+        raise HTTPException(status_code=422, detail="Language must be hi, sa or en.")
+    if limit < 1 or limit > 50:
+        raise HTTPException(status_code=422, detail="Limit must be between 1 and 50.")
+
+    results: list[dict[str, Any]] = []
+
+    def add_result(kind: str, item_id: str, title: str, fields: list[str], snippet: str):
+        searchable = " ".join(str(value) for value in [title, *fields] if value)
+        if query in normalize_search_text(searchable):
+            results.append({
+                "type": kind,
+                "id": item_id,
+                "title": title,
+                "snippet": snippet[:280],
+                "review_required": True,
+                "status": "draft_requires_acharya_review",
+            })
+
+    for entry in load_knowledge():
+        title = str(entry.get("title", ""))
+        answer_field = {"hi": "answer", "sa": "answer_sa", "en": "answer_en"}[language]
+        snippet = str(entry.get(answer_field) or entry.get("answer", ""))
+        add_result("knowledge", str(entry.get("id", "")), title,
+                   [*entry.get("keywords", []), entry.get("answer", ""),
+                    entry.get("answer_en", ""), entry.get("answer_sa", "")], snippet)
+
+    for entry in load_knowledge():
+        if entry.get("category") == "mantra":
+            title = str(entry.get("title", ""))
+            field = {"hi": "answer", "sa": "answer_sa", "en": "answer_en"}[language]
+            add_result("mantra", str(entry.get("id", "")), title,
+                       [*entry.get("keywords", []), entry.get("answer", ""),
+                        entry.get("answer_en", ""), entry.get("answer_sa", "")],
+                       str(entry.get(field) or entry.get("answer", "")))
+
+    guides_path = PROJECT_ROOT / "data" / "puja_guides.json"
+    try:
+        with guides_path.open(encoding="utf-8") as handle:
+            guides = json.load(handle).get("guides", [])
+    except (OSError, json.JSONDecodeError):
+        guides = []
+    for guide in guides:
+        title_field = "title_en" if language == "en" else "title_hi"
+        summary_field = "summary_en" if language == "en" else "summary_hi"
+        title = str(guide.get(title_field) or guide.get("title_hi", ""))
+        snippet = str(guide.get(summary_field) or guide.get("summary_hi", ""))
+        fields = [guide.get("title_hi", ""), guide.get("title_en", ""),
+                  guide.get("summary_hi", ""), guide.get("summary_en", ""),
+                  *guide.get("steps_hi", []), *guide.get("steps_en", [])]
+        add_result("puja-guide", str(guide.get("id", "")), title, fields, snippet)
+
+    # Prefer exact title matches, then stable source order; never imply scriptural verification.
+    results.sort(key=lambda item: 0 if normalize_search_text(item["title"]) == query else 1)
+    return {
+        "query": q,
+        "language": language,
+        "count": min(len(results), limit),
+        "total_matches": len(results),
+        "status": "draft_requires_acharya_review",
+        "results": results[:limit],
+    }
+
+
 @app.get("/api/knowledge")
 def knowledge_status():
     entries = load_knowledge()
