@@ -182,14 +182,17 @@ def puja_guides(category: str | None = None, q: str | None = None):
         wanted = category.strip().casefold()
         guides = [item for item in guides if item.get("category", "").casefold() == wanted]
     if q and q.strip():
-        query = q.strip().casefold()
+        query = normalize_search_text(q)
         guides = [
             item for item in guides
-            if query in str(item.get("title_hi", "")).casefold()
-            or query in str(item.get("title_en", "")).casefold()
-            or query in str(item.get("summary_hi", "")).casefold()
-            or query in str(item.get("summary_en", "")).casefold()
-            or any(query in str(step).casefold() for step in item.get("steps_hi", []) + item.get("steps_en", []))
+            if query in normalize_search_text(str(item.get("title_hi", "")))
+            or query in normalize_search_text(str(item.get("title_en", "")))
+            or query in normalize_search_text(str(item.get("summary_hi", "")))
+            or query in normalize_search_text(str(item.get("summary_en", "")))
+            or any(
+                query in normalize_search_text(str(step))
+                for step in item.get("steps_hi", []) + item.get("steps_en", [])
+            )
         ]
     return {
         "status": payload.get("status", "draft_requires_acharya_review"),
@@ -248,13 +251,14 @@ def knowledge_topics(category: str | None = None, q: str | None = None):
         wanted = category.strip().casefold()
         entries = [entry for entry in entries if entry.get("category", "").casefold() == wanted]
     if q and q.strip():
-        query = q.strip().casefold()
+        query = normalize_search_text(q)
         entries = [
             entry for entry in entries
-            if query in str(entry.get("title", "")).casefold()
-            or any(query in str(keyword).casefold() for keyword in entry.get("keywords", []))
-            or query in str(entry.get("answer", "")).casefold()
-            or query in str(entry.get("answer_en", "")).casefold()
+            if query in normalize_search_text(str(entry.get("title", "")))
+            or any(query in normalize_search_text(str(keyword)) for keyword in entry.get("keywords", []))
+            or query in normalize_search_text(str(entry.get("answer", "")))
+            or query in normalize_search_text(str(entry.get("answer_en", "")))
+            or query in normalize_search_text(str(entry.get("answer_sa", "")))
         ]
     return {
         "status": "draft_requires_acharya_review",
