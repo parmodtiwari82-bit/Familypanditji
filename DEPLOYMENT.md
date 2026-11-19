@@ -16,7 +16,7 @@ docker run --rm -p 8000:8000 \
   ai-family-pandit-ji
 ```
 
-Open `/health` to confirm the API process responds. The image runs as a non-root user and includes a container health check.
+Open `/health` to confirm the API process responds. Use `/api/release/readiness` for the explicit production checklist; it intentionally remains not-ready until all external services and human approvals are actually verified. The image runs as a non-root user and includes a container health check.
 
 ## Required hosting configuration
 
