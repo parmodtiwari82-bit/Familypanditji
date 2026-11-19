@@ -162,3 +162,21 @@ def test_panchang_overview_explains_five_limbs_without_claiming_live_calculation
     ]
     assert payload["summary_en"]
     assert payload["summary_sa"]
+
+
+def test_mantra_library_returns_review_labelled_multilingual_entries():
+    response = client.get("/api/mantras")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["count"] >= 1
+    assert all(item["review_required"] is True for item in payload["mantras"])
+    assert all(item["text_hi"] and item["text_en"] and item["text_sa"] for item in payload["mantras"])
+
+
+def test_mantra_library_searches_sanskrit_and_english_aliases():
+    sanskrit = client.get("/api/mantras", params={"q": "गायत्री"})
+    english = client.get("/api/mantras", params={"q": "Gayatri"})
+    assert sanskrit.status_code == english.status_code == 200
+    assert sanskrit.json()["count"] == english.json()["count"] == 1
+    assert sanskrit.json()["mantras"][0]["id"] == "gayatri-mantra"
