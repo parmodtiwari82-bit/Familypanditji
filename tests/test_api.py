@@ -450,3 +450,11 @@ def test_content_review_schema_and_admin_workflow_docs_exist():
     assert "no public create, update, approve" in workflow
     assert "author cannot approve own revision" in workflow
     assert "append-only audit" in workflow
+
+
+
+def test_sadhana_tracker_allows_user_to_clear_local_data():
+    frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    assert 'id="sadhanaClear"' in frontend
+    assert "localStorage.removeItem(sadhanaKey)" in frontend
+    assert "इस डिवाइस का सेव किया साधना डेटा मिटा दिया गया" in frontend
