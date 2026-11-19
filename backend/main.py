@@ -145,6 +145,56 @@ def health():
         "ai_configured": bool(AI_API_KEY and AI_MODEL),
     }
 
+@app.get("/api/trust/status")
+def trust_status():
+    """Expose implementation and review readiness without overstating product readiness."""
+    entries = load_knowledge()
+    guides_path = PROJECT_ROOT / "data" / "puja_guides.json"
+    samskaras_path = PROJECT_ROOT / "data" / "samskaras.json"
+    modules_path = PROJECT_ROOT / "data" / "ecosystem_modules.json"
+    try:
+        with guides_path.open(encoding="utf-8") as handle:
+            guides = json.load(handle).get("guides", [])
+    except (OSError, json.JSONDecodeError):
+        guides = []
+    try:
+        with samskaras_path.open(encoding="utf-8") as handle:
+            samskaras = json.load(handle).get("samskaras", [])
+    except (OSError, json.JSONDecodeError):
+        samskaras = []
+    try:
+        with modules_path.open(encoding="utf-8") as handle:
+            modules = json.load(handle).get("modules", [])
+    except (OSError, json.JSONDecodeError):
+        modules = []
+
+    return {
+        "service": "ai-family-pandit-ji",
+        "environment": "development_beta",
+        "ai_provider_configured": bool(AI_API_KEY and AI_MODEL),
+        "content_review": {
+            "status": "acharya_review_required",
+            "knowledge_entries": len(entries),
+            "puja_guides": len(guides),
+            "samskara_entries": len(samskaras),
+            "all_content_is_draft": True,
+        },
+        "capabilities": {
+            "panchang_live_calculation": False,
+            "kundli_calculation": False,
+            "verified_pandit_booking": False,
+            "commerce_and_payments": False,
+            "production_voice_service": False,
+        },
+        "modules": {
+            "beta": sum(1 for item in modules if item.get("status") == "beta"),
+            "planned": sum(1 for item in modules if item.get("status") == "planned"),
+        },
+        "production_release_ready": False,
+        "note": "यह स्थिति-पृष्ठ पारदर्शिता के लिए है; यह आचार्य सत्यापन, सुरक्षा ऑडिट या production deployment का प्रमाण नहीं है।",
+    }
+
+
 @app.get("/api/modules")
 def ecosystem_modules():
     """Return the product module catalogue and clearly-labelled implementation status."""
