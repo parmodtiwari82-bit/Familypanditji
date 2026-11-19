@@ -163,6 +163,7 @@ def test_panchang_overview_explains_five_limbs_without_claiming_live_calculation
     ]
     assert payload["summary_en"]
     assert payload["summary_sa"]
+    assert all(item["description_sa"] for item in payload["limbs"])
 
 
 def test_mantra_library_returns_review_labelled_multilingual_entries():
