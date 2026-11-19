@@ -307,3 +307,30 @@ def test_runtime_config_accepts_explicit_production_settings():
         "production", ["https://app.example.com"],
         "https://api.example.com/v1", 25,
     )
+
+
+def test_jyotish_guide_is_transparent_and_does_not_claim_calculations():
+    response = client.get("/api/jyotish/guide")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "integration_blueprint_only"
+    assert payload["calculation_available"] is False
+    assert {item["id"] for item in payload["required_inputs"]} == {
+        "birth_date", "birth_time", "birth_place", "timezone"
+    }
+    assert "सहमति" in payload["privacy"]
+
+
+def test_pandit_directory_does_not_fabricate_profiles_or_claim_booking():
+    response = client.get("/api/pandits")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "directory_beta_no_booking"
+    assert payload["count"] == 0
+    assert payload["pandits"] == []
+    assert payload["booking_available"] is False
+
+
+def test_pandit_directory_validates_verification_filter():
+    assert client.get("/api/pandits", params={"status": "unverified"}).status_code == 422
+    assert client.get("/api/pandits", params={"status": "all"}).status_code == 200
