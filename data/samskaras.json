@@ -1,0 +1,152 @@
+{
+  "version": "1.0.0",
+  "status": "draft_requires_acharya_review",
+  "note_hi": "यह एक प्रचलित षोडश-संस्कार सूची का प्रारूप है। ग्रंथ, गृह्यसूत्र, क्षेत्र और संप्रदाय के अनुसार नाम, क्रम तथा मान्यता में भिन्नता हो सकती है। इसे आचार्य समीक्षा के बिना अंतिम धार्मिक निर्देश न मानें।",
+  "note_en": "This is a draft of one commonly used sixteen-samskara list. Names, order and observance vary by text, Grihya Sutra, region and sampradaya. It is not final ritual instruction until reviewed by a qualified acharya.",
+  "samskaras": [
+    {
+      "id": "garbhadhana",
+      "number": 1,
+      "name_hi": "गर्भाधान",
+      "name_en": "Garbhadhana",
+      "description_hi": "गृहस्थ जीवन में संतानोत्पत्ति के संकल्प से संबंधित संस्कार।",
+      "description_en": "A rite associated with the intention to conceive within married life.",
+      "review_required": true
+    },
+    {
+      "id": "pumsavana",
+      "number": 2,
+      "name_hi": "पुंसवन",
+      "name_en": "Pumsavana",
+      "description_hi": "गर्भावस्था के आरंभिक चरण से संबंधित पारंपरिक संस्कार; इसकी व्याख्या परंपराओं में भिन्न है।",
+      "description_en": "A traditional rite associated with an early stage of pregnancy; interpretations vary.",
+      "review_required": true
+    },
+    {
+      "id": "simantonnayana",
+      "number": 3,
+      "name_hi": "सीमन्तोन्नयन",
+      "name_en": "Simantonnayana",
+      "description_hi": "गर्भवती माता के कल्याण और परिवार के मंगल से जुड़ा संस्कार।",
+      "description_en": "A rite associated with the well-being of the expectant mother and family.",
+      "review_required": true
+    },
+    {
+      "id": "jatakarma",
+      "number": 4,
+      "name_hi": "जातकर्म",
+      "name_en": "Jatakarma",
+      "description_hi": "शिशु के जन्म के अवसर पर किया जाने वाला पारंपरिक संस्कार।",
+      "description_en": "A traditional rite performed on the occasion of a child's birth.",
+      "review_required": true
+    },
+    {
+      "id": "namakarana",
+      "number": 5,
+      "name_hi": "नामकरण",
+      "name_en": "Namakarana",
+      "description_hi": "शिशु का नाम रखने से संबंधित संस्कार।",
+      "description_en": "The naming ceremony for a child.",
+      "review_required": true
+    },
+    {
+      "id": "nishkramana",
+      "number": 6,
+      "name_hi": "निष्क्रमण",
+      "name_en": "Nishkramana",
+      "description_hi": "शिशु के पहली बार घर से बाहर आने से संबंधित संस्कार।",
+      "description_en": "A rite associated with a child's first outing from the home.",
+      "review_required": true
+    },
+    {
+      "id": "annaprashana",
+      "number": 7,
+      "name_hi": "अन्नप्राशन",
+      "name_en": "Annaprashana",
+      "description_hi": "शिशु को पहली बार अन्न/ठोस आहार देने से जुड़ा संस्कार; समय और विधि परिवार तथा स्वास्थ्य-निर्देशों के अनुरूप हों।",
+      "description_en": "A rite marking the first introduction of food; timing should respect family custom and health guidance.",
+      "review_required": true
+    },
+    {
+      "id": "chudakarana",
+      "number": 8,
+      "name_hi": "चूड़ाकर्म",
+      "name_en": "Chudakarana",
+      "description_hi": "बालक के प्रथम केश-सम्बन्धी संस्कारों में से एक, जिसे मुंडन भी कहा जाता है।",
+      "description_en": "A traditional first hair-cutting rite, often associated with tonsure.",
+      "review_required": true
+    },
+    {
+      "id": "karnavedha",
+      "number": 9,
+      "name_hi": "कर्णवेध",
+      "name_en": "Karnavedha",
+      "description_hi": "कान छेदन से संबंधित पारंपरिक संस्कार; सुरक्षा और स्वच्छता का ध्यान आवश्यक है।",
+      "description_en": "A traditional ear-piercing rite; safety and hygiene are essential.",
+      "review_required": true
+    },
+    {
+      "id": "upanayana",
+      "number": 10,
+      "name_hi": "उपनयन",
+      "name_en": "Upanayana",
+      "description_hi": "अध्ययन और गुरु-शिष्य परंपरा में प्रवेश से संबंधित संस्कार; पात्रता और विधि परंपरा-विशिष्ट हैं।",
+      "description_en": "A rite associated with entry into a disciplined learning tradition; eligibility and practice vary.",
+      "review_required": true
+    },
+    {
+      "id": "vedarambha",
+      "number": 11,
+      "name_hi": "वेदारम्भ",
+      "name_en": "Vedarambha",
+      "description_hi": "वेदाध्ययन अथवा औपचारिक अध्ययन के आरंभ से संबंधित संस्कार।",
+      "description_en": "A rite associated with beginning Vedic or formal study.",
+      "review_required": true
+    },
+    {
+      "id": "keshanta",
+      "number": 12,
+      "name_hi": "केशान्त",
+      "name_en": "Keshanta",
+      "description_hi": "किशोरावस्था और जीवन के एक पारंपरिक चरण से जुड़ा संस्कार।",
+      "description_en": "A traditional rite associated with an adolescent life stage.",
+      "review_required": true
+    },
+    {
+      "id": "samavartana",
+      "number": 13,
+      "name_hi": "समावर्तन",
+      "name_en": "Samavartana",
+      "description_hi": "गुरुकुल अथवा अध्ययन-चरण की पूर्णता से संबंधित संस्कार।",
+      "description_en": "A rite marking completion of a period of study.",
+      "review_required": true
+    },
+    {
+      "id": "vivaha",
+      "number": 14,
+      "name_hi": "विवाह",
+      "name_en": "Vivaha",
+      "description_hi": "विवाह और गृहस्थ आश्रम में प्रवेश से संबंधित संस्कार।",
+      "description_en": "The marriage rite associated with entering the householder stage.",
+      "review_required": true
+    },
+    {
+      "id": "vanaprastha",
+      "number": 15,
+      "name_hi": "वानप्रस्थ",
+      "name_en": "Vanaprastha",
+      "description_hi": "जीवन के उत्तरार्ध में दायित्वों के क्रमिक हस्तांतरण और साधनामय जीवन की पारंपरिक अवधारणा।",
+      "description_en": "A traditional life-stage concept of gradually handing over responsibilities and focusing on spiritual life.",
+      "review_required": true
+    },
+    {
+      "id": "antyeshti",
+      "number": 16,
+      "name_hi": "अन्त्येष्टि",
+      "name_en": "Antyeshti",
+      "description_hi": "मृत्यु के बाद किए जाने वाले अंतिम संस्कार; विधि क्षेत्र और परिवार की परंपरा के अनुसार बदलती है।",
+      "description_en": "The final rites after death; practices vary by region and family tradition.",
+      "review_required": true
+    }
+  ]
+}
