@@ -130,3 +130,21 @@ def test_puja_guides_support_category_and_text_filters():
     guides = response.json()["guides"]
     assert len(guides) == 1
     assert guides[0]["id"] == "aarti-etiquette"
+
+
+def test_question_lookup_ignores_punctuation_and_extra_spacing():
+    response = client.post("/api/ask", json={"question": "  गायत्री-मंत्र   बताइए!!! ", "language": "hi"})
+    assert response.status_code == 200
+    assert "गायत्री" in response.json()["matched_topic"]
+
+
+def test_knowledge_lookup_handles_unicode_compatibility_forms():
+    response = client.post("/api/ask", json={"question": "पञ्चाङ्ग के पाँच अंग", "language": "sa"})
+    assert response.status_code == 200
+    assert response.json()["matched_topic"] is not None
+
+
+def test_knowledge_lookup_prefers_specific_phrase_match():
+    response = client.post("/api/ask", json={"question": "गायत्री मंत्र का अर्थ बताइए", "language": "hi"})
+    assert response.status_code == 200
+    assert "गायत्री" in response.json()["matched_topic"]
