@@ -25,7 +25,7 @@ This is a development beta, not a production-ready religious service. The five s
 
 ## Production launch handoff
 
-See [LAUNCH_HANDOFF.md](LAUNCH_HANDOFF.md) for the owner-input checklist, external integration evidence and mandatory release gates. The current repository remains a development beta; do not treat CI success or a container build as production launch approval.
+See [LAUNCH_HANDOFF.md](LAUNCH_HANDOFF.md) for the owner-input checklist, external integration evidence and mandatory release gates. See [STAGING_SMOKE_TESTS.md](STAGING_SMOKE_TESTS.md) for staging API, browser, security and go/no-go checks. The current repository remains a development beta; do not treat CI success or a container build as production launch approval.
 
 ## Deployment\n\nSee [DEPLOYMENT.md](DEPLOYMENT.md) for the Docker build, hosting configuration and pre-launch checklist. A container build does not itself deploy the application.\n\n## Run locally
 
