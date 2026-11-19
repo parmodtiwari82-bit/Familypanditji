@@ -180,3 +180,16 @@ def test_mantra_library_searches_sanskrit_and_english_aliases():
     assert sanskrit.status_code == english.status_code == 200
     assert sanskrit.json()["count"] == english.json()["count"] == 1
     assert sanskrit.json()["mantras"][0]["id"] == "gayatri-mantra"
+
+
+
+def test_knowledge_topics_searches_sanskrit_answer_text():
+    response = client.get("/api/knowledge/topics", params={"q": "पञ्चाङ्गस्य"})
+    assert response.status_code == 200
+    assert any(topic["id"] == "panchang-five-limbs" for topic in response.json()["topics"])
+
+
+def test_puja_guides_search_ignores_punctuation_and_spacing():
+    response = client.get("/api/puja-guides", params={"q": "दीप   प्रज्वलन"})
+    assert response.status_code == 200
+    assert response.json()["count"] >= 1
