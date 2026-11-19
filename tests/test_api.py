@@ -264,3 +264,11 @@ def test_trust_status_is_transparent_about_beta_and_missing_capabilities():
     assert payload["capabilities"]["kundli_calculation"] is False
     assert payload["production_release_ready"] is False
     assert payload["modules"]["beta"] >= 1
+
+
+
+def test_frontend_displays_trust_and_release_status():
+    frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    assert 'id="trustStatus"' in frontend
+    assert 'id="trustList"' in frontend
+    assert "loadTrustStatus();" in frontend
