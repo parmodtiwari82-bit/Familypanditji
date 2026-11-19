@@ -148,3 +148,17 @@ def test_knowledge_lookup_prefers_specific_phrase_match():
     response = client.post("/api/ask", json={"question": "गायत्री मंत्र का अर्थ बताइए", "language": "hi"})
     assert response.status_code == 200
     assert "गायत्री" in response.json()["matched_topic"]
+
+
+def test_panchang_overview_explains_five_limbs_without_claiming_live_calculation():
+    response = client.get("/api/panchang/overview")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "educational_reference_only"
+    assert payload["live_calculation_available"] is False
+    assert payload["review_required"] is True
+    assert [item["id"] for item in payload["limbs"]] == [
+        "tithi", "vara", "nakshatra", "yoga", "karana"
+    ]
+    assert payload["summary_en"]
+    assert payload["summary_sa"]
