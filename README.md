@@ -66,3 +66,6 @@ pytest -q
 ## Safety and trust
 
 Religious practices vary by sampradaya, region, family tradition and source text. The platform must show source/context, avoid presenting disputed practice as universal, and recommend qualified human acharya review for consequential questions. Never rely on this beta for time-critical Panchang or astrological decisions.
+
+
+The knowledge topics endpoint supports category filtering and text search with `?category=mantra` and `?q=panchang`. Starter topics include Hindi, English and Sanskrit answer drafts plus transliterated search aliases; all remain marked for acharya review.
