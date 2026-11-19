@@ -2,7 +2,17 @@
 
 Run these checks against a staging URL after deploying the exact release commit. Replace `BASE_URL` with the staging origin. Do not run payment or destructive tests against production.
 
-## API checks
+## Automated API checks
+
+From the repository root, run the checked-in smoke-test script against the deployed staging origin:
+
+```bash
+BASE_URL="https://staging.example.com" bash scripts/staging_smoke_test.sh
+```
+
+The script checks required GET routes, a valid Hindi chat request, invalid-language rejection, and baseline API security headers. It is non-destructive and does not exercise payments or real personal data.
+
+## Manual API checks
 
 ```bash
 export BASE_URL="https://staging.example.com"
