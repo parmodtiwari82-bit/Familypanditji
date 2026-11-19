@@ -5,11 +5,13 @@ from typing import Any
 
 import httpx
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 APP_VERSION = "0.3.0"
-KNOWLEDGE_PATH = Path(__file__).resolve().parent.parent / "data" / "knowledge_hi.json"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+KNOWLEDGE_PATH = PROJECT_ROOT / "data" / "knowledge_hi.json"
 AI_API_KEY = os.getenv("AI_API_KEY", "").strip()
 AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 AI_MODEL = os.getenv("AI_MODEL", "").strip()
@@ -94,6 +96,10 @@ async def ask_ai(question: str, language: str, context: str) -> str | None:
         return answer.strip() if isinstance(answer, str) and answer.strip() else None
     except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
         return None
+
+@app.get("/", include_in_schema=False)
+def home():
+    return FileResponse(PROJECT_ROOT / "index.html")
 
 @app.get("/health")
 def health():
