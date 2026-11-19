@@ -242,3 +242,11 @@ def test_unified_search_validates_query_language_and_limit():
     assert client.get("/api/search", params={"q": "   "}).status_code == 422
     assert client.get("/api/search", params={"q": "puja", "language": "fr"}).status_code == 422
     assert client.get("/api/search", params={"q": "puja", "limit": 100}).status_code == 422
+
+
+
+def test_frontend_exposes_unified_ecosystem_search():
+    frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    assert 'id="globalSearch"' in frontend
+    assert "runGlobalSearch" in frontend
+    assert "fetch('/api/search?'" in frontend
