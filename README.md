@@ -5,16 +5,16 @@ A mobile-first Hindi/Sanskrit/English spiritual guidance platform.
 ## Implemented in this repository
 
 - Responsive browser interface with text chat and device-dependent speech input/output.
-- FastAPI backend with `GET /health`, `GET /api/knowledge`, `GET /api/knowledge/topics` (category and multilingual text filters), `GET /api/modules`, and `POST /api/ask`.
+- FastAPI backend with `GET /health`, `GET /api/knowledge`, `GET /api/knowledge/topics` (category and multilingual text filters), `GET /api/samskaras` (sixteen-samskara draft catalogue), `GET /api/modules`, and `POST /api/ask`.
 - Frontend-to-backend chat integration when the page is served from the same host as the API.
 - Optional OpenAI-compatible chat-completions provider configured only through environment secrets.
 - Safe fallback to the starter curated knowledge library when no provider is configured or the provider is unavailable.
-- Ecosystem roadmap catalogue and a searchable, category-filtered knowledge-card browser with Hindi/English/Sanskrit draft display; both clearly label planned/draft content.
+- Ecosystem roadmap catalogue and a searchable, category-filtered knowledge-card browser with Hindi/English/Sanskrit draft display; a sixteen-samskara overview in Hindi and English; both clearly label planned/draft content.
 - Language selection (Hindi, Sanskrit, English), request validation and basic API smoke tests.
 
 ## Important current limitations
 
-This is a development beta, not a production-ready religious service. The five starter knowledge entries are drafts and require acharya review. AI-generated responses are not scripture-verified and are marked for human review. No real Panchang calculation, horoscope/kundli engine, verified pandit directory, booking, e-commerce, payment, user accounts, admin console, or production voice-cloning/TTS service is integrated. Browser speech depends on the device and browser; it does not yet provide the requested dedicated deep spiritual voice.
+This is a development beta, not a production-ready religious service. The five starter knowledge entries and sixteen-samskara overview are drafts and require acharya review. AI-generated responses are not scripture-verified and are marked for human review. No real Panchang calculation, horoscope/kundli engine, verified pandit directory, booking, e-commerce, payment, user accounts, admin console, or production voice-cloning/TTS service is integrated. Browser speech depends on the device and browser; it does not yet provide the requested dedicated deep spiritual voice.
 
 ## Run locally
 
@@ -54,7 +54,7 @@ pytest -q
 1. Core platform, responsive UX, language and accessibility — starter beta implemented; needs device testing.
 2. AI Pandit conversation engine — optional provider adapter implemented; credentials, provider validation and safety evaluation remain.
 3. Reviewed knowledge library — starter drafts only; acharya review and source citations remain.
-4. Sixteen samskaras and life-event guidance — basic list only.
+4. Sixteen samskaras and life-event guidance — overview catalogue added; detailed procedures, source citations and acharya review remain.
 5. Panchang, muhurta, horoscope and kundli — not integrated.
 6. Pandit discovery, profiles, verification and booking — not integrated.
 7. Temple, pilgrimage and seva discovery — static guidance only.
