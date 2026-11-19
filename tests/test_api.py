@@ -222,6 +222,16 @@ def test_installable_app_assets_are_served():
     assert "<svg" in icon.text
 
 
+def test_frontend_prevents_duplicate_chat_requests_and_supports_stopping_voice_input():
+    frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    assert "let isSending=false;" in frontend
+    assert "if(isSending)return;" in frontend
+    assert "finally{isSending=false;sendButton.disabled=false}" in frontend
+    assert "let activeRecognition=null;" in frontend
+    assert "if(activeRecognition){activeRecognition.stop();activeRecognition=null}" in frontend
+    assert "आपकी बात सुन रहा हूँ" in frontend
+
+
 def test_frontend_exposes_voice_picker_and_registers_app_shell():
     frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
     assert 'id="voiceChoice"' in frontend
