@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://familypanditji.example/schemas/content-review.schema.json",
+  "title": "AI Family Pandit Ji Content Review Record",
+  "description": "Metadata contract for future authenticated editorial review. A valid record is not proof of approval; approval must be authenticated, audited and independently verified.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "content_id", "content_type", "language", "tradition_or_sampradaya",
+    "source_title", "source_author_or_tradition", "edition_or_publication",
+    "page_or_section", "reviewer_name", "reviewer_qualification",
+    "reviewed_at", "decision", "review_notes"
+  ],
+  "properties": {
+    "content_id": {"type": "string", "minLength": 1, "maxLength": 120},
+    "content_type": {"enum": ["knowledge", "puja_guide", "samskara", "mantra", "festival", "panchang_explainer"]},
+    "language": {"enum": ["hi", "sa", "en"]},
+    "tradition_or_sampradaya": {"type": "string", "minLength": 2, "maxLength": 240},
+    "source_title": {"type": "string", "minLength": 1, "maxLength": 300},
+    "source_author_or_tradition": {"type": "string", "minLength": 1, "maxLength": 300},
+    "edition_or_publication": {"type": "string", "minLength": 1, "maxLength": 300},
+    "page_or_section": {"type": "string", "minLength": 1, "maxLength": 120},
+    "reviewer_name": {"type": "string", "minLength": 2, "maxLength": 160},
+    "reviewer_qualification": {"type": "string", "minLength": 2, "maxLength": 500},
+    "reviewed_at": {"type": "string", "format": "date-time"},
+    "decision": {"enum": ["pending", "approved", "revision_required", "rejected"]},
+    "review_notes": {"type": "string", "maxLength": 5000},
+    "separate_checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_verified": {"type": "boolean"},
+        "mantra_text_verified": {"type": "boolean"},
+        "translation_verified": {"type": "boolean"},
+        "ritual_steps_verified": {"type": "boolean"},
+        "regional_context_checked": {"type": "boolean"}
+      }
+    }
+  }
+}
