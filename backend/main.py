@@ -49,6 +49,12 @@ def load_knowledge() -> list[dict[str, Any]]:
     except (OSError, json.JSONDecodeError):
         return []
 
+def localized_answer(entry: dict[str, Any], language: str) -> str:
+    """Return a reviewed-status draft in the requested language, with Hindi fallback."""
+    field = {"hi": "answer", "sa": "answer_sa", "en": "answer_en"}[language]
+    return str(entry.get(field) or entry.get("answer", ""))
+
+
 def find_curated_answer(question: str) -> dict[str, Any] | None:
     folded = question.casefold()
     for entry in load_knowledge():
@@ -137,6 +143,8 @@ def knowledge_topics(category: str | None = None):
                 "title": entry.get("title", ""),
                 "keywords": entry.get("keywords", []),
                 "answer": entry.get("answer", ""),
+                "answer_en": entry.get("answer_en", ""),
+                "answer_sa": entry.get("answer_sa", ""),
                 "review_required": entry.get("review_required", True),
             }
             for entry in entries
@@ -162,7 +170,7 @@ async def ask(payload: AskRequest):
     entry = find_curated_answer(question)
     context = ""
     if entry:
-        context = f"Topic: {entry.get('title', '')}\nAnswer: {entry.get('answer', '')}"
+        context = f"Topic: {entry.get('title', '')}\nAnswer: {localized_answer(entry, payload.language)}"
     ai_answer = await ask_ai(question, payload.language, context)
     if ai_answer:
         return AskResponse(
@@ -175,7 +183,7 @@ async def ask(payload: AskRequest):
 
     if entry:
         return AskResponse(
-            answer=entry["answer"],
+            answer=localized_answer(entry, payload.language),
             mode="curated-beta",
             needs_acharya_review=entry.get("review_required", True),
             source_status="draft_requires_acharya_review",
