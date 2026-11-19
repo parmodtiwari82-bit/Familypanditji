@@ -250,6 +250,50 @@ def panchang_overview():
     }
 
 
+@app.get("/api/jyotish/guide")
+def jyotish_guide():
+    """Describe the consent-based birth details needed for a future verified chart service."""
+    return {
+        "status": "integration_blueprint_only",
+        "calculation_available": False,
+        "required_inputs": [
+            {"id": "birth_date", "label_hi": "जन्म तिथि", "required": True},
+            {"id": "birth_time", "label_hi": "जन्म समय", "required": True, "note": "समय की सटीकता बताना आवश्यक है।"},
+            {"id": "birth_place", "label_hi": "जन्म स्थान", "required": True},
+            {"id": "timezone", "label_hi": "समय क्षेत्र", "required": True},
+        ],
+        "privacy": "जन्म विवरण संवेदनशील व्यक्तिगत जानकारी है; स्पष्ट सहमति और सुरक्षित भंडारण के बिना इसे जमा न करें।",
+        "limitations": [
+            "कोई ग्रह-स्थिति, लग्न, दशा, गुण-मिलान या भविष्यवाणी गणना नहीं की जाती।",
+            "गणना इंजन, पंचांग/अयनांश पद्धति और विशेषज्ञ सत्यापन अभी एकीकृत नहीं हैं।",
+        ],
+        "review_required": True,
+    }
+
+
+@app.get("/api/pandits")
+def pandit_directory(status: str = "verified"):
+    """Return only real directory records; no fabricated pandit profiles or bookings."""
+    if status not in {"verified", "pending", "all"}:
+        raise HTTPException(status_code=422, detail="Status must be verified, pending or all.")
+    directory_path = PROJECT_ROOT / "data" / "pandit_directory.json"
+    try:
+        with directory_path.open(encoding="utf-8") as handle:
+            records = json.load(handle).get("pandits", [])
+    except (OSError, json.JSONDecodeError):
+        raise HTTPException(status_code=503, detail="Pandit directory catalogue is unavailable.")
+    if status != "all":
+        records = [item for item in records if item.get("verification_status") == status]
+    return {
+        "status": "directory_beta_no_booking",
+        "count": len(records),
+        "pandits": records,
+        "booking_available": False,
+        "verification_policy": "किसी प्रोफ़ाइल को verified तभी दिखाया जाएगा जब पहचान और योग्यता की मानवीय जाँच पूरी हो।",
+        "note": "अभी कोई सत्यापित पंडित प्रोफ़ाइल उपलब्ध नहीं है; खाली सूची का अर्थ सेवा की उपलब्धता नहीं है।",
+    }
+
+
 @app.get("/api/puja-guides")
 def puja_guides(category: str | None = None, q: str | None = None):
     """Return introductory puja/aarti guides, all explicitly marked as drafts."""
