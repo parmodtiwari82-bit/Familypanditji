@@ -11,7 +11,7 @@ A mobile-first Hindi/Sanskrit/English spiritual guidance platform.
 - Optional OpenAI-compatible chat-completions provider configured only through environment secrets.
 - Safe fallback to the starter curated knowledge library when no provider is configured or the provider is unavailable.
 - Ecosystem roadmap catalogue and a searchable, category-filtered knowledge-card browser with Hindi/English/Sanskrit draft display; a sixteen-samskara overview in Hindi and English, bilingual puja/aarti guide cards, a searchable multilingual mantra library, and an educational Panchang five-limbs section; all clearly label draft content requiring acharya review.
-- Language selection (Hindi, Sanskrit, English), request validation and basic API smoke tests.
+- Language selection (Hindi, Sanskrit, English), request validation and basic API smoke tests. Baseline HTTP security headers are applied to responses, and API responses use `Cache-Control: no-store`.
 
 ## Important current limitations
 
