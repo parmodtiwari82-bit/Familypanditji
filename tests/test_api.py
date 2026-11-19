@@ -294,7 +294,7 @@ def test_runtime_config_rejects_invalid_timeout_and_environment():
     from main import validate_runtime_config
     import pytest
 
-    with pytest.raises(ValueError, match="timeout"):
+    with pytest.raises(ValueError, match="AI_TIMEOUT_SECONDS"):
         validate_runtime_config("development", ["*"], "https://api.example.com/v1", 0)
     with pytest.raises(ValueError, match="APP_ENV"):
         validate_runtime_config("local", ["*"], "https://api.example.com/v1", 25)
