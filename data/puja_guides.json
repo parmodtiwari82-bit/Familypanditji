@@ -1,0 +1,90 @@
+{
+  "status": "draft_requires_acharya_review",
+  "note": "These are introductory, non-sectarian outlines only. Procedures, offerings, timings and mantras vary by sampradaya, region and family tradition. Confirm the complete vidhi with a qualified acharya before practice.",
+  "guides": [
+    {
+      "id": "daily-puja",
+      "category": "daily",
+      "title_hi": "दैनिक गृह पूजा",
+      "title_en": "Daily home puja",
+      "summary_hi": "घर में श्रद्धा और स्वच्छता के साथ की जाने वाली सामान्य पूजा का परिचय।",
+      "summary_en": "An introductory outline for a simple, respectful daily home worship routine.",
+      "steps_hi": [
+        "पूजा-स्थान और आवश्यक सामग्री को स्वच्छ रखें।",
+        "शांत होकर अपने इष्टदेव का स्मरण करें और अपनी परंपरा के अनुसार संकल्प लें।",
+        "परंपरा के अनुसार दीप, पुष्प, जल या अन्य उपलब्ध सामग्री अर्पित करें।",
+        "प्रार्थना और कृतज्ञता के साथ पूजा पूर्ण करें; सामग्री का सम्मानपूर्वक विसर्जन या उपयोग करें।"
+      ],
+      "steps_en": [
+        "Keep the worship space and required items clean.",
+        "Sit calmly, remember your chosen deity and make a sankalpa according to your tradition.",
+        "Offer a lamp, flowers, water or other items as prescribed in your tradition.",
+        "Conclude with prayer and gratitude; handle remaining offerings respectfully."
+      ],
+      "review_required": true
+    },
+    {
+      "id": "deepavali-puja-overview",
+      "category": "festival",
+      "title_hi": "दीपावली पूजा: सामान्य परिचय",
+      "title_en": "Deepavali puja: overview",
+      "summary_hi": "दीपावली पूजा की परंपराओं का सामान्य परिचय; तिथि और विधि स्थानीय पंचांग व परंपरा से जाँचें।",
+      "summary_en": "A general introduction; confirm date and procedure with your local calendar and tradition.",
+      "steps_hi": [
+        "स्थानीय पंचांग और परिवार की परंपरा के अनुसार पूजा का समय सुनिश्चित करें।",
+        "पूजा-स्थान स्वच्छ कर आवश्यक सामग्री पहले से व्यवस्थित करें।",
+        "परिवार की परंपरा के अनुसार लक्ष्मी-गणेश पूजन और प्रार्थना करें।",
+        "दीप प्रज्वलित करते समय अग्नि-सुरक्षा का ध्यान रखें।"
+      ],
+      "steps_en": [
+        "Confirm the timing using a trusted local Panchang and family tradition.",
+        "Clean the worship area and arrange items beforehand.",
+        "Perform Lakshmi-Ganesha worship and prayers according to family tradition.",
+        "Use lamps safely and never leave an open flame unattended."
+      ],
+      "review_required": true
+    },
+    {
+      "id": "aarti-etiquette",
+      "category": "aarti",
+      "title_hi": "आरती: सामान्य मर्यादा",
+      "title_en": "Aarti: general practice",
+      "summary_hi": "आरती के समय स्वच्छता, श्रद्धा और अग्नि-सुरक्षा से जुड़ी सामान्य बातें।",
+      "summary_en": "General guidance on respectful conduct and fire safety during aarti.",
+      "steps_hi": [
+        "आरती की थाली और दीप को सुरक्षित स्थान पर तैयार रखें।",
+        "अपने मंदिर या परिवार की प्रचलित आरती का अनुसरण करें।",
+        "दीप को सावधानी से घुमाएँ और बच्चों को खुली लौ से दूर रखें।",
+        "आरती के बाद दीप सुरक्षित स्थान पर रखें और लौ पूरी तरह बुझने तक ध्यान दें।"
+      ],
+      "steps_en": [
+        "Prepare the aarti plate and lamp in a stable, safe place.",
+        "Follow the aarti customary to your temple or family tradition.",
+        "Move the lamp carefully and keep children away from the open flame.",
+        "Place the lamp safely afterwards and supervise it until the flame is extinguished."
+      ],
+      "review_required": true
+    },
+    {
+      "id": "puja-preparation",
+      "category": "preparation",
+      "title_hi": "पूजा की पूर्व तैयारी",
+      "title_en": "Preparing for puja",
+      "summary_hi": "पूजा से पहले स्थान, सामग्री और व्यक्तिगत तैयारी की सामान्य सूची।",
+      "summary_en": "A general checklist for preparing the space and materials before worship.",
+      "steps_hi": [
+        "पूजा-स्थान को स्वच्छ और व्यवस्थित करें।",
+        "अपनी पूजा के अनुसार आवश्यक सामग्री की सूची बनाएँ; अनावश्यक खरीद से बचें।",
+        "जल, आसन और सामग्री को सुविधाजनक ढंग से रखें।",
+        "विधि, मंत्र और समय के लिए विश्वसनीय पारिवारिक या आचार्य मार्गदर्शन लें।"
+      ],
+      "steps_en": [
+        "Clean and arrange the worship space.",
+        "Make a list of items appropriate to your puja; avoid unnecessary purchases.",
+        "Keep water, seating and materials within easy reach.",
+        "Consult trusted family or acharya guidance for procedure, mantras and timing."
+      ],
+      "review_required": true
+    }
+  ]
+}
