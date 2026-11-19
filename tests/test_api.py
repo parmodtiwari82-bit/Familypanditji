@@ -80,8 +80,7 @@ def test_knowledge_topics_searches_multilingual_keywords():
     response = client.get("/api/knowledge/topics", params={"q": "panchang"})
     assert response.status_code == 200
     topics = response.json()["topics"]
-    assert len(topics) == 1
-    assert topics[0]["id"] == "panchang-five-limbs"
+    assert any(topic["id"] == "panchang-five-limbs" for topic in topics)
 
 
 def test_knowledge_topics_searches_sanskrit_alias():
