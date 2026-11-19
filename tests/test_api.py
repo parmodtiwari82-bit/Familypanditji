@@ -38,3 +38,19 @@ def test_ecosystem_module_catalogue_is_explicit_about_status():
     assert {"ai-pandit", "panchang", "jyotish", "pandit-directory", "puja-store"} <= ids
     assert next(item for item in payload["modules"] if item["id"] == "ai-pandit")["status"] == "beta"
     assert next(item for item in payload["modules"] if item["id"] == "panchang")["status"] == "planned"
+
+def test_knowledge_topics_returns_review_labelled_cards():
+    response = client.get("/api/knowledge/topics")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["count"] >= 5
+    assert all(topic["review_required"] is True for topic in payload["topics"])
+
+
+def test_knowledge_topics_can_filter_by_category():
+    response = client.get("/api/knowledge/topics", params={"category": "mantra"})
+    assert response.status_code == 200
+    topics = response.json()["topics"]
+    assert len(topics) == 1
+    assert topics[0]["category"] == "mantra"
