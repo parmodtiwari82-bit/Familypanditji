@@ -182,6 +182,49 @@ def service_worker():
 def app_icon():
     return FileResponse(PROJECT_ROOT / "icons" / "panditji.svg", media_type="image/svg+xml")
 
+@app.get("/api/content/review-policy")
+def content_review_policy():
+    """Describe the editorial review workflow; this endpoint does not approve content."""
+    catalog_files = {
+        "knowledge": PROJECT_ROOT / "data" / "knowledge_hi.json",
+        "puja_guides": PROJECT_ROOT / "data" / "puja_guides.json",
+        "samskaras": PROJECT_ROOT / "data" / "samskaras.json",
+        "mantras": PROJECT_ROOT / "data" / "mantras.json",
+    }
+    counts = {}
+    for name, path in catalog_files.items():
+        try:
+            with path.open(encoding="utf-8") as handle:
+                payload = json.load(handle)
+            collection = next((value for value in payload.values() if isinstance(value, list)), [])
+            counts[name] = len(collection)
+        except (OSError, json.JSONDecodeError):
+            counts[name] = None
+
+    return {
+        "status": "workflow_blueprint_only",
+        "approval_enabled": False,
+        "catalogue_counts": counts,
+        "required_metadata": [
+            "content_id", "content_type", "language", "tradition_or_sampradaya",
+            "source_title", "source_author_or_tradition", "edition_or_publication",
+            "page_or_section", "reviewer_name", "reviewer_qualification",
+            "reviewed_at", "decision", "review_notes",
+        ],
+        "workflow": [
+            {"step": 1, "status": "required", "label_hi": "स्रोत और संस्करण दर्ज करें"},
+            {"step": 2, "status": "required", "label_hi": "परंपरा/संप्रदाय और क्षेत्रीय संदर्भ दर्ज करें"},
+            {"step": 3, "status": "required", "label_hi": "योग्य आचार्य द्वारा समीक्षा"},
+            {"step": 4, "status": "required", "label_hi": "मंत्र, विधि और अनुवाद का अलग-अलग सत्यापन"},
+            {"step": 5, "status": "required", "label_hi": "निर्णय, समीक्षा-तिथि और टिप्पणी दर्ज करें"},
+            {"step": 6, "status": "required", "label_hi": "स्वीकृति के बाद ही प्रकाशित सामग्री को verified चिह्न दें"},
+        ],
+        "allowed_decisions": ["pending", "approved", "revision_required", "rejected"],
+        "publication_rule": "जब तक स्रोत-संदर्भ और योग्य आचार्य की दर्ज स्वीकृति न हो, सामग्री draft_requires_acharya_review ही रहे।",
+        "security_note": "यह सार्वजनिक नीति/ढाँचा है, admin login या submission endpoint नहीं। समीक्षा अधिकार सुरक्षित admin प्रणाली बनने के बाद ही जोड़े जाएँ।",
+    }
+
+
 @app.get("/api/release/readiness")
 def release_readiness():
     """Return an honest production checklist; beta code must not self-certify as launched."""
