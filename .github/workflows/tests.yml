@@ -23,6 +23,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Validate staging smoke-test script
+        run: |
+          bash -n scripts/staging_smoke_test.sh
+          if BASE_URL="http://localhost.attacker.example" bash scripts/staging_smoke_test.sh; then
+            echo "Unsafe lookalike localhost host was accepted." >&2
+            exit 1
+          fi
+          if BASE_URL="http://staging.example.com" bash scripts/staging_smoke_test.sh; then
+            echo "Plain HTTP staging host was accepted." >&2
+            exit 1
+          fi
       - name: Run API tests
         working-directory: backend
         run: PYTHONPATH=. pytest -q ../tests
