@@ -158,6 +158,16 @@ async def ask_ai(question: str, language: str, context: str) -> str | None:
 def home():
     return FileResponse(PROJECT_ROOT / "index.html")
 
+@app.get("/privacy", include_in_schema=False)
+def privacy_page():
+    return FileResponse(PROJECT_ROOT / "privacy.html", media_type="text/html")
+
+
+@app.get("/terms", include_in_schema=False)
+def terms_page():
+    return FileResponse(PROJECT_ROOT / "terms.html", media_type="text/html")
+
+
 @app.get("/manifest.webmanifest", include_in_schema=False)
 def web_manifest():
     return FileResponse(PROJECT_ROOT / "manifest.webmanifest", media_type="application/manifest+json")
