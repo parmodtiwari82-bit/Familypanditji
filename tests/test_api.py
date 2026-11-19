@@ -458,3 +458,22 @@ def test_sadhana_tracker_allows_user_to_clear_local_data():
     assert 'id="sadhanaClear"' in frontend
     assert "localStorage.removeItem(sadhanaKey)" in frontend
     assert "इस डिवाइस का सेव किया साधना डेटा मिटा दिया गया" in frontend
+
+
+
+def test_release_and_trust_endpoints_are_not_cached_or_secret_leaking():
+    readiness = client.get("/api/release/readiness")
+    trust = client.get("/api/trust/status")
+    assert readiness.status_code == trust.status_code == 200
+    assert readiness.headers["Cache-Control"] == "no-store"
+    assert trust.headers["Cache-Control"] == "no-store"
+    serialized = readiness.text + trust.text
+    assert "AI_API_KEY" not in serialized
+    assert "Bearer " not in serialized
+
+
+def test_static_privacy_page_has_security_headers():
+    response = client.get("/privacy")
+    assert response.status_code == 200
+    assert response.headers["X-Content-Type-Options"] == "nosniff"
+    assert response.headers["X-Frame-Options"] == "DENY"
