@@ -40,6 +40,8 @@ jobs:
           node-version: "20"
       - name: Validate frontend JavaScript syntax
         run: bash scripts/check_frontend.sh
+      - name: Validate religious content catalogues
+        run: python scripts/validate_content.py
       - name: Run API tests
         working-directory: backend
         run: PYTHONPATH=. pytest -q ../tests
