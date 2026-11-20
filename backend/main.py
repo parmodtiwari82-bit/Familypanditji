@@ -257,6 +257,63 @@ def release_readiness():
     }
 
 
+@app.get("/ready")
+def readiness_probe():
+    """Check local files/catalogues needed to serve the beta; not a production go-live check."""
+    required_files = [
+        "index.html", "manifest.webmanifest", "sw.js", "privacy.html", "terms.html",
+        "icons/panditji.svg", "data/knowledge_hi.json", "data/puja_guides.json",
+        "data/samskaras.json", "data/ecosystem_modules.json", "data/pandit_directory.json",
+    ]
+    checks: dict[str, bool] = {}
+    for relative_path in required_files:
+        path = PROJECT_ROOT / relative_path
+        checks[relative_path] = path.is_file() and path.stat().st_size > 0
+
+    catalogue_roots = {
+        "data/knowledge_hi.json": "entries",
+        "data/puja_guides.json": "guides",
+        "data/samskaras.json": "samskaras",
+        "data/ecosystem_modules.json": "modules",
+        "data/pandit_directory.json": "pandits",
+    }
+    for relative_path, collection_key in catalogue_roots.items():
+        if not checks.get(relative_path, False):
+            checks[f"valid_json:{relative_path}"] = False
+            continue
+        try:
+            with (PROJECT_ROOT / relative_path).open(encoding="utf-8") as handle:
+                payload = json.load(handle)
+            checks[f"valid_json:{relative_path}"] = (
+                isinstance(payload, dict) and isinstance(payload.get(collection_key), list)
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            checks[f"valid_json:{relative_path}"] = False
+
+    ready = all(checks.values())
+    return {
+        "status": "ready" if ready else "not_ready",
+        "ready": ready,
+        "checks_passed": sum(checks.values()),
+        "checks_total": len(checks),
+        "checks": checks,
+        "scope": "local_application_files_and_catalogue_structure_only",
+        "note_hi": "यह केवल ऐप की स्थानीय फाइलों और JSON कैटलॉग की उपलब्धता जाँचता है; production launch, बाहरी सेवाओं, सुरक्षा ऑडिट या आचार्य अनुमोदन का प्रमाण नहीं है।",
+    } if ready else _readiness_error_payload(checks)
+
+
+def _readiness_error_payload(checks: dict[str, bool]) -> dict[str, Any]:
+    from fastapi.responses import JSONResponse
+    # The caller below converts this structured diagnostic into HTTP 503.
+    return {
+        "status": "not_ready", "ready": False,
+        "checks_passed": sum(checks.values()), "checks_total": len(checks),
+        "checks": checks,
+        "scope": "local_application_files_and_catalogue_structure_only",
+        "note_hi": "आवश्यक ऐप फाइल या कैटलॉग अनुपलब्ध/अमान्य है।",
+    }
+
+
 @app.get("/health")
 def health():
     return {
