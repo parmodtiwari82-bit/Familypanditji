@@ -530,3 +530,14 @@ def test_operational_readiness_probe_is_not_cached():
     response = client.get("/ready")
     assert response.status_code == 200
     assert response.headers["Cache-Control"] == "no-store"
+
+
+def test_service_worker_versions_its_cache_and_keeps_api_responses_network_only():
+    worker = (Path(__file__).resolve().parent.parent / "sw.js").read_text(encoding="utf-8")
+    assert 'const CACHE_NAME = "family-pandit-shell-v2"' in worker
+    assert 'const CACHE_PREFIX = "family-pandit-shell-"' in worker
+    assert '"/privacy", "/terms"' in worker
+    assert 'url.pathname.startsWith("/api/")' in worker
+    assert 'url.pathname === "/ready"' in worker
+    assert 'key.startsWith(CACHE_PREFIX)' in worker
+    assert 'await cache.put(request, copy)' in worker
