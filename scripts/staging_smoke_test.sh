@@ -47,7 +47,7 @@ request() {
   echo "PASS $method $path -> $status"
 }
 
-for path in /health /api/trust/status /api/release/readiness /api/modules \
+for path in /health /ready /api/trust/status /api/release/readiness /api/modules \
   /api/panchang/overview /api/jyotish/guide /api/pandits /api/search?q=Gayatri\&language=en \
   /api/mantras /api/puja-guides /api/samskaras /api/content/review-policy \
   /manifest.webmanifest /sw.js /icons/panditji.svg /privacy /terms; do
