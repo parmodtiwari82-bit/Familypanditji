@@ -511,3 +511,22 @@ def test_frontend_has_validated_local_backup_and_restore_controls():
     assert "file.size>1024*1024" in frontend
     assert "URL.createObjectURL(blob)" in frontend
     assert "loadPujaGuides()" in frontend
+
+
+def test_operational_readiness_probe_checks_required_assets_and_catalogues():
+    response = client.get("/ready")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "ready"
+    assert payload["ready"] is True
+    assert payload["checks_passed"] == payload["checks_total"]
+    assert payload["scope"] == "local_application_files_and_catalogue_structure_only"
+    assert payload["checks"]["valid_json:data/knowledge_hi.json"] is True
+    assert payload["checks"]["valid_json:data/pandit_directory.json"] is True
+    assert "production launch" in payload["note_hi"]
+
+
+def test_operational_readiness_probe_is_not_cached():
+    response = client.get("/ready")
+    assert response.status_code == 200
+    assert response.headers["Cache-Control"] == "no-store"
