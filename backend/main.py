@@ -62,7 +62,7 @@ async def security_headers(request, call_next):
     response.headers.setdefault("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(self), geolocation=()")
-    if request.url.path.startswith("/api/") or request.url.path == "/health":
+    if request.url.path.startswith("/api/") or request.url.path in {"/health", "/ready"}:
         response.headers["Cache-Control"] = "no-store"
     if request.url.scheme == "https":
         response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
