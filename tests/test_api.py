@@ -977,6 +977,7 @@ def test_trust_status_reports_implemented_calculation_apis_and_remaining_release
     assert capabilities["advanced_jyotish_api"] is True
     assert set(capabilities["divisional_charts"]) == {"D2", "D3", "D7", "D9", "D10", "D12"}
     assert set(capabilities["vimshottari_periods"]) == {"mahadasha", "antardasha", "pratyantardasha"}
+    assert capabilities["pandit_directory_discovery_api"] is True
     assert capabilities["verified_pandit_booking"] is False
     assert payload["production_release_ready"] is False
     assert payload["release_blockers"]
