@@ -214,3 +214,50 @@ def calculate_panchang_limb_transitions(moment: datetime, ephemeris_path: str | 
         close = getattr(kernel, "close", None)
         if callable(close):
             close()
+
+
+def calculate_tropical_ascendant(moment: datetime, latitude: float, longitude: float,
+                                 ephemeris_path: str | Path) -> float:
+    """Calculate tropical ascendant using Skyfield apparent Greenwich sidereal time.
+
+    The sidereal-time angle is taken from Skyfield's time scale. Obliquity of date
+    still uses the project's compact polynomial approximation, so this is an
+    improved ascendant input, not a certified high-precision house calculation.
+    """
+    if moment.tzinfo is None or moment.utcoffset() is None:
+        raise ValueError("moment must be timezone-aware")
+    if not -90 <= latitude <= 90 or not -180 <= longitude <= 180:
+        raise ValueError("latitude/longitude are outside valid ranges")
+    if not EPHEMERIS_START_YEAR <= moment.year <= EPHEMERIS_END_YEAR:
+        raise ValueError(
+            f"DE440s supports dates from {EPHEMERIS_START_YEAR} through {EPHEMERIS_END_YEAR}"
+        )
+    path = Path(ephemeris_path).expanduser()
+    if not path.is_file():
+        raise FileNotFoundError(f"JPL ephemeris file not found: {path}")
+    try:
+        from skyfield.api import load, load_file
+    except ImportError as exc:
+        raise RuntimeError(
+            "Optional astronomy dependencies are missing; install backend/requirements-astronomy.txt"
+        ) from exc
+
+    kernel = load_file(str(path))
+    try:
+        timescale = load.timescale(builtin=True)
+        instant = timescale.from_datetime(moment.astimezone(timezone.utc))
+        local_sidereal_degrees = norm(float(instant.gast) * 15.0 + longitude)
+        centuries = (jd(moment) - 2451545.0) / 36525.0
+        obliquity = radians(23.439291 - 0.0130042 * centuries)
+        local_sidereal = radians(local_sidereal_degrees)
+        geographic_latitude = radians(latitude)
+        ascendant = degrees(__import__("math").atan2(
+            -__import__("math").cos(local_sidereal),
+            __import__("math").sin(local_sidereal) * __import__("math").cos(obliquity)
+            + __import__("math").tan(geographic_latitude) * __import__("math").sin(obliquity),
+        ))
+        return norm(ascendant)
+    finally:
+        close = getattr(kernel, "close", None)
+        if callable(close):
+            close()
