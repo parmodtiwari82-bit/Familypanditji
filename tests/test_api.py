@@ -1402,3 +1402,15 @@ def test_admin_cannot_erase_verified_pandit_profile(monkeypatch, tmp_path):
                          json={"reason": "Request to delete record.", "confirm_delete": True}, headers=headers)
     assert denied.status_code == 404
     assert client.get("/api/pandits").json()["count"] == 1
+
+
+
+def test_pandit_application_privacy_copy_discloses_manual_erasure_and_no_retention_schedule():
+    root = Path(__file__).resolve().parents[1]
+    privacy = (root / "privacy.html").read_text(encoding="utf-8")
+    home = (root / "index.html").read_text(encoding="utf-8")
+    assert "automatic retention scheduler" in privacy
+    assert "manually erase" in privacy
+    assert "Backup, hosting logs" in privacy
+    assert "निश्चित retention अवधि और applicant self-service deletion अभी उपलब्ध नहीं हैं" in home
+    assert "सुरक्षित रूप से रखे जाएँ" not in home
