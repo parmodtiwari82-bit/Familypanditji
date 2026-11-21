@@ -731,3 +731,32 @@ def test_frontend_exposes_advanced_jyotish_calculator():
     assert 'id="advancedJyotishButton"' in html
     assert "/api/jyotish/advanced" in html
     assert "D9 नवांश" in html
+
+
+
+def test_advanced_jyotish_returns_supported_divisional_charts():
+    response = client.post("/api/jyotish/advanced", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 26.4499, "longitude": 80.3319, "timezone": "Asia/Kolkata"
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    charts = payload["divisional_charts"]
+    assert set(charts) == {"d2_hora", "d3_drekkana", "d7_saptamsa", "d10_dashamsa", "d12_dwadasamsa"}
+    for chart in charts.values():
+        assert len(chart) == 9
+        assert all(item["rashi"] for item in chart.values())
+        assert all(0 <= item["source_longitude_degrees"] < 360 for item in chart.values())
+
+
+def test_divisional_sign_known_parashari_boundaries():
+    from advanced_jyotish import divisional_sign
+    # First/second Hora in an odd sign: Leo/Cancer; in an even sign: Cancer/Leo.
+    assert divisional_sign(1.0, 2, "hora") == "सिंह"
+    assert divisional_sign(16.0, 2, "hora") == "कर्क"
+    assert divisional_sign(31.0, 2, "hora") == "कर्क"
+    assert divisional_sign(46.0, 2, "hora") == "सिंह"
+    # Drekkana starts from the sign itself, fifth and ninth signs.
+    assert divisional_sign(1.0, 3, "drekkana") == "मेष"
+    assert divisional_sign(11.0, 3, "drekkana") == "सिंह"
+    assert divisional_sign(21.0, 3, "drekkana") == "धनु"
