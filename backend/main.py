@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from vedic_calc import calculate_kundli, calculate_panchang, parse_local_datetime
 from advanced_jyotish import calculate_advanced_jyotish
 from precision_ephemeris import calculate_tropical_longitudes, calculate_tropical_ascendant, calculate_sunrise_sunset, calculate_panchang_limb_transitions, mean_node_longitudes
-from pandit_directory import create_pending_profile, get_profile_status, list_pending_profiles, list_verified_profiles, reject_pending_profile, suspend_profile, verify_profile
+from pandit_directory import create_pending_profile, erase_unverified_application, get_profile_status, list_pending_profiles, list_verified_profiles, reject_pending_profile, suspend_profile, verify_profile
 
 APP_VERSION = "0.3.0"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -194,6 +194,11 @@ class PanditSuspensionRequest(BaseModel):
 
 class PanditRejectionRequest(BaseModel):
     reason: str = Field(min_length=10, max_length=1000)
+
+
+class PanditErasureRequest(BaseModel):
+    reason: str = Field(min_length=10, max_length=1000)
+    confirm_delete: bool
 
 
 class AskRequest(BaseModel):
@@ -407,6 +412,23 @@ def admin_reject_pandit_application(profile_id: str, payload: PanditRejectionReq
     if not changed:
         raise HTTPException(status_code=404, detail="Pending application was not found.")
     return {"profile_id": profile_id, "status": "rejected", "public_listing": False}
+
+
+@app.post("/api/admin/pandits/{profile_id}/erase")
+def admin_erase_pandit_application(profile_id: str, payload: PanditErasureRequest,
+                                   authorization: str | None = Header(default=None)):
+    """Permanently erase only unverified pending/rejected applications after explicit confirmation."""
+    require_admin_access(authorization)
+    if not payload.confirm_delete:
+        raise HTTPException(status_code=422, detail="Explicit deletion confirmation is required.")
+    try:
+        erased = erase_unverified_application(PANDIT_DIRECTORY_DB, profile_id)
+    except sqlite3.Error:
+        raise HTTPException(status_code=503, detail="Pandit directory storage is unavailable.")
+    if not erased:
+        raise HTTPException(status_code=404, detail="Only pending or rejected unverified applications can be erased.")
+    return {"profile_id": profile_id, "status": "erased", "personal_data_retained": False,
+            "note_hi": "असत्यापित आवेदन का रिकॉर्ड डेटाबेस से मिटा दिया गया है। बैकअप प्रतियों पर अलग retention नियम लागू हो सकते हैं।"}
 
 
 @app.post("/api/admin/pandits/{profile_id}/suspend")
