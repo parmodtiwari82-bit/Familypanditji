@@ -25,7 +25,7 @@
 
 <section class="panel" id="panchangCalculator">
  <div class="section-title">आज का पंचांग — निःशुल्क गणना</div>
- <p class="hint">अपनी तारीख और स्थान भरें। कोई GPS permission नहीं ली जाती। अभी गणना प्रारंभिक/अनुमानित है; व्रत-मुहूर्त का अंतिम निर्णय स्थानीय प्रमाणित पंचांग से मिलाएँ।</p>
+ <p class="hint">अपनी तारीख और स्थान भरें। कोई GPS permission नहीं ली जाती। चुने गए इंजन के अनुसार गणना होगी। JPL mode में ग्रह-स्थिति और मानक सूर्योदय/सूर्यास्त बेहतर खगोलीय ephemeris से हैं, लेकिन वैदिक परंपरा/अयनांश और स्थानीय क्षितिज का पूर्ण सत्यापन शेष है। व्रत-मुहूर्त का अंतिम निर्णय स्थानीय प्रमाणित पंचांग से मिलाएँ।</p>
  <form id="panchangForm">
   <div class="calc-grid">
    <label>तारीख<input id="pDate" type="date" required></label>
@@ -33,7 +33,7 @@
    <label>अक्षांश (Latitude)<input id="pLat" type="number" min="-90" max="90" step="any" placeholder="जैसे 26.45" required></label>
    <label>देशांतर (Longitude)<input id="pLon" type="number" min="-180" max="180" step="any" placeholder="जैसे 80.33" required></label>
    <label>Timezone<input id="pTz" type="text" value="Asia/Kolkata" required></label>
-   <label>गणना इंजन<select id="pEngine"><option value="auto">Auto (उपलब्ध हो तो JPL)</option><option value="approximate">निःशुल्क Approximate</option><option value="jpl">JPL DE440s (स्थानीय फ़ाइल आवश्यक)</option></select></label>
+   <label>गणना इंजन<select id="pEngine"><option value="auto">Auto (उपलब्ध हो तो JPL)</option><option value="approximate">निःशुल्क Approximate</option><option value="jpl">JPL DE440s (Skyfield + स्थानीय फ़ाइल आवश्यक)</option></select></label>
   </div>
   <div class="calc-actions"><button type="submit">पंचांग निकालें</button></div>
  </form>
@@ -191,7 +191,7 @@ function showCalcLines(target,items){const box=document.getElementById(target);b
 document.getElementById('panchangForm').addEventListener('submit',async event=>{
  event.preventDefault();const status=document.getElementById('panchangCalcStatus');const out=document.getElementById('panchangCalcResult');status.textContent='पंचांग गणना हो रही है…';out.replaceChildren();
  const params=new URLSearchParams({date:document.getElementById('pDate').value,time:document.getElementById('pTime').value,latitude:document.getElementById('pLat').value,longitude:document.getElementById('pLon').value,timezone_name:document.getElementById('pTz').value,engine:document.getElementById('pEngine').value});
- try{const response=await fetch('/api/panchang/calculate?'+params);const data=await response.json();if(!response.ok)throw new Error(data.detail||'गणना नहीं हो सकी');showCalcLines('panchangCalcResult',[['गणना इंजन',data.engine?.id],['वार',data.weekday],['तिथि',data.tithi],['नक्षत्र',data.nakshatra],['योग',data.yoga],['करण',data.karana],['सूर्योदय',data.sunrise],['सूर्यास्त',data.sunset],['तिथि समाप्ति (अनुमानित)',data.limb_ends_at?.tithi],['नक्षत्र समाप्ति (अनुमानित)',data.limb_ends_at?.nakshatra],['योग समाप्ति (अनुमानित)',data.limb_ends_at?.yoga],['करण समाप्ति (अनुमानित)',data.limb_ends_at?.karana],['अंग समाप्ति समय स्थिति',data.transition_times_status],['चन्द्र राशि',data.moon_sign],['सूर्य राशि',data.sun_sign],['गणना',data.accuracy_note_hi]]);status.textContent='गणना पूरी • '+data.date+' • '+data.timezone}
+ try{const response=await fetch('/api/panchang/calculate?'+params);const data=await response.json();if(!response.ok)throw new Error(data.detail||'गणना नहीं हो सकी');showCalcLines('panchangCalcResult',[['गणना इंजन',data.engine?.id],['इंजन विवरण',data.engine?.note_hi],['वार',data.weekday],['तिथि',data.tithi],['नक्षत्र',data.nakshatra],['योग',data.yoga],['करण',data.karana],['सूर्योदय',data.sunrise],['सूर्योदय गणना',data.sunrise_sunset_status],['सूर्यास्त',data.sunset],['तिथि समाप्ति',data.limb_ends_at?.tithi||'इस इंजन मोड में उपलब्ध नहीं'],['नक्षत्र समाप्ति',data.limb_ends_at?.nakshatra||'इस इंजन मोड में उपलब्ध नहीं'],['योग समाप्ति',data.limb_ends_at?.yoga||'इस इंजन मोड में उपलब्ध नहीं'],['करण समाप्ति',data.limb_ends_at?.karana||'इस इंजन मोड में उपलब्ध नहीं'],['अंग समाप्ति समय स्थिति',data.transition_times_status],['चन्द्र राशि',data.moon_sign],['सूर्य राशि',data.sun_sign],['गणना सीमा',data.accuracy_note_hi]]);status.textContent='गणना पूरी • '+data.date+' • '+data.timezone}
  catch(error){status.textContent='त्रुटि: '+error.message}
 });
 document.getElementById('kundliForm').addEventListener('submit',async event=>{
@@ -206,7 +206,7 @@ document.getElementById('advancedJyotishButton').addEventListener('click',async(
  if(!document.getElementById('kundliForm').reportValidity())return;
  status.textContent='D2, D3, D7, D9, D10, D12 वर्ग कुंडली और विंशोत्तरी दशा की गणना हो रही है…';
  document.getElementById('advancedJyotishResult').replaceChildren();
- const payload={birth_date:document.getElementById('kDate').value,birth_time:document.getElementById('kTime').value,latitude:Number(document.getElementById('kLat').value),longitude:Number(document.getElementById('kLon').value),timezone:document.getElementById('kTz').value};
+ const payload={birth_date:document.getElementById('kDate').value,birth_time:document.getElementById('kTime').value,latitude:Number(document.getElementById('kLat').value),longitude:Number(document.getElementById('kLon').value),timezone:document.getElementById('kTz').value,engine:document.getElementById('kEngine').value};
  try{
   const response=await fetch('/api/jyotish/advanced',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   const data=await response.json();if(!response.ok)throw new Error(data.detail||'उन्नत गणना नहीं हो सकी');
