@@ -355,6 +355,7 @@ def test_jyotish_guide_is_transparent_and_does_not_claim_calculations():
 
 def test_public_pandit_application_stays_private_until_admin_review(monkeypatch, tmp_path):
     import main as backend_main
+    backend_main._pandit_application_rate_windows.clear()
 
     monkeypatch.setattr(backend_main, "PANDIT_DIRECTORY_DB", tmp_path / "applications.sqlite3")
     payload = {
@@ -389,6 +390,7 @@ def test_public_pandit_application_stays_private_until_admin_review(monkeypatch,
 
 def test_pandit_application_requires_privacy_consent_and_valid_contact(tmp_path, monkeypatch):
     import main as backend_main
+    backend_main._pandit_application_rate_windows.clear()
 
     monkeypatch.setattr(backend_main, "PANDIT_DIRECTORY_DB", tmp_path / "applications.sqlite3")
     payload = {
@@ -403,6 +405,7 @@ def test_pandit_application_requires_privacy_consent_and_valid_contact(tmp_path,
 
 def test_pandit_application_rejects_honeypot_submission(monkeypatch, tmp_path):
     import main as backend_main
+    backend_main._pandit_application_rate_windows.clear()
 
     monkeypatch.setattr(backend_main, "PANDIT_DIRECTORY_DB", tmp_path / "applications.sqlite3")
     payload = {
