@@ -1338,7 +1338,7 @@ def test_admin_can_reject_pending_pandit_application_without_publication(monkeyp
     assert rejected.status_code == 200
     assert rejected.json()["status"] == "rejected"
     assert client.get("/api/admin/pandits/pending", headers={"Authorization": f"Bearer {token}"}).json()["count"] == 0
-    assert client.get("/api/admin/pandits").status_code == 404
+    assert client.get("/api/admin/pandits").status_code == 405
     status = client.get(f"/api/admin/pandits/{profile_id}/status", headers={"Authorization": f"Bearer {token}"})
     assert status.status_code == 200
     assert status.json()["status"] == "rejected"
