@@ -1,8 +1,10 @@
 # Deployment guide
 
-This repository now includes a Dockerfile for a portable container build. A successful image build is not the same as a live deployment; a hosting account, domain, environment secrets and operator approval are still required.
+This repository Docker image installs the MIT-licensed Skyfield adapter and downloads the freely available NASA/JPL DE440s ephemeris during image build. The API's `engine=auto` then selects JPL planetary positions when the bundled data and dependency are ready. This improves the astronomy source but does not certify the Vedic conversion: Lahiri ayanamsa, mean lunar nodes, ascendant/obliquity and whole-sign houses remain approximate. A successful image build is not a live deployment; a hosting account, domain, environment secrets and operator approval are still required.
 
 ## Container build
+
+The build includes the free Skyfield dependency and downloads NASA/JPL DE440s into the image. The build intentionally fails if the ephemeris cannot be downloaded, rather than silently shipping an image that would fall back to low-precision planetary positions.
 
 From the repository root:
 
