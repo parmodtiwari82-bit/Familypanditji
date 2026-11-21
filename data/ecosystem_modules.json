@@ -48,7 +48,7 @@
       "name_en": "Jyotish and Kundli",
       "group": "tools",
       "status": "beta",
-      "description": "नौ ग्रहों की जन्मकुंडली, optional JPL DE440s planetary positions, D2/D3/D7/D9/D10/D12 varga और महादशा-अंतरदशा-प्रत्यंतरदशा (Vimshottari) API उपलब्ध; अयनांश, लग्न/भाव, परंपरा और विशेषज्ञ सत्यापन बाकी।"
+      "description": "नौ ग्रहों की जन्मकुंडली, optional JPL DE440s planetary positions, Skyfield apparent sidereal-time लग्न, D2/D3/D7/D9/D10/D12 varga और महादशा-अंतरदशा-प्रत्यंतरदशा (Vimshottari) API उपलब्ध; अयनांश, obliquity, भाव/परंपरा और विशेषज्ञ सत्यापन बाकी।"
     },
     {
       "id": "pandit-directory",
