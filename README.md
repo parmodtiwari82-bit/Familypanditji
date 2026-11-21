@@ -73,7 +73,7 @@ pytest -q
 3. Reviewed knowledge library — starter drafts only; acharya review and source citations remain.
 4. Sixteen samskaras and life-event guidance — overview catalogue added; detailed procedures, source citations and acharya review remain.
 5. Puja and aarti guidance — introductory bilingual draft guides added; tradition-specific vidhi, mantras, citations and acharya review remain.
-6. Panchang and Kundli calculations plus preliminary D2/D3/D7/D9/D10/D12 vargas and full Vimshottari periods — approximate engine and optional JPL planetary ephemeris selection integrated; Vedic convention validation, regional Panchang comparison, precise transition times, muhurta and professional interpretation remain outstanding.
+6. Panchang and Kundli calculations plus preliminary D2/D3/D7/D9/D10/D12 vargas and full Vimshottari periods — approximate engine and optional JPL DE440s planetary positions / standard-horizon solar events integrated; Vedic convention validation, regional Panchang comparison, precise JPL limb-transition times, muhurta and professional interpretation remain outstanding.
 7. Pandit discovery, profiles, verification and booking — not integrated.
 8. Temple, pilgrimage and seva discovery — static guidance only.
 9. Puja samagri catalogue and e-commerce — not integrated.
