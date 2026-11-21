@@ -590,7 +590,30 @@ def test_operational_readiness_probe_checks_required_assets_and_catalogues():
     assert payload["scope"] == "local_application_files_and_catalogue_structure_only"
     assert payload["checks"]["valid_json:data/knowledge_hi.json"] is True
     assert payload["checks"]["valid_json:data/pandit_directory.json"] is True
+    assert payload["checks"]["valid_json:data/temples.json"] is True
     assert "production launch" in payload["note_hi"]
+
+
+def test_operational_readiness_probe_returns_503_when_required_catalogue_is_missing(monkeypatch, tmp_path):
+    import main as backend_main
+    monkeypatch.setattr(backend_main, "PROJECT_ROOT", tmp_path)
+    response = client.get("/ready")
+    assert response.status_code == 503
+    payload = response.json()
+    assert payload["status"] == "not_ready"
+    assert payload["ready"] is False
+    assert payload["checks"]["data/temples.json"] is False
+    assert payload["checks"]["valid_json:data/temples.json"] is False
+
+
+def test_operational_readiness_probe_rejects_invalid_temple_catalogue(monkeypatch, tmp_path):
+    import main as backend_main
+    (tmp_path / "data").mkdir()
+    (tmp_path / "data" / "temples.json").write_text('{"temples": "not-a-list"}', encoding="utf-8")
+    monkeypatch.setattr(backend_main, "PROJECT_ROOT", tmp_path)
+    response = client.get("/ready")
+    assert response.status_code == 503
+    assert response.json()["checks"]["valid_json:data/temples.json"] is False
 
 
 def test_operational_readiness_probe_is_not_cached():
