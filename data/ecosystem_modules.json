@@ -39,7 +39,7 @@
       "name_hi": "पंचांग एवं मुहूर्त",
       "name_en": "Panchang and Muhurta",
       "group": "tools",
-      "status": "beta_approximate",
+      "status": "beta",
       "description": "स्थान और तिथि-आधारित निःशुल्क प्रारंभिक पंचांग गणना उपलब्ध; स्थानीय प्रमाणित पंचांग से सत्यापन और मुहूर्त engine अभी बाकी।"
     },
     {
@@ -47,7 +47,7 @@
       "name_hi": "ज्योतिष एवं कुंडली",
       "name_en": "Jyotish and Kundli",
       "group": "tools",
-      "status": "beta_approximate",
+      "status": "beta",
       "description": "निःशुल्क प्रारंभिक जन्मकुंडली में नौ ग्रह, अनुमानित लग्न और whole-sign भाव उपलब्ध; उच्च-सटीकता ephemeris, दशा, वर्ग कुंडली और आचार्य सत्यापन अभी बाकी।"
     },
     {
