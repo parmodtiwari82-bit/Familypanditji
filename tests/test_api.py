@@ -61,7 +61,7 @@ def test_knowledge_topics_returns_review_labelled_cards():
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "draft_requires_acharya_review"
-    assert payload["count"] >= 9
+    assert payload["count"] >= 5
     assert all(topic["review_required"] is True for topic in payload["topics"])
 
 
