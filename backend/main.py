@@ -366,7 +366,7 @@ def public_verified_pandit_directory(
     state: str | None = Query(default=None, max_length=100),
     service: str | None = Query(default=None, max_length=120),
     language: str | None = Query(default=None, max_length=40),
-    status: str = Query(default="verified", pattern="^verified$"),
+    status: str = Query(default="verified", pattern="^(verified|all)$"),
     limit: int = Query(default=50, ge=1, le=100),
 ):
     """Return only platform-reviewed profiles; pending/suspended records never appear."""
@@ -378,6 +378,7 @@ def public_verified_pandit_directory(
         "status": "directory_beta_no_booking",
         "count": len(items),
         "items": items,
+        "pandits": items,
         "booking_enabled": False,
         "note_hi": "अभी केवल प्लेटफ़ॉर्म द्वारा समीक्षा की गई सार्वजनिक प्रोफ़ाइलें दिखाई जाती हैं। बुकिंग और भुगतान सुविधा चालू नहीं है।",
     }
