@@ -882,3 +882,13 @@ def test_birth_chart_rejects_unknown_engine():
         "engine": "magic-precision",
     })
     assert response.status_code == 422
+
+
+def test_frontend_exposes_engine_selection_and_displays_provenance():
+    frontend = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    assert 'id="pEngine"' in frontend
+    assert 'id="kEngine"' in frontend
+    assert "engine:document.getElementById('pEngine').value" in frontend
+    assert "engine:document.getElementById('kEngine').value" in frontend
+    assert "data.engine?.note_hi" in frontend
+    assert "data.transition_times_status" in frontend
