@@ -366,6 +366,7 @@ def public_verified_pandit_directory(
     state: str | None = Query(default=None, max_length=100),
     service: str | None = Query(default=None, max_length=120),
     language: str | None = Query(default=None, max_length=40),
+    status: str = Query(default="verified", pattern="^verified$"),
     limit: int = Query(default=50, ge=1, le=100),
 ):
     """Return only platform-reviewed profiles; pending/suspended records never appear."""
@@ -374,6 +375,7 @@ def public_verified_pandit_directory(
     except sqlite3.Error:
         raise HTTPException(status_code=503, detail="Pandit directory storage is unavailable.")
     return {
+        "status": "directory_beta_no_booking",
         "count": len(items),
         "items": items,
         "booking_enabled": False,
