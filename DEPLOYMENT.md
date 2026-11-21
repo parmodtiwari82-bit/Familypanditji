@@ -23,6 +23,8 @@ Open `/health` to confirm the API process responds. Use `/api/release/readiness`
 - Set `PORT` to the port supplied by the hosting platform (the container command reads it).
 - Set `APP_ENV=production` and `ALLOWED_ORIGINS` to exact frontend origins. Production startup rejects wildcard origins and non-HTTPS AI endpoints.
 - Keep `AI_TIMEOUT_SECONDS` between 1 and 120 seconds; the default is 25 seconds.
+- Configure `ASK_RATE_LIMIT_MAX` (default 20) and `ASK_RATE_LIMIT_WINDOW_SECONDS` (default 60) to cap repeated `POST /api/ask` requests per client IP. Valid ranges are 1–10000 requests and 1–3600 seconds.
+- The built-in limiter is per application process and uses the direct connection IP; behind a proxy, configure trusted client-IP handling at the edge. For multiple workers/replicas, enforce a shared rate limit at the API gateway/WAF or a shared store. Do not treat this in-memory guard as a substitute for distributed abuse protection.
 - Configure `AI_API_KEY` and `AI_MODEL` as hosting secrets if AI-provider answers are required. Never commit real keys.
 - Keep provider usage limits, billing alerts and key rotation under the account owner's control.
 - Enable HTTPS, platform logs, backups and uptime monitoring.

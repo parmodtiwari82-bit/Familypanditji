@@ -541,3 +541,37 @@ def test_service_worker_versions_its_cache_and_keeps_api_responses_network_only(
     assert 'url.pathname === "/ready"' in worker
     assert 'key.startsWith(CACHE_PREFIX)' in worker
     assert 'await cache.put(request, copy)' in worker
+
+
+def test_ask_endpoint_rate_limits_repeated_requests(monkeypatch):
+    import main as backend_main
+
+    monkeypatch.setattr(backend_main, "ASK_RATE_LIMIT_MAX", 2)
+    monkeypatch.setattr(backend_main, "ASK_RATE_LIMIT_WINDOW_SECONDS", 60)
+    backend_main._ask_rate_windows.clear()
+
+    first = client.post("/api/ask", json={"question": "अलग प्रश्न एक", "language": "hi"})
+    second = client.post("/api/ask", json={"question": "अलग प्रश्न दो", "language": "hi"})
+    blocked = client.post("/api/ask", json={"question": "अलग प्रश्न तीन", "language": "hi"})
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert blocked.status_code == 429
+    assert int(blocked.headers["Retry-After"]) >= 1
+    assert blocked.headers["Cache-Control"] == "no-store"
+
+
+def test_ask_rate_limit_does_not_block_other_api_routes(monkeypatch):
+    import main as backend_main
+
+    monkeypatch.setattr(backend_main, "ASK_RATE_LIMIT_MAX", 1)
+    monkeypatch.setattr(backend_main, "ASK_RATE_LIMIT_WINDOW_SECONDS", 60)
+    backend_main._ask_rate_windows.clear()
+
+    first = client.post("/api/ask", json={"question": "पहला प्रश्न", "language": "hi"})
+    blocked = client.post("/api/ask", json={"question": "दूसरा प्रश्न", "language": "hi"})
+    health = client.get("/health")
+
+    assert first.status_code == 200
+    assert blocked.status_code == 429
+    assert health.status_code == 200

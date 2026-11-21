@@ -1,11 +1,13 @@
 import json
 import os
+import threading
+import time
 from pathlib import Path
 from typing import Any
 
 import httpx
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -17,6 +19,8 @@ AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 AI_MODEL = os.getenv("AI_MODEL", "").strip()
 APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
 AI_TIMEOUT_SECONDS = float(os.getenv("AI_TIMEOUT_SECONDS", "25"))
+ASK_RATE_LIMIT_MAX = int(os.getenv("ASK_RATE_LIMIT_MAX", "20"))
+ASK_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv("ASK_RATE_LIMIT_WINDOW_SECONDS", "60"))
 ALLOWED_ORIGINS = [x.strip() for x in os.getenv("ALLOWED_ORIGINS", "*").split(",") if x.strip()]
 
 
@@ -27,6 +31,10 @@ def validate_runtime_config(environment: str, allowed_origins: list[str],
         raise ValueError("APP_ENV must be development, staging or production.")
     if not 1 <= timeout_seconds <= 120:
         raise ValueError("AI_TIMEOUT_SECONDS must be between 1 and 120.")
+    if not 1 <= ASK_RATE_LIMIT_MAX <= 10000:
+        raise ValueError("ASK_RATE_LIMIT_MAX must be between 1 and 10000.")
+    if not 1 <= ASK_RATE_LIMIT_WINDOW_SECONDS <= 3600:
+        raise ValueError("ASK_RATE_LIMIT_WINDOW_SECONDS must be between 1 and 3600.")
     if environment == "production":
         if not allowed_origins or "*" in allowed_origins:
             raise ValueError("Production requires explicit ALLOWED_ORIGINS; wildcard is not allowed.")
@@ -51,6 +59,39 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "Authorization"],
 )
+
+# Per-process abuse guard for the costly public AI question endpoint.
+# For multiple workers/replicas, enforce the same limit at a shared gateway/store.
+_ask_rate_windows: dict[str, tuple[float, int]] = {}
+_ask_rate_lock = threading.Lock()
+
+
+@app.middleware("http")
+async def ask_rate_limit(request, call_next):
+    if request.method == "POST" and request.url.path == "/api/ask":
+        client_ip = request.client.host if request.client else "unknown"
+        now = time.monotonic()
+        with _ask_rate_lock:
+            started, count = _ask_rate_windows.get(client_ip, (now, 0))
+            if now - started >= ASK_RATE_LIMIT_WINDOW_SECONDS:
+                started, count = now, 0
+            if count >= ASK_RATE_LIMIT_MAX:
+                retry_after = max(1, int(ASK_RATE_LIMIT_WINDOW_SECONDS - (now - started)))
+                response = JSONResponse(
+                    status_code=429,
+                    content={"detail": "Question limit reached. Please try again later."},
+                    headers={"Retry-After": str(retry_after)},
+                )
+                return response
+            _ask_rate_windows[client_ip] = (started, count + 1)
+            # Bound memory use by dropping expired client windows on new requests.
+            expired = [
+                key for key, (window_start, _) in _ask_rate_windows.items()
+                if now - window_start >= ASK_RATE_LIMIT_WINDOW_SECONDS
+            ]
+            for key in expired:
+                _ask_rate_windows.pop(key, None)
+    return await call_next(request)
 
 
 @app.middleware("http")
