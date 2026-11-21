@@ -1,0 +1,3 @@
+# Optional high-precision planetary ephemeris adapter (MIT-licensed Skyfield).
+# Install separately; DE440s data file is downloaded explicitly and is about 32 MB.
+skyfield==1.55
