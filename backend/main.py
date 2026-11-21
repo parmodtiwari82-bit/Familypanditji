@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from vedic_calc import calculate_kundli, calculate_panchang, parse_local_datetime
 from advanced_jyotish import calculate_advanced_jyotish
 from precision_ephemeris import calculate_tropical_longitudes, calculate_tropical_ascendant, calculate_sunrise_sunset, calculate_panchang_limb_transitions, mean_node_longitudes
-from pandit_directory import create_pending_profile, get_profile_status, list_pending_profiles, list_verified_profiles, suspend_profile, verify_profile
+from pandit_directory import create_pending_profile, get_profile_status, list_pending_profiles, list_verified_profiles, reject_pending_profile, suspend_profile, verify_profile
 
 APP_VERSION = "0.3.0"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -189,6 +189,10 @@ class PanditVerificationRequest(BaseModel):
 
 
 class PanditSuspensionRequest(BaseModel):
+    reason: str = Field(min_length=10, max_length=1000)
+
+
+class PanditRejectionRequest(BaseModel):
     reason: str = Field(min_length=10, max_length=1000)
 
 
@@ -389,6 +393,20 @@ def admin_verify_pandit_profile(profile_id: str, payload: PanditVerificationRequ
         raise HTTPException(status_code=404, detail="Pending Pandit profile was not found.")
     return {"profile_id": profile_id, "status": "verified", "verification_scope": "platform_reviewed_profile",
             "note_hi": "प्रोफ़ाइल की दी गई जानकारी और संदर्भित योग्यता-साक्ष्य की प्लेटफ़ॉर्म समीक्षा दर्ज हुई है; यह सरकारी प्रमाणन नहीं है।"}
+
+
+@app.post("/api/admin/pandits/{profile_id}/reject")
+def admin_reject_pandit_application(profile_id: str, payload: PanditRejectionRequest,
+                                    authorization: str | None = Header(default=None)):
+    """Record an admin rejection; retain the private record for controlled follow-up."""
+    require_admin_access(authorization)
+    try:
+        changed = reject_pending_profile(PANDIT_DIRECTORY_DB, profile_id, payload.reason)
+    except sqlite3.Error:
+        raise HTTPException(status_code=503, detail="Pandit directory storage is unavailable.")
+    if not changed:
+        raise HTTPException(status_code=404, detail="Pending application was not found.")
+    return {"profile_id": profile_id, "status": "rejected", "public_listing": False}
 
 
 @app.post("/api/admin/pandits/{profile_id}/suspend")
