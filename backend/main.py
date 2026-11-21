@@ -15,6 +15,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from vedic_calc import calculate_kundli, calculate_panchang, parse_local_datetime
+from advanced_jyotish import calculate_advanced_jyotish
 
 APP_VERSION = "0.3.0"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -600,6 +601,19 @@ def calculate_birth_chart(payload: BirthChartRequest):
     try:
         local_dt = parse_local_datetime(payload.birth_date, payload.birth_time, payload.timezone)
         result = calculate_kundli(local_dt, payload.latitude, payload.longitude)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    result["timezone"] = payload.timezone
+    result["data_retention"] = "not_stored_by_this_endpoint"
+    return result
+
+
+@app.post("/api/jyotish/advanced")
+def calculate_advanced_birth_chart(payload: BirthChartRequest):
+    """Calculate approximate D9 and Vimshottari foundations; birth data is not stored."""
+    try:
+        local_dt = parse_local_datetime(payload.birth_date, payload.birth_time, payload.timezone)
+        result = calculate_advanced_jyotish(local_dt, payload.latitude, payload.longitude)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
     result["timezone"] = payload.timezone
