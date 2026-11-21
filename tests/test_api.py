@@ -1190,3 +1190,12 @@ def test_samskara_detail_returns_one_entry_with_review_notice():
 
 def test_samskara_detail_returns_404_for_unknown_id():
     assert client.get("/api/samskaras/not-a-real-samskara").status_code == 404
+
+
+
+def test_frontend_uses_individual_puja_and_samskara_detail_endpoints():
+    html = (Path(__file__).resolve().parents[1] / "index.html").read_text(encoding="utf-8")
+    assert "'/api/puja-guides/'+encodeURIComponent(item.id)" in html
+    assert "'/api/samskaras/'+encodeURIComponent(item.id)" in html
+    assert "विस्तृत जानकारी खोलें" in html
+    assert "aria-live" in html
