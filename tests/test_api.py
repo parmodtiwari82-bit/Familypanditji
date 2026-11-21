@@ -286,9 +286,12 @@ def test_trust_status_is_transparent_about_beta_and_missing_capabilities():
     assert payload["environment"] == "development"
     assert payload["content_review"]["all_content_is_draft"] is True
     assert payload["content_review"]["status"] == "acharya_review_required"
-    assert payload["capabilities"]["panchang_live_calculation"] is False
-    assert payload["capabilities"]["kundli_calculation"] is False
+    assert payload["capabilities"]["panchang_calculation_api"] is True
+    assert payload["capabilities"]["kundli_calculation_api"] is True
+    assert payload["capabilities"]["advanced_jyotish_api"] is True
+    assert payload["capabilities"]["verified_pandit_booking"] is False
     assert payload["production_release_ready"] is False
+    assert payload["release_blockers"]
     assert payload["modules"]["beta"] >= 1
 
 
@@ -962,3 +965,26 @@ def test_explicit_jpl_mode_fails_clearly_when_skyfield_is_missing(monkeypatch, t
     })
     assert response.status_code == 503
     assert "install backend/requirements-astronomy.txt" in response.json()["detail"]
+
+
+def test_trust_status_reports_implemented_calculation_apis_and_remaining_release_blockers():
+    response = client.get("/api/trust/status")
+    assert response.status_code == 200
+    payload = response.json()
+    capabilities = payload["capabilities"]
+    assert capabilities["panchang_calculation_api"] is True
+    assert capabilities["kundli_calculation_api"] is True
+    assert capabilities["advanced_jyotish_api"] is True
+    assert set(capabilities["divisional_charts"]) == {"D2", "D3", "D7", "D9", "D10", "D12"}
+    assert set(capabilities["vimshottari_periods"]) == {"mahadasha", "antardasha", "pratyantardasha"}
+    assert capabilities["verified_pandit_booking"] is False
+    assert payload["production_release_ready"] is False
+    assert payload["release_blockers"]
+
+
+def test_module_catalogue_does_not_claim_unimplemented_muhurta_or_certified_jyotish():
+    payload = client.get("/api/modules").json()
+    modules = {item["id"]: item for item in payload["modules"]}
+    assert "optional JPL DE440s" in modules["panchang"]["description"]
+    assert "D2/D3/D7/D9/D10/D12" in modules["jyotish"]["description"]
+    assert modules["pandit-directory"]["status"] == "planned"

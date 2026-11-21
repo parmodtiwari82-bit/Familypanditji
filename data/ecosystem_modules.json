@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "notice": "यह उत्पाद-रोडमैप कैटलॉग है; listed services को live सुविधा न मानें जब तक उनका implementation और परीक्षण पूरा न हो।",
+  "version": "1.1.0",
+  "notice": "यह implementation-status catalogue है। API उपलब्ध होना विशेषज्ञ सत्यापन, संचालन या production launch readiness का प्रमाण नहीं है।",
   "modules": [
     {
       "id": "ai-pandit",
@@ -40,7 +40,7 @@
       "name_en": "Panchang and Muhurta",
       "group": "tools",
       "status": "beta",
-      "description": "स्थान और तिथि-आधारित प्रारंभिक पंचांग उपलब्ध है। वैकल्पिक JPL DE440s mode में ग्रहों के दीर्घांश और मानक क्षितिज के सूर्योदय/सूर्यास्त मिलते हैं; अयनांश, राहु-केतु, क्षेत्रीय परंपरा और अंग-समाप्ति समय का सत्यापन बाकी है। मुहूर्त engine अभी उपलब्ध नहीं।"
+      "description": "स्थान और तिथि-आधारित Panchang API उपलब्ध; optional JPL DE440s ग्रह-स्थिति और standard sunrise/sunset चयन उपलब्ध। अंग-समाप्ति समय केवल approximate engine में अनुमानित है; JPL mode में नहीं। मुहूर्त engine अभी उपलब्ध नहीं; क्षेत्रीय पंचांग और अयनांश का विशेषज्ञ सत्यापन बाकी।"
     },
     {
       "id": "jyotish",
@@ -48,7 +48,7 @@
       "name_en": "Jyotish and Kundli",
       "group": "tools",
       "status": "beta",
-      "description": "प्रारंभिक जन्मकुंडली, D2/D3/D7/D9/D10/D12 वर्ग-स्थिति और विंशोत्तरी महादशा-अंतरदशा-प्रत्यंतरदशा उपलब्ध हैं। वैकल्पिक JPL DE440s ग्रह-स्थिति mode भी है; अयनांश, राहु-केतु, लग्न/भाव, वर्ग-नियम और दशा परिणामों का विशेषज्ञ सत्यापन बाकी है।"
+      "description": "नौ ग्रहों की जन्मकुंडली, optional JPL DE440s planetary positions, D2/D3/D7/D9/D10/D12 varga और महादशा-अंतरदशा-प्रत्यंतरदशा (Vimshottari) API उपलब्ध; अयनांश, लग्न/भाव, परंपरा और विशेषज्ञ सत्यापन बाकी।"
     },
     {
       "id": "pandit-directory",
@@ -88,7 +88,7 @@
       "name_en": "Admin and Trust Center",
       "group": "platform",
       "status": "planned",
-      "description": "आचार्य समीक्षा, रिपोर्टिंग, गोपनीयता, ऑडिट और सुरक्षा नियंत्रण।"
+      "description": "आचार्य समीक्षा audit trail और admin read-only review queue उपलब्ध; पूर्ण admin console, reporting/moderation workflows, privacy operations और production security review बाकी।"
     }
   ]
 }

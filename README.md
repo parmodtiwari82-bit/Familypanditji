@@ -31,7 +31,7 @@ No verified Pandit profiles, booking lifecycle, e-commerce, payments, user accou
  
 ## Production launch handoff
 
-See [LAUNCH_HANDOFF.md](LAUNCH_HANDOFF.md) for the owner-input checklist, external integration evidence and mandatory release gates. See [STAGING_SMOKE_TESTS.md](STAGING_SMOKE_TESTS.md) for staging API, browser, security and go/no-go checks. The current repository remains a development beta; do not treat CI success or a container build as production launch approval.
+See [LAUNCH_HANDOFF.md](LAUNCH_HANDOFF.md) for the owner-input checklist, external integration evidence and mandatory release gates. See [STAGING_SMOKE_TESTS.md](STAGING_SMOKE_TESTS.md) for staging API, browser, security and go/no-go checks. The current repository remains a development beta; do not treat CI success or a container build as production launch approval. `GET /api/trust/status` reports implemented calculation endpoints separately from still-missing verified booking, commerce, production voice, expert review and operational release gates.
 
 ## Deployment\n\nSee [DEPLOYMENT.md](DEPLOYMENT.md) for the Docker build, hosting configuration and pre-launch checklist. A container build does not itself deploy the application.\n\n## Run locally
 
