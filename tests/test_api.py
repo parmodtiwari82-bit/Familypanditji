@@ -892,3 +892,27 @@ def test_frontend_exposes_engine_selection_and_displays_provenance():
     assert "engine:document.getElementById('kEngine').value" in frontend
     assert "data.engine?.note_hi" in frontend
     assert "data.transition_times_status" in frontend
+
+
+def test_jpl_panchang_uses_ephemeris_sunrise_sunset_and_reports_horizon_limit(monkeypatch, tmp_path):
+    import main
+    ephemeris = tmp_path / "de440s.bsp"
+    ephemeris.write_bytes(b"stub")
+    monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", ephemeris)
+    monkeypatch.setattr(main, "calculate_tropical_longitudes", lambda moment, path: {
+        "Sun": 10.0, "Moon": 20.0, "Mercury": 30.0, "Venus": 40.0,
+        "Mars": 50.0, "Jupiter": 60.0, "Saturn": 70.0,
+    })
+    monkeypatch.setattr(main, "calculate_sunrise_sunset", lambda moment, lat, lon, path: {
+        "sunrise": "2026-11-21T06:18:00+05:30", "sunset": "2026-11-21T17:12:00+05:30",
+    })
+    response = client.get("/api/panchang/calculate", params={
+        "date": "2026-11-21", "time": "12:00", "latitude": 26.45,
+        "longitude": 80.33, "timezone_name": "Asia/Kolkata", "engine": "jpl",
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["sunrise"] == "2026-11-21T06:18:00+05:30"
+    assert payload["sunset"] == "2026-11-21T17:12:00+05:30"
+    assert payload["sunrise_sunset_status"] == "jpl_de440s_standard_horizon"
+    assert "JPL sunrise/sunset uses standard unobstructed horizon only; local terrain/buildings are not modeled" in payload["engine"]["limitations"]
