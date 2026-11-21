@@ -20,7 +20,7 @@ BODY_KEYS = {
     "Moon": "moon",
     "Mercury": "mercury",
     "Venus": "venus",
-    "Mars": "mars",
+    "Mars": "mars barycenter",
     "Jupiter": "jupiter barycenter",
     "Saturn": "saturn barycenter",
 }
