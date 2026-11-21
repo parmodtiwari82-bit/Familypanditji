@@ -866,6 +866,7 @@ def test_jpl_panchang_does_not_present_approximate_transition_times_as_jpl(monke
     monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", ephemeris)
     monkeypatch.setattr(main.importlib.util, "find_spec", lambda name: object())
     monkeypatch.setattr(main, "calculate_sunrise_sunset", lambda moment, lat, lon, path: {"sunrise": "2026-11-21T06:18:00+05:30", "sunset": "2026-11-21T17:12:00+05:30"})
+    monkeypatch.setattr(main, "calculate_panchang_limb_transitions", lambda moment, path: {"tithi": "2026-11-21T19:14:00+05:30", "nakshatra": "2026-11-22T02:11:00+05:30", "yoga": "2026-11-22T04:10:00+05:30", "karana": "2026-11-21T16:10:00+05:30"})
     monkeypatch.setattr(main, "calculate_tropical_longitudes", lambda moment, path: {
         "Sun": 10.0, "Moon": 20.0, "Mercury": 30.0, "Venus": 40.0,
         "Mars": 50.0, "Jupiter": 60.0, "Saturn": 70.0,
@@ -877,8 +878,9 @@ def test_jpl_panchang_does_not_present_approximate_transition_times_as_jpl(monke
     assert response.status_code == 200
     payload = response.json()
     assert payload["engine"]["id"] == "jpl_de440s_skyfield"
-    assert payload["limb_ends_at"] is None
-    assert payload["transition_times_status"] == "not_calculated_for_jpl_mode"
+    assert payload["limb_ends_at"]["tithi"] == "2026-11-21T19:14:00+05:30"
+    assert set(payload["limb_ends_at"]) == {"tithi", "nakshatra", "yoga", "karana"}
+    assert payload["transition_times_status"] == "jpl_de440s_with_approximate_lahiri_conventions"
 
 
 def test_birth_chart_rejects_unknown_engine():
@@ -912,6 +914,10 @@ def test_jpl_panchang_uses_ephemeris_sunrise_sunset_and_reports_horizon_limit(mo
     })
     monkeypatch.setattr(main, "calculate_sunrise_sunset", lambda moment, lat, lon, path: {
         "sunrise": "2026-11-21T06:18:00+05:30", "sunset": "2026-11-21T17:12:00+05:30",
+    })
+    monkeypatch.setattr(main, "calculate_panchang_limb_transitions", lambda moment, path: {
+        "tithi": "2026-11-21T19:14:00+05:30", "nakshatra": "2026-11-22T02:11:00+05:30",
+        "yoga": "2026-11-22T04:10:00+05:30", "karana": "2026-11-21T16:10:00+05:30",
     })
     response = client.get("/api/panchang/calculate", params={
         "date": "2026-11-21", "time": "12:00", "latitude": 26.45,
@@ -1096,3 +1102,28 @@ def test_frontend_exposes_verified_only_pandit_directory_search_without_booking_
     assert "/api/pandits?" in html
     assert "booking_available!==false" in html
     assert "कोई live verified पंडित प्रोफ़ाइल उपलब्ध नहीं है" in html
+
+
+def test_jpl_panchang_reports_transition_provenance_and_all_four_limbs(monkeypatch, tmp_path):
+    import main
+    ephemeris = tmp_path / "de440s.bsp"
+    ephemeris.write_bytes(b"stub")
+    monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", ephemeris)
+    monkeypatch.setattr(main.importlib.util, "find_spec", lambda name: object())
+    monkeypatch.setattr(main, "calculate_tropical_longitudes", lambda moment, path: {
+        "Sun": 10.0, "Moon": 20.0, "Mercury": 30.0, "Venus": 40.0,
+        "Mars": 50.0, "Jupiter": 60.0, "Saturn": 70.0,
+    })
+    monkeypatch.setattr(main, "calculate_sunrise_sunset", lambda *args: {"sunrise": None, "sunset": None})
+    monkeypatch.setattr(main, "calculate_panchang_limb_transitions", lambda *args: {
+        "tithi": "2026-11-21T19:14:00+05:30", "nakshatra": None, "yoga": None, "karana": None,
+    })
+    response = client.get("/api/panchang/calculate", params={
+        "date": "2026-11-21", "time": "12:00", "latitude": 26.45,
+        "longitude": 80.33, "timezone_name": "Asia/Kolkata", "engine": "jpl",
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["transition_times_status"] == "jpl_de440s_with_approximate_lahiri_conventions"
+    assert payload["limb_ends_at"]["tithi"].endswith("+05:30")
+    assert payload["limb_ends_at"]["nakshatra"] is None

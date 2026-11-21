@@ -66,3 +66,27 @@ def test_jpl_sunrise_requires_local_ephemeris_file(tmp_path):
     from precision_ephemeris import calculate_sunrise_sunset
     with pytest.raises(FileNotFoundError, match="JPL ephemeris file not found"):
         calculate_sunrise_sunset(datetime(2026, 11, 21, 12, 0, tzinfo=timezone.utc), 26.45, 80.33, tmp_path / "missing.bsp")
+
+
+def test_jpl_panchang_transitions_require_timezone_aware_datetime(tmp_path):
+    from precision_ephemeris import calculate_panchang_limb_transitions
+    with pytest.raises(ValueError, match="timezone-aware"):
+        calculate_panchang_limb_transitions(datetime(2026, 11, 21), tmp_path / "missing.bsp")
+
+
+def test_jpl_panchang_transitions_enforce_supported_date_range(tmp_path):
+    from precision_ephemeris import calculate_panchang_limb_transitions
+    with pytest.raises(ValueError, match="1849 through 2150"):
+        calculate_panchang_limb_transitions(datetime(1700, 1, 1, tzinfo=timezone.utc), tmp_path / "missing.bsp")
+
+
+def test_jpl_panchang_transitions_require_local_ephemeris_file(tmp_path):
+    from precision_ephemeris import calculate_panchang_limb_transitions
+    with pytest.raises(FileNotFoundError, match="JPL ephemeris file not found"):
+        calculate_panchang_limb_transitions(datetime(2026, 11, 21, tzinfo=timezone.utc), tmp_path / "missing.bsp")
+
+
+def test_jpl_panchang_transitions_validate_scan_horizon(tmp_path):
+    from precision_ephemeris import calculate_panchang_limb_transitions
+    with pytest.raises(ValueError, match="max_hours"):
+        calculate_panchang_limb_transitions(datetime(2026, 11, 21, tzinfo=timezone.utc), tmp_path / "missing.bsp", max_hours=0)
