@@ -52,8 +52,8 @@
   <div class="calc-actions"><button type="submit">जन्म कुंडली बनाएँ</button></div>
  </form>
  <div id="kundliCalcStatus" class="hint" aria-live="polite"></div><div id="kundliCalcResult" class="calc-output" aria-live="polite"></div>
- <div class="section-title" style="margin-top:18px">उन्नत ज्योतिष — D9 नवांश एवं विंशोत्तरी दशा</div>
- <p class="hint">ऊपर भरे गए जन्म विवरण से प्रारंभिक D9 और महादशा क्रम निकालें। ये परिणाम निम्न-सटीकता गणना पर आधारित हैं, प्रमाणित भविष्यवाणी नहीं।</p>
+ <div class="section-title" style="margin-top:18px">उन्नत ज्योतिष — D9 नवांश एवं विंशोत्तरी महादशा, अंतरदशा व प्रत्यंतरदशा</div>
+ <p class="hint">ऊपर भरे गए जन्म विवरण से प्रारंभिक D9, महादशा, अंतरदशा और प्रत्यंतरदशा क्रम निकालें। ये परिणाम निम्न-सटीकता गणना पर आधारित हैं, प्रमाणित भविष्यवाणी नहीं।</p>
  <div class="calc-actions"><button id="advancedJyotishButton" type="button" class="secondary">उन्नत कुंडली विवरण निकालें</button></div>
  <p id="advancedJyotishStatus" class="hint" aria-live="polite"></p><div id="advancedJyotishResult" class="calc-output" aria-live="polite"></div>
 </section>
@@ -189,7 +189,7 @@ function showCalcLines(target,items){const box=document.getElementById(target);b
 document.getElementById('panchangForm').addEventListener('submit',async event=>{
  event.preventDefault();const status=document.getElementById('panchangCalcStatus');const out=document.getElementById('panchangCalcResult');status.textContent='पंचांग गणना हो रही है…';out.replaceChildren();
  const params=new URLSearchParams({date:document.getElementById('pDate').value,time:document.getElementById('pTime').value,latitude:document.getElementById('pLat').value,longitude:document.getElementById('pLon').value,timezone_name:document.getElementById('pTz').value});
- try{const response=await fetch('/api/panchang/calculate?'+params);const data=await response.json();if(!response.ok)throw new Error(data.detail||'गणना नहीं हो सकी');showCalcLines('panchangCalcResult',[['वार',data.weekday],['तिथि',data.tithi],['नक्षत्र',data.nakshatra],['योग',data.yoga],['करण',data.karana],['सूर्योदय',data.sunrise],['सूर्यास्त',data.sunset],['चन्द्र राशि',data.moon_sign],['सूर्य राशि',data.sun_sign],['गणना',data.accuracy_note_hi]]);status.textContent='गणना पूरी • '+data.date+' • '+data.timezone}
+ try{const response=await fetch('/api/panchang/calculate?'+params);const data=await response.json();if(!response.ok)throw new Error(data.detail||'गणना नहीं हो सकी');showCalcLines('panchangCalcResult',[['वार',data.weekday],['तिथि',data.tithi],['नक्षत्र',data.nakshatra],['योग',data.yoga],['करण',data.karana],['सूर्योदय',data.sunrise],['सूर्यास्त',data.sunset],['तिथि समाप्ति (अनुमानित)',data.limb_ends_at?.tithi],['नक्षत्र समाप्ति (अनुमानित)',data.limb_ends_at?.nakshatra],['योग समाप्ति (अनुमानित)',data.limb_ends_at?.yoga],['करण समाप्ति (अनुमानित)',data.limb_ends_at?.karana],['चन्द्र राशि',data.moon_sign],['सूर्य राशि',data.sun_sign],['गणना',data.accuracy_note_hi]]);status.textContent='गणना पूरी • '+data.date+' • '+data.timezone}
  catch(error){status.textContent='त्रुटि: '+error.message}
 });
 document.getElementById('kundliForm').addEventListener('submit',async event=>{
@@ -202,7 +202,7 @@ document.getElementById('kundliForm').addEventListener('submit',async event=>{
 document.getElementById('advancedJyotishButton').addEventListener('click',async()=>{
  const status=document.getElementById('advancedJyotishStatus');
  if(!document.getElementById('kundliForm').reportValidity())return;
- status.textContent='D9 नवांश और विंशोत्तरी दशा की गणना हो रही है…';
+ status.textContent='D9 नवांश, महादशा, अंतरदशा और प्रत्यंतरदशा की गणना हो रही है…';
  document.getElementById('advancedJyotishResult').replaceChildren();
  const payload={birth_date:document.getElementById('kDate').value,birth_time:document.getElementById('kTime').value,latitude:Number(document.getElementById('kLat').value),longitude:Number(document.getElementById('kLon').value),timezone:document.getElementById('kTz').value};
  try{
@@ -211,6 +211,9 @@ document.getElementById('advancedJyotishButton').addEventListener('click',async(
   const lines=[['जन्म नक्षत्र',data.vimshottari.birth_nakshatra],['जन्म महादशा स्वामी',data.vimshottari.birth_nakshatra_lord]];
   for(const [planet,info] of Object.entries(data.navamsa_d9))lines.push(['D9 '+planet,info.rashi+' • '+info.nakshatra+' • '+info.longitude_degrees+'°']);
   for(const period of data.vimshottari.mahadasha_periods)lines.push(['महादशा '+period.lord,period.start+' से '+period.end+' • लगभग '+period.duration_years_approx+' वर्ष']);
+  lines.push(['जन्म की अंतरदशा',data.vimshottari.birth_antardasha],['जन्म की प्रत्यंतरदशा',data.vimshottari.birth_pratyantardasha]);
+  const birthMd=data.vimshottari.mahadasha_periods.find(period=>period.active_at_birth);
+  if(birthMd){for(const period of birthMd.antardashas)lines.push(['अंतरदशा '+period.lord,period.start+' से '+period.end]);const birthAd=birthMd.antardashas.find(period=>period.active_at_birth);if(birthAd){for(const period of birthAd.pratyantardashas)lines.push(['प्रत्यंतरदशा '+period.lord,period.start+' से '+period.end]);}}
   lines.push(['गणना सीमा',data.accuracy_note_hi]);
   showCalcLines('advancedJyotishResult',lines);
   status.textContent='उन्नत विवरण तैयार • जन्म विवरण इस endpoint में सेव नहीं किया गया';

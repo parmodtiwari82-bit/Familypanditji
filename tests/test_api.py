@@ -534,7 +534,7 @@ def test_operational_readiness_probe_is_not_cached():
 
 def test_service_worker_versions_its_cache_and_keeps_api_responses_network_only():
     worker = (Path(__file__).resolve().parent.parent / "sw.js").read_text(encoding="utf-8")
-    assert 'const CACHE_NAME = "family-pandit-shell-v3"' in worker
+    assert 'const CACHE_NAME = "family-pandit-shell-v4"' in worker
     assert 'const CACHE_PREFIX = "family-pandit-shell-"' in worker
     assert '"/privacy", "/terms"' in worker
     assert 'url.pathname.startsWith("/api/")' in worker
