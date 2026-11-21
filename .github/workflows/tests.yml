@@ -54,3 +54,47 @@ jobs:
         uses: actions/checkout@v4
       - name: Build production container image
         run: docker build --tag ai-family-pandit-ji:ci .
+
+      - name: Run container and verify bundled JPL engine through Family Pandit Ji API
+        run: |
+          docker run --detach --name ai-family-pandit-ji-ci --publish 8000:8000 ai-family-pandit-ji:ci
+          cleanup() {
+            docker rm --force ai-family-pandit-ji-ci >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          for attempt in $(seq 1 45); do
+            if curl --fail --silent http://127.0.0.1:8000/health >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          python - <<'PY'
+          import json
+          from urllib.request import Request, urlopen
+
+          base = "http://127.0.0.1:8000"
+          with urlopen(base + "/api/astronomy/status", timeout=10) as response:
+              status = json.load(response)
+          assert status["jpl_ready"] is True, status
+
+          birth = {
+              "birth_date": "1982-01-01",
+              "birth_time": "00:30",
+              "latitude": 26.4499,
+              "longitude": 80.3319,
+              "timezone": "Asia/Kolkata",
+              "engine": "auto",
+          }
+          request = Request(
+              base + "/api/kundli/calculate",
+              data=json.dumps(birth).encode(),
+              headers={"Content-Type": "application/json"},
+              method="POST",
+          )
+          with urlopen(request, timeout=30) as response:
+              chart = json.load(response)
+          assert chart["engine"]["id"] == "jpl_de440s_skyfield", chart.get("engine")
+          assert len(chart["planets"]) == 9, chart.get("planets")
+          assert chart["data_retention"] == "not_stored_by_this_endpoint"
+          print("JPL API smoke test passed:", chart["engine"]["id"], chart["lagna"]["rashi"])
+          PY
