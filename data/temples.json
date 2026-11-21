@@ -22,7 +22,7 @@
       ],
       "source_status": "official_temple_trust_website",
       "last_checked_on": "2026-11-21",
-      "pilgrimage_circuit": [
+      "pilgrimage_circuits": [
         "Dwadasha Jyotirlinga"
       ]
     },
@@ -45,7 +45,7 @@
       ],
       "source_status": "official_temple_management_website",
       "last_checked_on": "2026-11-21",
-      "pilgrimage_circuit": [
+      "pilgrimage_circuits": [
         "Dwadasha Jyotirlinga"
       ]
     },
@@ -68,7 +68,7 @@
       ],
       "source_status": "official_shree_somnath_trust_website",
       "last_checked_on": "2026-11-21",
-      "pilgrimage_circuit": [
+      "pilgrimage_circuits": [
         "Dwadasha Jyotirlinga"
       ]
     },
@@ -90,7 +90,10 @@
         "Temple rules and visitor guidance"
       ],
       "source_status": "official_ttd_website",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuits": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "jagannath-puri",
@@ -108,7 +111,10 @@
         "Official notices and visitor guidance"
       ],
       "source_status": "official_temple_administration_website",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuits": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "yamunotri-dham-uttarakhand",
@@ -167,11 +173,11 @@
         "Yatra safety and visitor guidance"
       ],
       "source_status": "official_uttarakhand_tourism_government_portal",
-      "pilgrimage_circuit": [
-        "Uttarakhand Char Dham",
+      "pilgrimage_circuit": "Uttarakhand Char Dham",
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuits": [
         "Dwadasha Jyotirlinga"
-      ],
-      "last_checked_on": "2026-11-21"
+      ]
     },
     {
       "id": "badrinath-dham-uttarakhand",
@@ -210,7 +216,10 @@
       ],
       "source_status": "official_temple_devasthanam_website",
       "pilgrimage_circuit": "Dwadasha Jyotirlinga",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuits": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "omkareshwar-madhya-pradesh",
@@ -229,7 +238,10 @@
       ],
       "source_status": "official_temple_trust_website",
       "pilgrimage_circuit": "Dwadasha Jyotirlinga",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuits": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "bhimashankar-maharashtra",
@@ -248,7 +260,10 @@
       ],
       "source_status": "official_maharashtra_tourism_government_portal",
       "pilgrimage_circuit": "Dwadasha Jyotirlinga",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuits": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "trimbakeshwar-maharashtra",
@@ -268,7 +283,10 @@
       ],
       "source_status": "official_temple_devasthan_trust_website",
       "pilgrimage_circuit": "Dwadasha Jyotirlinga",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuits": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "vaidyanath-deoghar",
@@ -288,7 +306,10 @@
       ],
       "source_status": "official_temple_administration_website",
       "pilgrimage_circuit": "Dwadasha Jyotirlinga",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuits": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "nageshwar-dwarka",
@@ -307,7 +328,10 @@
       ],
       "source_status": "official_gujarat_tourism_government_portal",
       "pilgrimage_circuit": "Dwadasha Jyotirlinga",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuits": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "ramanathaswamy-rameswaram",
@@ -326,7 +350,10 @@
       ],
       "source_status": "official_tamil_nadu_hrce_temple_portal",
       "pilgrimage_circuit": "Dwadasha Jyotirlinga",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuits": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "grishneshwar-verul",
@@ -345,7 +372,10 @@
       ],
       "source_status": "official_maharashtra_tourism_government_portal",
       "pilgrimage_circuit": "Dwadasha Jyotirlinga",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuits": [
+        "Dwadasha Jyotirlinga"
+      ]
     }
   ]
 }
