@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from vedic_calc import calculate_kundli, calculate_panchang, parse_local_datetime
 from advanced_jyotish import calculate_advanced_jyotish
 from precision_ephemeris import calculate_tropical_longitudes, calculate_tropical_ascendant, calculate_sunrise_sunset, calculate_panchang_limb_transitions, mean_node_longitudes
-from pandit_directory import create_pending_profile, get_profile_status, list_verified_profiles, suspend_profile, verify_profile
+from pandit_directory import create_pending_profile, get_profile_status, list_pending_profiles, list_verified_profiles, suspend_profile, verify_profile
 
 APP_VERSION = "0.3.0"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -80,6 +80,7 @@ app.add_middleware(
 # Per-process abuse guard for the costly public AI question endpoint.
 # For multiple workers/replicas, enforce the same limit at a shared gateway/store.
 _ask_rate_windows: dict[str, tuple[float, int]] = {}
+_pandit_application_rate_windows: dict[str, tuple[float, int]] = {}
 _ask_rate_lock = threading.Lock()
 
 
@@ -108,6 +109,19 @@ async def ask_rate_limit(request, call_next):
             ]
             for key in expired:
                 _ask_rate_windows.pop(key, None)
+    if request.method == "POST" and request.url.path == "/api/pandit-applications":
+        client_ip = request.client.host if request.client else "unknown"
+        now = time.monotonic()
+        with _ask_rate_lock:
+            started, count = _pandit_application_rate_windows.get(client_ip, (now, 0))
+            if now - started >= 600:
+                started, count = now, 0
+            if count >= 3:
+                retry_after = max(1, int(600 - (now - started)))
+                return JSONResponse(status_code=429,
+                    content={"detail": "Application limit reached. Please try again later."},
+                    headers={"Retry-After": str(retry_after)})
+            _pandit_application_rate_windows[client_ip] = (started, count + 1)
     return await call_next(request)
 
 
@@ -158,6 +172,12 @@ class PanditProfileCreate(BaseModel):
     tradition: str = Field(min_length=2, max_length=160)
     biography: str = Field(default="", max_length=1200)
     qualification_summary: str = Field(min_length=2, max_length=240)
+
+
+class PanditApplicationCreate(PanditProfileCreate):
+    contact_phone: str = Field(min_length=8, max_length=20, pattern=r"^\+?[0-9][0-9 \-]{7,18}$")
+    privacy_consent: bool
+    website: str = Field(default="", max_length=200)
 
 
 class PanditVerificationRequest(BaseModel):
@@ -303,6 +323,41 @@ def require_admin_access(authorization: str | None) -> None:
     scheme, _, supplied = (authorization or "").partition(" ")
     if scheme.lower() != "bearer" or not supplied or not hmac.compare_digest(supplied, configured):
         raise HTTPException(status_code=401, detail="Valid admin bearer token required.")
+
+
+@app.post("/api/pandit-applications", status_code=201)
+def submit_pandit_application(payload: PanditApplicationCreate):
+    """Accept a private, unverified application; never publish or auto-verify it."""
+    if not payload.privacy_consent:
+        raise HTTPException(status_code=422, detail="Privacy consent is required.")
+    if payload.website.strip():
+        raise HTTPException(status_code=422, detail="Application could not be accepted.")
+    profile = payload.model_dump(exclude={"privacy_consent", "website"})
+    profile["service_categories"] = list(dict.fromkeys(x.strip() for x in payload.service_categories if x.strip()))
+    profile["languages"] = list(dict.fromkeys(x.strip() for x in payload.languages if x.strip()))
+    if not profile["service_categories"] or not profile["languages"]:
+        raise HTTPException(status_code=422, detail="At least one valid service and language are required.")
+    try:
+        result = create_pending_profile(PANDIT_DIRECTORY_DB, profile)
+    except sqlite3.Error:
+        raise HTTPException(status_code=503, detail="Pandit application storage is unavailable.")
+    return {
+        **result,
+        "note_hi": "आपका आवेदन निजी समीक्षा कतार में जमा हुआ है। यह सत्यापन, सार्वजनिक सूची या बुकिंग की पुष्टि नहीं है।",
+        "public_listing": False,
+        "booking_enabled": False,
+    }
+
+
+@app.get("/api/admin/pandits/pending")
+def admin_pending_pandit_applications(authorization: str | None = Header(default=None)):
+    """Private contact details are available only to authenticated platform admins."""
+    require_admin_access(authorization)
+    try:
+        items = list_pending_profiles(PANDIT_DIRECTORY_DB)
+    except sqlite3.Error:
+        raise HTTPException(status_code=503, detail="Pandit directory storage is unavailable.")
+    return {"count": len(items), "items": items, "status": "private_pending_review_queue"}
 
 
 @app.post("/api/admin/pandits", status_code=201)
