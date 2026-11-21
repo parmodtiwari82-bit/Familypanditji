@@ -61,7 +61,7 @@ def test_knowledge_topics_returns_review_labelled_cards():
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "draft_requires_acharya_review"
-    assert payload["count"] >= 5
+    assert payload["count"] >= 9
     assert all(topic["review_required"] is True for topic in payload["topics"])
 
 
@@ -1143,6 +1143,19 @@ def test_temple_directory_returns_curated_official_source_records():
         assert temple["official_information_url"].startswith("https://")
         assert temple["source_status"].startswith("official_")
         assert temple["last_checked_on"] == "2026-11-21"
+
+
+def test_temple_directory_includes_four_uttarakhand_char_dham_with_government_sources():
+    response = client.get("/api/temples", params={"state": "Uttarakhand"})
+    assert response.status_code == 200
+    temples = response.json()["temples"]
+    assert {item["id"] for item in temples} == {
+        "yamunotri-dham-uttarakhand", "gangotri-dham-uttarakhand",
+        "kedarnath-dham-uttarakhand", "badrinath-dham-uttarakhand",
+    }
+    assert all(item["source_status"] == "official_uttarakhand_tourism_government_portal" for item in temples)
+    assert all(item["official_website"] == "https://registrationandtouristcare.uk.gov.in/" for item in temples)
+    assert all(item["pilgrimage_circuit"] == "Uttarakhand Char Dham" for item in temples)
 
 
 def test_temple_directory_filters_by_city_state_and_deity():
