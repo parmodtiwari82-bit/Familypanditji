@@ -204,3 +204,15 @@ def list_pending_profiles(database: Path, limit: int = 100) -> list[dict[str, An
         "created_at": row["created_at"],
         "status": "pending_review",
     } for row in rows]
+
+
+def erase_unverified_application(database: Path, profile_id: str) -> bool:
+    """Permanently erase a pending or rejected application; verified profiles are excluded."""
+    with _connect(database) as connection:
+        cursor = connection.execute(
+            """DELETE FROM pandit_profiles
+               WHERE profile_id=? AND verified_at IS NULL
+                 AND (status='pending_review' OR rejected_at IS NOT NULL)""",
+            (profile_id,),
+        )
+        return cursor.rowcount == 1
