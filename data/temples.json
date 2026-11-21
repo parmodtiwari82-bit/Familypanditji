@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "notice_hi": "यह प्रारंभिक निर्देशिका है। यात्रा से पहले मंदिर की आधिकारिक वेबसाइट पर वर्तमान दर्शन, प्रवेश, नियम और सेवा जानकारी दोबारा जाँचें।",
+  "version": "1.1.0",
+  "notice_hi": "यह निर्देशिका आधिकारिक मंदिर/सरकारी पर्यटन स्रोतों पर आधारित है। चारधाम के लिंक उत्तराखंड सरकार के यात्रा-पंजीकरण और पर्यटन सूचना पोर्टल हैं, मंदिरों की निजी वेबसाइट नहीं। यात्रा से पहले वर्तमान कपाट, मौसम, मार्ग, पंजीकरण, दर्शन, प्रवेश और सेवाएँ आधिकारिक पोर्टल पर दोबारा जाँचें।",
   "last_catalogue_reviewed": "2026-11-21",
   "temples": [
     {
@@ -14,7 +14,12 @@
       "address": "Lahori Tola, Varanasi, Uttar Pradesh 221001, India",
       "official_website": "https://www.shrikashivishwanath.org/",
       "official_information_url": "https://www.shrikashivishwanath.org/general/daily_schedule",
-      "official_services": ["Darshan information", "Aarti information", "Rudrabhishek information", "Live darshan"],
+      "official_services": [
+        "Darshan information",
+        "Aarti information",
+        "Rudrabhishek information",
+        "Live darshan"
+      ],
       "source_status": "official_temple_trust_website",
       "last_checked_on": "2026-11-21"
     },
@@ -29,7 +34,12 @@
       "address": "Shri Mahakaleshwar Temple, Ujjain, Madhya Pradesh, India",
       "official_website": "https://www.shrimahakaleshwar.mp.gov.in/",
       "official_information_url": "https://www.shrimahakaleshwar.mp.gov.in/temple",
-      "official_services": ["Darshan information", "Bhasma Aarti booking information", "Pujan and Abhishek information", "Atithi Niwas information"],
+      "official_services": [
+        "Darshan information",
+        "Bhasma Aarti booking information",
+        "Pujan and Abhishek information",
+        "Atithi Niwas information"
+      ],
       "source_status": "official_temple_management_website",
       "last_checked_on": "2026-11-21"
     },
@@ -44,7 +54,12 @@
       "address": "Somnath, Gir Somnath district, Gujarat, India",
       "official_website": "https://somnath.org/",
       "official_information_url": "https://somnath.org/faq/",
-      "official_services": ["Darshan information", "Aarti information", "Accessibility information", "Tirth Darshan information"],
+      "official_services": [
+        "Darshan information",
+        "Aarti information",
+        "Accessibility information",
+        "Tirth Darshan information"
+      ],
       "source_status": "official_shree_somnath_trust_website",
       "last_checked_on": "2026-11-21"
     },
@@ -59,7 +74,12 @@
       "address": "Tirumala, Tirupati district, Andhra Pradesh, India",
       "official_website": "https://tirumala.org/",
       "official_information_url": "https://tirumala.org/Darshan.aspx",
-      "official_services": ["Darshan information", "Seva information", "Accommodation information", "Temple rules and visitor guidance"],
+      "official_services": [
+        "Darshan information",
+        "Seva information",
+        "Accommodation information",
+        "Temple rules and visitor guidance"
+      ],
       "source_status": "official_ttd_website",
       "last_checked_on": "2026-11-21"
     },
@@ -74,8 +94,91 @@
       "address": "Puri, Odisha, India",
       "official_website": "https://shreejagannatha.in/",
       "official_information_url": "https://shreejagannatha.in/",
-      "official_services": ["Temple administration information", "Official notices and visitor guidance"],
+      "official_services": [
+        "Temple administration information",
+        "Official notices and visitor guidance"
+      ],
       "source_status": "official_temple_administration_website",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "yamunotri-dham-uttarakhand",
+      "name_hi": "श्री यमुनोत्री धाम",
+      "name_en": "Shri Yamunotri Dham",
+      "deity": "माँ यमुना",
+      "city": "Yamunotri",
+      "state": "Uttarakhand",
+      "country": "India",
+      "address": "Yamunotri, Uttarkashi district, Uttarakhand, India",
+      "official_website": "https://registrationandtouristcare.uk.gov.in/",
+      "official_information_url": "https://uttarakhandtourism.gov.in/experiences/char-dham",
+      "official_services": [
+        "Official Char Dham yatra registration",
+        "Government pilgrimage information",
+        "Yatra safety and visitor guidance"
+      ],
+      "source_status": "official_uttarakhand_tourism_government_portal",
+      "pilgrimage_circuit": "Uttarakhand Char Dham",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "gangotri-dham-uttarakhand",
+      "name_hi": "श्री गंगोत्री धाम",
+      "name_en": "Shri Gangotri Dham",
+      "deity": "माँ गंगा",
+      "city": "Gangotri",
+      "state": "Uttarakhand",
+      "country": "India",
+      "address": "Gangotri, Uttarkashi district, Uttarakhand, India",
+      "official_website": "https://registrationandtouristcare.uk.gov.in/",
+      "official_information_url": "https://uttarakhandtourism.gov.in/experiences/char-dham",
+      "official_services": [
+        "Official Char Dham yatra registration",
+        "Government pilgrimage information",
+        "Yatra safety and visitor guidance"
+      ],
+      "source_status": "official_uttarakhand_tourism_government_portal",
+      "pilgrimage_circuit": "Uttarakhand Char Dham",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "kedarnath-dham-uttarakhand",
+      "name_hi": "श्री केदारनाथ धाम",
+      "name_en": "Shri Kedarnath Dham",
+      "deity": "भगवान शिव",
+      "city": "Kedarnath",
+      "state": "Uttarakhand",
+      "country": "India",
+      "address": "Kedarnath, Rudraprayag district, Uttarakhand, India",
+      "official_website": "https://registrationandtouristcare.uk.gov.in/",
+      "official_information_url": "https://uttarakhandtourism.gov.in/experiences/char-dham",
+      "official_services": [
+        "Official Char Dham yatra registration",
+        "Government pilgrimage information",
+        "Yatra safety and visitor guidance"
+      ],
+      "source_status": "official_uttarakhand_tourism_government_portal",
+      "pilgrimage_circuit": "Uttarakhand Char Dham",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "badrinath-dham-uttarakhand",
+      "name_hi": "श्री बद्रीनाथ धाम",
+      "name_en": "Shri Badrinath Dham",
+      "deity": "भगवान विष्णु",
+      "city": "Badrinath",
+      "state": "Uttarakhand",
+      "country": "India",
+      "address": "Badrinath, Chamoli district, Uttarakhand, India",
+      "official_website": "https://registrationandtouristcare.uk.gov.in/",
+      "official_information_url": "https://uttarakhandtourism.gov.in/experiences/char-dham",
+      "official_services": [
+        "Official Char Dham yatra registration",
+        "Government pilgrimage information",
+        "Yatra safety and visitor guidance"
+      ],
+      "source_status": "official_uttarakhand_tourism_government_portal",
+      "pilgrimage_circuit": "Uttarakhand Char Dham",
       "last_checked_on": "2026-11-21"
     }
   ]

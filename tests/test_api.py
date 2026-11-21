@@ -1145,6 +1145,19 @@ def test_temple_directory_returns_curated_official_source_records():
         assert temple["last_checked_on"] == "2026-11-21"
 
 
+def test_temple_directory_includes_four_uttarakhand_char_dham_with_government_sources():
+    response = client.get("/api/temples", params={"state": "Uttarakhand"})
+    assert response.status_code == 200
+    temples = response.json()["temples"]
+    assert {item["id"] for item in temples} == {
+        "yamunotri-dham-uttarakhand", "gangotri-dham-uttarakhand",
+        "kedarnath-dham-uttarakhand", "badrinath-dham-uttarakhand",
+    }
+    assert all(item["source_status"] == "official_uttarakhand_tourism_government_portal" for item in temples)
+    assert all(item["official_website"] == "https://registrationandtouristcare.uk.gov.in/" for item in temples)
+    assert all(item["pilgrimage_circuit"] == "Uttarakhand Char Dham" for item in temples)
+
+
 def test_temple_directory_filters_by_city_state_and_deity():
     city = client.get("/api/temples", params={"q": "Varanasi"})
     assert city.status_code == 200
