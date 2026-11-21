@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from vedic_calc import calculate_kundli, calculate_panchang, parse_local_datetime
 from advanced_jyotish import calculate_advanced_jyotish
-from precision_ephemeris import calculate_tropical_longitudes, calculate_sunrise_sunset, calculate_panchang_limb_transitions, mean_node_longitudes
+from precision_ephemeris import calculate_tropical_longitudes, calculate_tropical_ascendant, calculate_sunrise_sunset, calculate_panchang_limb_transitions, mean_node_longitudes
 from pandit_directory import create_pending_profile, get_profile_status, list_verified_profiles, suspend_profile, verify_profile
 
 APP_VERSION = "0.3.0"
@@ -741,6 +741,18 @@ def resolve_astronomy_engine(moment: datetime, requested: str) -> tuple[dict[str
     }
 
 
+
+
+def resolve_ascendant(moment: datetime, latitude: float, longitude: float,
+                      engine_info: dict[str, Any]) -> float | None:
+    """Use Skyfield apparent sidereal time when JPL mode is selected."""
+    if engine_info.get("id") != "jpl_de440s_skyfield":
+        return None
+    try:
+        return calculate_tropical_ascendant(moment, latitude, longitude, JPL_EPHEMERIS_PATH)
+    except (FileNotFoundError, RuntimeError, ValueError) as exc:
+        raise HTTPException(status_code=503, detail=f"JPL ascendant calculation unavailable: {exc}") from exc
+
 @app.get("/api/astronomy/status")
 def astronomy_status():
     """Expose local ephemeris readiness and the exact limits of the available engine."""
@@ -801,7 +813,8 @@ def calculate_birth_chart(payload: BirthChartRequest):
     try:
         local_dt = parse_local_datetime(payload.birth_date, payload.birth_time, payload.timezone)
         tropical, engine_info = resolve_astronomy_engine(local_dt, payload.engine)
-        result = calculate_kundli(local_dt, payload.latitude, payload.longitude, tropical_override=tropical)
+        ascendant = resolve_ascendant(local_dt, payload.latitude, payload.longitude, engine_info)
+        result = calculate_kundli(local_dt, payload.latitude, payload.longitude, tropical_override=tropical, ascendant_tropical_override=ascendant)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
     result["timezone"] = payload.timezone
@@ -817,6 +830,12 @@ def calculate_advanced_birth_chart(payload: BirthChartRequest):
         local_dt = parse_local_datetime(payload.birth_date, payload.birth_time, payload.timezone)
         tropical, engine_info = resolve_astronomy_engine(local_dt, payload.engine)
         result = calculate_advanced_jyotish(local_dt, payload.latitude, payload.longitude, tropical_override=tropical)
+        ascendant = resolve_ascendant(local_dt, payload.latitude, payload.longitude, engine_info)
+        if ascendant is not None:
+            kundli = calculate_kundli(local_dt, payload.latitude, payload.longitude, tropical_override=tropical, ascendant_tropical_override=ascendant)
+            result["lagna"] = kundli["lagna"]
+            result["house_system"] = kundli["house_system"]
+            result["ascendant_calculation"] = kundli["ascendant_calculation"]
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
     result["timezone"] = payload.timezone
