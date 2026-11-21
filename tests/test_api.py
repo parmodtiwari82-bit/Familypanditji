@@ -789,3 +789,94 @@ def test_advanced_jyotish_ui_lists_all_supported_vargas():
     for label in ("D2 होरा", "D3 द्रेष्काण", "D7 सप्तांश", "D9 नवांश", "D10 दशांश", "D12 द्वादशांश"):
         assert label in html
     assert "data.divisional_charts" in html
+
+
+def test_astronomy_status_discloses_optional_ephemeris_and_limits():
+    payload = client.get("/api/astronomy/status").json()
+    assert payload["request_downloads_ephemeris"] is False
+    assert payload["certified_vedic_engine"] is False
+    assert payload["supported_years"] == [1849, 2150]
+    assert "approximate Lahiri ayanamsa" in payload["limitations"]
+
+
+def test_panchang_explicit_approximate_engine_is_reported():
+    response = client.get("/api/panchang/calculate", params={
+        "date": "2026-11-21", "time": "12:00", "latitude": 26.45,
+        "longitude": 80.33, "timezone_name": "Asia/Kolkata", "engine": "approximate",
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["engine"]["id"] == "free_approximate"
+    assert payload["transition_times_status"] == "estimated_low_precision"
+
+
+def test_kundli_auto_engine_falls_back_transparently_when_ephemeris_absent(monkeypatch, tmp_path):
+    import main
+    monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", tmp_path / "missing-de440s.bsp")
+    response = client.post("/api/kundli/calculate", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 26.45, "longitude": 80.33, "timezone": "Asia/Kolkata",
+    })
+    assert response.status_code == 200
+    assert response.json()["engine"]["id"] == "free_approximate"
+
+
+def test_explicit_jpl_mode_fails_closed_when_ephemeris_file_is_missing(monkeypatch, tmp_path):
+    import main
+    monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", tmp_path / "missing-de440s.bsp")
+    response = client.post("/api/kundli/calculate", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 26.45, "longitude": 80.33, "timezone": "Asia/Kolkata",
+        "engine": "jpl",
+    })
+    assert response.status_code == 503
+    assert "JPL engine unavailable" in response.json()["detail"]
+
+
+def test_jpl_mode_uses_injected_ephemeris_positions_and_labels_remaining_approximations(monkeypatch, tmp_path):
+    import main
+    monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", tmp_path / "de440s.bsp")
+    monkeypatch.setattr(main.JPL_EPHEMERIS_PATH, "is_file", lambda: True)
+    monkeypatch.setattr(main, "calculate_tropical_longitudes", lambda moment, path: {
+        "Sun": 10.0, "Moon": 20.0, "Mercury": 30.0, "Venus": 40.0,
+        "Mars": 50.0, "Jupiter": 60.0, "Saturn": 70.0,
+    })
+    response = client.post("/api/kundli/calculate", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 26.45, "longitude": 80.33, "timezone": "Asia/Kolkata",
+        "engine": "jpl",
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["engine"]["id"] == "jpl_de440s_skyfield"
+    assert payload["engine"]["ayanamsa"] == "approximate_Lahiri"
+    assert payload["planets"]["Sun"]["longitude_degrees"] != 10.0
+    assert "lagna_and_houses" in payload["engine"]
+
+
+def test_jpl_panchang_does_not_present_approximate_transition_times_as_jpl(monkeypatch, tmp_path):
+    import main
+    monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", tmp_path / "de440s.bsp")
+    monkeypatch.setattr(main.JPL_EPHEMERIS_PATH, "is_file", lambda: True)
+    monkeypatch.setattr(main, "calculate_tropical_longitudes", lambda moment, path: {
+        "Sun": 10.0, "Moon": 20.0, "Mercury": 30.0, "Venus": 40.0,
+        "Mars": 50.0, "Jupiter": 60.0, "Saturn": 70.0,
+    })
+    response = client.get("/api/panchang/calculate", params={
+        "date": "2026-11-21", "time": "12:00", "latitude": 26.45,
+        "longitude": 80.33, "timezone_name": "Asia/Kolkata", "engine": "jpl",
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["engine"]["id"] == "jpl_de440s_skyfield"
+    assert payload["limb_ends_at"] is None
+    assert payload["transition_times_status"] == "not_calculated_for_jpl_mode"
+
+
+def test_birth_chart_rejects_unknown_engine():
+    response = client.post("/api/kundli/calculate", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 26.45, "longitude": 80.33, "timezone": "Asia/Kolkata",
+        "engine": "magic-precision",
+    })
+    assert response.status_code == 422
