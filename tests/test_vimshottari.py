@@ -56,3 +56,13 @@ def test_frontend_exposes_birth_subperiods():
     assert "अंतरदशा" in html
     assert "प्रत्यंतरदशा" in html
     assert "birth_pratyantardasha" in html
+
+
+def test_panchang_ui_displays_estimated_limb_end_times():
+    from pathlib import Path
+
+    html = (Path(__file__).resolve().parents[1] / "index.html").read_text(encoding="utf-8")
+    assert "data.limb_ends_at?.tithi" in html
+    assert "data.limb_ends_at?.nakshatra" in html
+    assert "data.limb_ends_at?.yoga" in html
+    assert "data.limb_ends_at?.karana" in html
