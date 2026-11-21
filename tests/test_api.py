@@ -1,3 +1,4 @@
+import pytest
 from pathlib import Path
 from fastapi.testclient import TestClient
 from main import app
@@ -430,6 +431,44 @@ def test_pandit_directory_does_not_fabricate_profiles_or_claim_booking():
 def test_pandit_directory_validates_verification_filter():
     assert client.get("/api/pandits", params={"status": "unverified"}).status_code == 422
     assert client.get("/api/pandits", params={"status": "all"}).status_code == 200
+
+
+@pytest.mark.parametrize("overrides", [
+    {"birth_date": "2026-02-30"},
+    {"birth_time": "25:61"},
+    {"timezone": "Not/A_Real_Timezone"},
+    {"latitude": 91},
+    {"longitude": 181},
+])
+def test_kundli_api_rejects_invalid_birth_inputs(overrides):
+    payload = {
+        "birth_date": "1990-12-10",
+        "birth_time": "00:40",
+        "latitude": 26.4499,
+        "longitude": 80.3319,
+        "timezone": "Asia/Kolkata",
+        "engine": "approximate",
+    }
+    payload.update(overrides)
+    response = client.post("/api/kundli/calculate", json=payload)
+    assert response.status_code == 422
+
+
+def test_kundli_api_reports_approximate_engine_and_does_not_store_birth_data():
+    response = client.post("/api/kundli/calculate", json={
+        "birth_date": "1990-12-10",
+        "birth_time": "00:40",
+        "latitude": 26.4499,
+        "longitude": 80.3319,
+        "timezone": "Asia/Kolkata",
+        "engine": "approximate",
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["engine"]["status"] == "approximate"
+    assert payload["data_retention"] == "not_stored_by_this_endpoint"
+    assert payload["birth_datetime_local"].startswith("1990-12-10T00:40")
+    assert payload["planets"]
 
 
 def test_release_readiness_never_claims_beta_is_production_ready():
