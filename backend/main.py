@@ -668,6 +668,7 @@ def trust_status():
                 "skyfield_installed": importlib.util.find_spec("skyfield") is not None,
                 "ready": JPL_EPHEMERIS_PATH.is_file() and importlib.util.find_spec("skyfield") is not None,
             },
+            "pandit_directory_discovery_api": True,
             "verified_pandit_booking": False,
             "commerce_and_payments": False,
             "production_voice_service": False,
