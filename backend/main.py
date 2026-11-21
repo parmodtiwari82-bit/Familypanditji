@@ -1,6 +1,9 @@
 import hmac
 import json
 import os
+import sqlite3
+import uuid
+from datetime import datetime, timezone
 import threading
 import time
 from pathlib import Path
@@ -19,6 +22,10 @@ AI_API_KEY = os.getenv("AI_API_KEY", "").strip()
 AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 AI_MODEL = os.getenv("AI_MODEL", "").strip()
 ADMIN_API_TOKEN = os.getenv("ADMIN_API_TOKEN", "").strip()
+ACHARYA_API_TOKEN = os.getenv("ACHARYA_API_TOKEN", "").strip()
+ACHARYA_REVIEWER_ID = os.getenv("ACHARYA_REVIEWER_ID", "").strip()
+ACHARYA_REVIEWER_QUALIFICATION = os.getenv("ACHARYA_REVIEWER_QUALIFICATION", "").strip()
+REVIEW_AUDIT_DB = Path(os.getenv("REVIEW_AUDIT_DB", str(PROJECT_ROOT / "data" / "review_audit.sqlite3")))
 APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
 AI_TIMEOUT_SECONDS = float(os.getenv("AI_TIMEOUT_SECONDS", "25"))
 ASK_RATE_LIMIT_MAX = int(os.getenv("ASK_RATE_LIMIT_MAX", "20"))
@@ -110,6 +117,19 @@ async def security_headers(request, call_next):
     if request.url.scheme == "https":
         response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
     return response
+
+class AcharyaReviewSubmission(BaseModel):
+    content_id: str = Field(min_length=1, max_length=120)
+    content_type: str = Field(pattern="^(knowledge|puja_guides|samskaras)$")
+    decision: str = Field(pattern="^(approved|revision_required|rejected)$")
+    language: str = Field(min_length=2, max_length=12)
+    tradition_or_sampradaya: str = Field(min_length=2, max_length=200)
+    source_title: str = Field(min_length=2, max_length=300)
+    source_author_or_tradition: str = Field(min_length=2, max_length=300)
+    edition_or_publication: str = Field(min_length=2, max_length=300)
+    page_or_section: str = Field(min_length=1, max_length=120)
+    review_notes: str = Field(min_length=5, max_length=4000)
+
 
 class AskRequest(BaseModel):
     question: str = Field(min_length=1, max_length=4000)
@@ -282,6 +302,71 @@ def admin_review_queue(authorization: str | None = Header(default=None)):
         "write_enabled": False,
         "note_hi": "यह केवल सुरक्षित समीक्षा-कतार है। इस API से सामग्री स्वीकृत, अस्वीकृत या प्रकाशित नहीं की जा सकती।",
     }
+
+
+
+def require_acharya_access(authorization: str | None) -> None:
+    configured = ACHARYA_API_TOKEN
+    if len(configured) < 32 or not ACHARYA_REVIEWER_ID or not ACHARYA_REVIEWER_QUALIFICATION:
+        raise HTTPException(status_code=503, detail="Acharya review is disabled until reviewer configuration is complete.")
+    scheme, _, supplied = (authorization or "").partition(" ")
+    if scheme.lower() != "bearer" or not supplied or not hmac.compare_digest(supplied, configured):
+        raise HTTPException(status_code=401, detail="Valid Acharya reviewer token required.")
+
+
+def append_review_event(submission: AcharyaReviewSubmission) -> str:
+    catalogue = {
+        "knowledge": (PROJECT_ROOT / "data" / "knowledge_hi.json", "entries"),
+        "puja_guides": (PROJECT_ROOT / "data" / "puja_guides.json", "guides"),
+        "samskaras": (PROJECT_ROOT / "data" / "samskaras.json", "samskaras"),
+    }
+    path, collection_key = catalogue[submission.content_type]
+    try:
+        with path.open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+        records = payload.get(collection_key, [])
+        if not any(item.get("id") == submission.content_id and item.get("review_required") is True for item in records):
+            raise HTTPException(status_code=404, detail="Pending draft content was not found.")
+    except (OSError, json.JSONDecodeError, TypeError):
+        raise HTTPException(status_code=503, detail="Content catalogue is unavailable.")
+    REVIEW_AUDIT_DB.parent.mkdir(parents=True, exist_ok=True)
+    event_id = str(uuid.uuid4())
+    try:
+        with sqlite3.connect(REVIEW_AUDIT_DB, timeout=10) as connection:
+            connection.execute("CREATE TABLE IF NOT EXISTS acharya_review_events (event_id TEXT PRIMARY KEY, content_id TEXT NOT NULL, content_type TEXT NOT NULL, decision TEXT NOT NULL, language TEXT NOT NULL, tradition TEXT NOT NULL, source_title TEXT NOT NULL, source_author TEXT NOT NULL, edition TEXT NOT NULL, page_section TEXT NOT NULL, reviewer_id TEXT NOT NULL, reviewer_qualification TEXT NOT NULL, reviewed_at TEXT NOT NULL, review_notes TEXT NOT NULL)")
+            connection.execute("INSERT INTO acharya_review_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (
+                event_id, submission.content_id, submission.content_type, submission.decision,
+                submission.language, submission.tradition_or_sampradaya, submission.source_title,
+                submission.source_author_or_tradition, submission.edition_or_publication,
+                submission.page_or_section, ACHARYA_REVIEWER_ID, ACHARYA_REVIEWER_QUALIFICATION,
+                datetime.now(timezone.utc).isoformat(), submission.review_notes
+            ))
+    except sqlite3.Error:
+        raise HTTPException(status_code=503, detail="Review audit storage is unavailable.")
+    return event_id
+
+
+@app.post("/api/admin/reviews", status_code=201)
+def submit_acharya_review(submission: AcharyaReviewSubmission, authorization: str | None = Header(default=None)):
+    require_acharya_access(authorization)
+    event_id = append_review_event(submission)
+    return {"event_id": event_id, "content_id": submission.content_id,
+            "decision_recorded": submission.decision,
+            "catalogue_status": "draft_requires_acharya_review", "published": False}
+
+
+@app.get("/api/admin/review-events")
+def admin_review_events(authorization: str | None = Header(default=None)):
+    require_admin_access(authorization)
+    if not REVIEW_AUDIT_DB.exists():
+        return {"count": 0, "events": []}
+    try:
+        with sqlite3.connect(REVIEW_AUDIT_DB, timeout=10) as connection:
+            connection.row_factory = sqlite3.Row
+            rows = connection.execute("SELECT * FROM acharya_review_events ORDER BY reviewed_at DESC").fetchall()
+    except sqlite3.Error:
+        raise HTTPException(status_code=503, detail="Review audit storage is unavailable.")
+    return {"count": len(rows), "events": [dict(row) for row in rows]}
 
 
 @app.get("/api/content/review-policy")
