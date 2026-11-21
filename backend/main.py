@@ -738,6 +738,22 @@ def ecosystem_modules():
 
 
 
+@app.get("/api/temples/{temple_id}")
+def temple_detail(temple_id: str):
+    """Return one curated temple record and its source/circuit provenance."""
+    catalogue = load_temple_catalogue()
+    temple = next((item for item in catalogue["temples"]
+                   if item.get("id") == temple_id), None)
+    if temple is None:
+        raise HTTPException(status_code=404, detail="Temple was not found.")
+    return {
+        "temple": temple,
+        "notice_hi": catalogue.get("notice_hi", ""),
+        "last_catalogue_reviewed": catalogue.get("last_catalogue_reviewed"),
+        "source_policy": "Official temple/administration or government tourism information; verify current details at source.",
+    }
+
+
 def load_temple_catalogue() -> dict[str, Any]:
     try:
         with TEMPLE_CATALOG_PATH.open(encoding="utf-8") as handle:

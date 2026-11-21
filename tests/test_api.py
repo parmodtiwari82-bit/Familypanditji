@@ -1145,6 +1145,22 @@ def test_temple_directory_returns_curated_official_source_records():
         assert temple["last_checked_on"] == "2026-11-21"
 
 
+def test_temple_detail_returns_source_provenance_and_pilgrimage_circuit():
+    response = client.get("/api/temples/kedarnath-dham-uttarakhand")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["temple"]["id"] == "kedarnath-dham-uttarakhand"
+    assert payload["temple"]["pilgrimage_circuit"] == "Uttarakhand Char Dham"
+    assert "Dwadasha Jyotirlinga" in payload["temple"]["pilgrimage_circuits"]
+    assert payload["temple"]["source_status"] == "official_uttarakhand_tourism_government_portal"
+    assert payload["notice_hi"]
+    assert payload["last_catalogue_reviewed"] == "2026-11-21"
+
+
+def test_temple_detail_returns_404_for_unknown_id():
+    assert client.get("/api/temples/not-a-real-temple").status_code == 404
+
+
 def test_temple_directory_includes_all_twelve_dwadasha_jyotirlingas():
     response = client.get("/api/temples")
     assert response.status_code == 200

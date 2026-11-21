@@ -124,12 +124,29 @@ async function loadTempleDirectory(){
    const title=document.createElement('b');title.textContent=temple.name_hi+' • '+temple.name_en;
    const location=document.createElement('div');location.className='hint';location.textContent=temple.city+', '+temple.state+', '+temple.country;
    const deity=document.createElement('p');deity.className='hint';deity.textContent='आराध्य: '+temple.deity;
-   const services=document.createElement('p');services.className='hint';services.textContent=temple.official_services.join(' • ');
+   const services=document.createElement('p');services.className='hint';services.textContent=(temple.official_services||[]).join(' • ');
    const links=document.createElement('div');links.className='row';
-   for(const [label,url] of [['आधिकारिक वेबसाइट',temple.official_website],['दर्शन/जानकारी',temple.official_information_url]]){
+   const governmentSource=String(temple.source_status||'').includes('government_portal');
+   for(const [label,url] of [[governmentSource?'सरकारी आधिकारिक जानकारी':'मंदिर/ट्रस्ट पोर्टल',temple.official_website],['दर्शन/जानकारी',temple.official_information_url]]){
     try{const parsed=new URL(url);if(parsed.protocol!=='https:')continue;const link=document.createElement('a');link.href=parsed.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label;links.append(link)}catch(error){}
    }
-   card.append(title,location,deity,services,links);target.append(card);
+   const detailButton=document.createElement('button');detailButton.type='button';detailButton.className='secondary';detailButton.textContent='विस्तृत जानकारी';
+   const detail=document.createElement('div');detail.className='hint';detail.hidden=true;detail.setAttribute('aria-live','polite');
+   detailButton.onclick=async()=>{
+    if(!detail.hidden){detail.hidden=true;detailButton.textContent='विस्तृत जानकारी';return}
+    detail.hidden=false;detail.textContent='विवरण लोड हो रहा है…';detailButton.disabled=true;
+    try{
+     const result=await fetch('/api/temples/'+encodeURIComponent(temple.id));if(!result.ok)throw new Error('detail unavailable');
+     const payload=await result.json(),item=payload.temple;detail.replaceChildren();
+     const source=document.createElement('p');source.textContent='स्रोत की स्थिति: '+item.source_status;
+     const checked=document.createElement('p');checked.textContent='कैटलॉग में अंतिम जाँच: '+(item.last_checked_on||payload.last_catalogue_reviewed||'तिथि उपलब्ध नहीं');
+     const circuits=document.createElement('p');const circuitNames=[...(item.pilgrimage_circuits||[]),...(item.pilgrimage_circuit?[item.pilgrimage_circuit]:[])];circuits.textContent='तीर्थ-सर्किट: '+(circuitNames.join(' • ')||'विशिष्ट सर्किट टैग उपलब्ध नहीं');
+     const notice=document.createElement('p');notice.textContent=payload.notice_hi||payload.source_policy;
+     detail.append(source,checked,circuits,notice);
+    }catch(error){detail.textContent='मंदिर का विस्तृत विवरण अभी उपलब्ध नहीं है।'}
+    finally{detailButton.disabled=false}
+   };
+   card.append(title,location,deity,services,links,detailButton,detail);target.append(card);
   }
   if(!data.count)status.textContent='कोई मंदिर नहीं मिला। दूसरा नाम, देवता या राज्य आज़माएँ।';
  }catch(error){status.textContent='मंदिर सूची अभी उपलब्ध नहीं है। कृपया बाद में प्रयास करें।'}
