@@ -107,8 +107,53 @@ def calculate_vimshottari(local_birth: datetime, moon_sidereal_longitude: float)
     }
 
 
+def divisional_sign(longitude: float, division: int, method: str) -> str:
+    """Map a sidereal longitude to a classical varga sign for supported methods."""
+    from vedic_calc import SIGNS
+    if division < 1 or 360 % division != 0:
+        raise ValueError("division must be a positive divisor of 360")
+    value = norm(longitude)
+    rashi = int(value // 30)
+    part = min(division - 1, int((value % 30) / (30.0 / division)))
+    if method == "hora":
+        # Parashara Hora: odd signs alternate Leo/Cancer; even signs Cancer/Leo.
+        target = (4 if part == 0 else 3) if rashi % 2 == 0 else (3 if part == 0 else 4)
+    elif method == "drekkana":
+        target = (rashi + (0, 4, 8)[part]) % 12
+    elif method == "saptamsa":
+        target = (rashi + part) % 12 if rashi % 2 == 0 else (rashi + 6 + part) % 12
+    elif method == "dashamsa":
+        target = (rashi + part) % 12 if rashi % 2 == 0 else (rashi + 8 + part) % 12
+    elif method == "dwadasamsa":
+        target = (rashi + part) % 12
+    else:
+        raise ValueError("unsupported varga method")
+    return SIGNS[target]
+
+
+def calculate_divisional_charts(sidereal: dict[str, float]) -> dict:
+    """Calculate selected Parashari vargas from sidereal longitudes."""
+    specs = {
+        "d2_hora": (2, "hora"),
+        "d3_drekkana": (3, "drekkana"),
+        "d7_saptamsa": (7, "saptamsa"),
+        "d10_dashamsa": (10, "dashamsa"),
+        "d12_dwadasamsa": (12, "dwadasamsa"),
+    }
+    charts = {}
+    for chart_id, (division, method) in specs.items():
+        charts[chart_id] = {
+            planet: {
+                "rashi": divisional_sign(longitude, division, method),
+                "source_longitude_degrees": round(norm(longitude), 4),
+            }
+            for planet, longitude in sidereal.items()
+        }
+    return charts
+
+
 def calculate_advanced_jyotish(local_birth: datetime, latitude: float, longitude: float) -> dict:
-    """Return D9 placements and a birth-anchored Vimshottari sequence."""
+    """Return selected varga charts and a birth-anchored Vimshottari sequence."""
     tropical = tropical_longitudes(local_birth)
     ayan = ayanamsa_lahiri_approx(local_birth)
     sidereal = {name: norm(value - ayan) for name, value in tropical.items()}
@@ -123,6 +168,7 @@ def calculate_advanced_jyotish(local_birth: datetime, latitude: float, longitude
     return {
         "birth_datetime_local": local_birth.isoformat(),
         "navamsa_d9": navamsa,
+        "divisional_charts": calculate_divisional_charts(sidereal),
         "vimshottari": calculate_vimshottari(local_birth, sidereal["Moon"]),
         "calculation": "advanced_derivations_from_low_precision_starter_ephemeris",
         "accuracy_note_hi": (
