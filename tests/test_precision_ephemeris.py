@@ -6,6 +6,7 @@ from precision_ephemeris import (
     calculate_tropical_longitudes,
     mean_node_longitudes,
     to_sidereal_longitudes,
+    BODY_KEYS,
 )
 
 
@@ -114,3 +115,9 @@ def test_jpl_ascendant_requires_local_ephemeris_file(tmp_path):
     from precision_ephemeris import calculate_tropical_ascendant
     with pytest.raises(FileNotFoundError, match="JPL ephemeris file not found"):
         calculate_tropical_ascendant(datetime(2026, 11, 21, tzinfo=timezone.utc), 26.45, 80.33, tmp_path / "missing.bsp")
+
+
+def test_de440s_body_targets_use_supported_kernel_names():
+    assert BODY_KEYS["Mars"] == "mars barycenter"
+    assert BODY_KEYS["Jupiter"] == "jupiter barycenter"
+    assert BODY_KEYS["Saturn"] == "saturn barycenter"
