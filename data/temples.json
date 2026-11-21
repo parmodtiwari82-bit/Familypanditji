@@ -1,0 +1,82 @@
+{
+  "version": "1.0.0",
+  "notice_hi": "यह प्रारंभिक निर्देशिका है। यात्रा से पहले मंदिर की आधिकारिक वेबसाइट पर वर्तमान दर्शन, प्रवेश, नियम और सेवा जानकारी दोबारा जाँचें।",
+  "last_catalogue_reviewed": "2026-11-21",
+  "temples": [
+    {
+      "id": "kashi-vishwanath-varanasi",
+      "name_hi": "श्री काशी विश्वनाथ मंदिर",
+      "name_en": "Shri Kashi Vishwanath Temple",
+      "deity": "भगवान शिव",
+      "city": "Varanasi",
+      "state": "Uttar Pradesh",
+      "country": "India",
+      "address": "Lahori Tola, Varanasi, Uttar Pradesh 221001, India",
+      "official_website": "https://www.shrikashivishwanath.org/",
+      "official_information_url": "https://www.shrikashivishwanath.org/general/daily_schedule",
+      "official_services": ["Darshan information", "Aarti information", "Rudrabhishek information", "Live darshan"],
+      "source_status": "official_temple_trust_website",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "mahakaleshwar-ujjain",
+      "name_hi": "श्री महाकालेश्वर ज्योतिर्लिंग",
+      "name_en": "Shri Mahakaleshwar Jyotirlinga",
+      "deity": "भगवान शिव",
+      "city": "Ujjain",
+      "state": "Madhya Pradesh",
+      "country": "India",
+      "address": "Shri Mahakaleshwar Temple, Ujjain, Madhya Pradesh, India",
+      "official_website": "https://www.shrimahakaleshwar.mp.gov.in/",
+      "official_information_url": "https://www.shrimahakaleshwar.mp.gov.in/temple",
+      "official_services": ["Darshan information", "Bhasma Aarti booking information", "Pujan and Abhishek information", "Atithi Niwas information"],
+      "source_status": "official_temple_management_website",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "somnath-gujarat",
+      "name_hi": "श्री सोमनाथ ज्योतिर्लिंग",
+      "name_en": "Shree Somnath Temple",
+      "deity": "भगवान शिव",
+      "city": "Somnath",
+      "state": "Gujarat",
+      "country": "India",
+      "address": "Somnath, Gir Somnath district, Gujarat, India",
+      "official_website": "https://somnath.org/",
+      "official_information_url": "https://somnath.org/faq/",
+      "official_services": ["Darshan information", "Aarti information", "Accessibility information", "Tirth Darshan information"],
+      "source_status": "official_shree_somnath_trust_website",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "tirumala-venkateswara",
+      "name_hi": "श्री वेंकटेश्वर स्वामी मंदिर",
+      "name_en": "Sri Venkateswara Swamy Temple",
+      "deity": "भगवान श्री वेंकटेश्वर",
+      "city": "Tirumala",
+      "state": "Andhra Pradesh",
+      "country": "India",
+      "address": "Tirumala, Tirupati district, Andhra Pradesh, India",
+      "official_website": "https://tirumala.org/",
+      "official_information_url": "https://tirumala.org/Darshan.aspx",
+      "official_services": ["Darshan information", "Seva information", "Accommodation information", "Temple rules and visitor guidance"],
+      "source_status": "official_ttd_website",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "jagannath-puri",
+      "name_hi": "श्री जगन्नाथ मंदिर",
+      "name_en": "Shree Jagannatha Temple",
+      "deity": "भगवान जगन्नाथ",
+      "city": "Puri",
+      "state": "Odisha",
+      "country": "India",
+      "address": "Puri, Odisha, India",
+      "official_website": "https://shreejagannatha.in/",
+      "official_information_url": "https://shreejagannatha.in/",
+      "official_services": ["Temple administration information", "Official notices and visitor guidance"],
+      "source_status": "official_temple_administration_website",
+      "last_checked_on": "2026-11-21"
+    }
+  ]
+}
