@@ -664,6 +664,7 @@ def readiness_probe():
         "index.html", "manifest.webmanifest", "sw.js", "privacy.html", "terms.html",
         "icons/panditji.svg", "data/knowledge_hi.json", "data/puja_guides.json",
         "data/samskaras.json", "data/ecosystem_modules.json", "data/pandit_directory.json",
+        "data/temples.json",
     ]
     checks: dict[str, bool] = {}
     for relative_path in required_files:
@@ -676,6 +677,7 @@ def readiness_probe():
         "data/samskaras.json": "samskaras",
         "data/ecosystem_modules.json": "modules",
         "data/pandit_directory.json": "pandits",
+        "data/temples.json": "temples",
     }
     for relative_path, collection_key in catalogue_roots.items():
         if not checks.get(relative_path, False):
@@ -691,27 +693,17 @@ def readiness_probe():
             checks[f"valid_json:{relative_path}"] = False
 
     ready = all(checks.values())
-    return {
+    payload = {
         "status": "ready" if ready else "not_ready",
         "ready": ready,
         "checks_passed": sum(checks.values()),
         "checks_total": len(checks),
         "checks": checks,
         "scope": "local_application_files_and_catalogue_structure_only",
-        "note_hi": "यह केवल ऐप की स्थानीय फाइलों और JSON कैटलॉग की उपलब्धता जाँचता है; production launch, बाहरी सेवाओं, सुरक्षा ऑडिट या आचार्य अनुमोदन का प्रमाण नहीं है।",
-    } if ready else _readiness_error_payload(checks)
-
-
-def _readiness_error_payload(checks: dict[str, bool]) -> dict[str, Any]:
-    from fastapi.responses import JSONResponse
-    # The caller below converts this structured diagnostic into HTTP 503.
-    return {
-        "status": "not_ready", "ready": False,
-        "checks_passed": sum(checks.values()), "checks_total": len(checks),
-        "checks": checks,
-        "scope": "local_application_files_and_catalogue_structure_only",
-        "note_hi": "आवश्यक ऐप फाइल या कैटलॉग अनुपलब्ध/अमान्य है।",
+        "note_hi": "यह केवल ऐप की स्थानीय फाइलों और JSON कैटलॉग की उपलब्धता जाँचता है; production launch, बाहरी सेवाओं, सुरक्षा ऑडिट या आचार्य अनुमोदन का प्रमाण नहीं है।" if ready else "आवश्यक ऐप फाइल या कैटलॉग अनुपलब्ध/अमान्य है।",
     }
+    return payload if ready else JSONResponse(status_code=503, content=payload)
+
 
 
 @app.get("/health")
