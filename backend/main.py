@@ -735,9 +735,9 @@ def resolve_astronomy_engine(moment: datetime, requested: str) -> tuple[dict[str
         "ayanamsa": "approximate_Lahiri", "nodes": "approximate_mean_Rahu_Ketu",
         "sunrise_sunset": "JPL_DE440s_apparent_solar_altitude_standard_horizon_minus_0.833_degrees",
         "panchang_transition_times": "JPL_DE440s_scan_and_binary_search_with_approximate_Lahiri_ayanamsa",
-        "lagna_and_houses": "approximate_local_sidereal_time_whole_sign",
-        "limitations": ["approximate Lahiri ayanamsa", "mean Rahu/Ketu", "standard unobstructed horizon; local terrain/buildings are not modeled", "approximate ascendant and whole-sign houses", "regional Panchang conventions and Acharya validation pending"],
-        "note_hi": "ग्रहों के दीर्घांश और मानक क्षितिज के सूर्योदय/सूर्यास्त JPL DE440s से हैं; अयनांश, राहु-केतु, लग्न/भाव और वैदिक नियम अभी अनुमानित हैं। स्थानीय पहाड़/इमारतें शामिल नहीं हैं। इसे प्रमाणित पंचांग/कुंडली न मानें।",
+        "lagna_and_houses": "Skyfield_apparent_GMST_plus_approximate_obliquity_whole_sign",
+        "limitations": ["approximate Lahiri ayanamsa", "mean Rahu/Ketu", "standard unobstructed horizon; local terrain/buildings are not modeled", "approximate obliquity in Skyfield ascendant and whole-sign houses", "regional Panchang conventions and Acharya validation pending"],
+        "note_hi": "ग्रहों के दीर्घांश JPL DE440s और लग्न का sidereal time Skyfield से है; अयनांश, obliquity, राहु-केतु और भाव-प्रणाली अभी अनुमानित हैं। स्थानीय पहाड़/इमारतें शामिल नहीं हैं। इसे प्रमाणित पंचांग/कुंडली न मानें।",
     }
 
 
