@@ -40,7 +40,7 @@
       "name_en": "Panchang and Muhurta",
       "group": "tools",
       "status": "beta",
-      "description": "स्थान और तिथि-आधारित Panchang API उपलब्ध; optional JPL DE440s ग्रह-स्थिति और standard sunrise/sunset चयन उपलब्ध। अंग-समाप्ति समय केवल approximate engine में अनुमानित है; JPL mode में नहीं। क्षेत्रीय पंचांग, अयनांश और मुहूर्त का विशेषज्ञ सत्यापन अभी बाकी।"
+      "description": "स्थान और तिथि-आधारित Panchang API उपलब्ध; optional JPL DE440s ग्रह-स्थिति और standard sunrise/sunset चयन उपलब्ध। अंग-समाप्ति समय केवल approximate engine में अनुमानित है; JPL mode में नहीं। मुहूर्त engine अभी उपलब्ध नहीं; क्षेत्रीय पंचांग और अयनांश का विशेषज्ञ सत्यापन बाकी।"
     },
     {
       "id": "jyotish",
@@ -48,7 +48,7 @@
       "name_en": "Jyotish and Kundli",
       "group": "tools",
       "status": "beta",
-      "description": "नौ ग्रहों की जन्मकुंडली, optional JPL DE440s planetary positions, D2/D3/D7/D9/D10/D12 varga और महादशा-अंतरदशा-प्रत्यंतरदशा (Vimshottari) API उपलब्ध; अयनांश, लग्न/भाव, परंपरा और आचार्य सत्यापन अभी बाकी।"
+      "description": "नौ ग्रहों की जन्मकुंडली, optional JPL DE440s planetary positions, D2/D3/D7/D9/D10/D12 varga और महादशा-अंतरदशा-प्रत्यंतरदशा (Vimshottari) API उपलब्ध; अयनांश, लग्न/भाव, परंपरा और विशेषज्ञ सत्यापन बाकी।"
     },
     {
       "id": "pandit-directory",
