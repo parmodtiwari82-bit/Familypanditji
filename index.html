@@ -34,6 +34,27 @@
  <div id="panditDirectoryResults" class="grid"></div>
  <p class="hint">ऑनलाइन उपलब्धता, बुकिंग, संदेश और भुगतान अभी चालू नहीं हैं।</p>
 </section>
+<section class="panel" id="panditApply">
+ <div class="section-title">पंडित जी के रूप में आवेदन करें</div>
+ <p class="hint">यह आवेदन निजी समीक्षा के लिए है। आवेदन जमा होने से प्रोफ़ाइल सत्यापित या सार्वजनिक नहीं होगी। कृपया केवल आवश्यक संपर्क जानकारी दें; आधार, PAN, बैंक विवरण या निजी दस्तावेज़ यहाँ अपलोड न करें।</p>
+ <form id="panditApplicationForm">
+  <div class="calc-grid">
+   <label>पूरा नाम<input id="applyPanditName" required minlength="2" maxlength="120"></label>
+   <label>मोबाइल नंबर<input id="applyPanditPhone" type="tel" required minlength="8" maxlength="20" placeholder="+91 9876543210"></label>
+   <label>शहर<input id="applyPanditCity" required minlength="2" maxlength="100"></label>
+   <label>राज्य<input id="applyPanditState" required minlength="2" maxlength="100"></label>
+   <label>सेवाएँ (comma separated)<input id="applyPanditServices" required maxlength="500" placeholder="Vivah Puja, Griha Pravesh"></label>
+   <label>भाषाएँ (comma separated)<input id="applyPanditLanguages" required maxlength="300" placeholder="Hindi, Sanskrit"></label>
+   <label>परंपरा / संप्रदाय<input id="applyPanditTradition" required minlength="2" maxlength="160"></label>
+   <label>योग्यता का संक्षिप्त विवरण<input id="applyPanditQualification" required minlength="2" maxlength="240"></label>
+  </div>
+  <label>परिचय (वैकल्पिक)<textarea id="applyPanditBio" maxlength="1200" rows="3"></textarea></label>
+  <label style="display:none" aria-hidden="true">Website<input id="applyPanditWebsite" tabindex="-1" autocomplete="off"></label>
+  <label class="hint"><input id="applyPanditConsent" type="checkbox" required> मैं सहमत हूँ कि मेरा नाम, मोबाइल और आवेदन विवरण निजी समीक्षा के लिए सुरक्षित रूप से रखे जाएँ। मैंने <a href="/privacy" target="_blank" rel="noopener">गोपनीयता सूचना</a> पढ़ी है।</label>
+  <div class="calc-actions"><button id="panditApplyButton" type="submit">समीक्षा के लिए आवेदन भेजें</button></div>
+ </form>
+ <p id="panditApplyStatus" class="hint" aria-live="polite">आवेदन अभी केवल निजी समीक्षा के लिए स्वीकार किए जाते हैं।</p>
+</section>
 <section class="panel" id="templeDirectory">
  <div class="section-title">मंदिर एवं तीर्थ खोजें</div>
  <p class="hint">प्रारंभिक सूची में आधिकारिक मंदिर/ट्रस्ट वेबसाइटों के स्रोत-लिंक दिए गए हैं। दर्शन समय, नियम, टिकट और सेवाएँ यात्रा से पहले संबंधित आधिकारिक वेबसाइट पर दोबारा जाँचें।</p>
@@ -155,6 +176,28 @@ document.getElementById('templeSearchButton').addEventListener('click',loadTempl
 for(const id of ['templeQuery','templeState','templeDeity']){
  document.getElementById(id).addEventListener('keydown',event=>{if(event.key==='Enter')loadTempleDirectory()});
 }
+document.getElementById('panditApplicationForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ const status=document.getElementById('panditApplyStatus'),button=document.getElementById('panditApplyButton');
+ const values=id=>document.getElementById(id).value.trim();
+ const split=id=>values(id).split(',').map(x=>x.trim()).filter(Boolean);
+ const payload={
+  display_name:values('applyPanditName'),contact_phone:values('applyPanditPhone'),
+  city:values('applyPanditCity'),state:values('applyPanditState'),country:'India',
+  service_categories:split('applyPanditServices'),languages:split('applyPanditLanguages'),
+  tradition:values('applyPanditTradition'),qualification_summary:values('applyPanditQualification'),
+  biography:values('applyPanditBio'),privacy_consent:document.getElementById('applyPanditConsent').checked,
+  website:values('applyPanditWebsite')
+ };
+ button.disabled=true;status.textContent='आवेदन जमा हो रहा है…';
+ try{
+  const response=await fetch('/api/pandit-applications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const result=await response.json();if(!response.ok)throw new Error(result.detail||'Application unavailable');
+  status.textContent='आवेदन जमा हुआ। आवेदन ID: '+result.profile_id+'। स्थिति: निजी समीक्षा लंबित। यह सत्यापन या बुकिंग की पुष्टि नहीं है।';
+  event.target.reset();
+ }catch(error){status.textContent='आवेदन जमा नहीं हो सका: '+(error.message||'कृपया बाद में प्रयास करें।')}
+ finally{button.disabled=false}
+});
 async function loadPanditDirectory(){
  const status=document.getElementById('panditDirectoryStatus');
  const target=document.getElementById('panditDirectoryResults');
