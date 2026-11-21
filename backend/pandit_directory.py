@@ -9,12 +9,14 @@ from __future__ import annotations
 import json
 import sqlite3
 import uuid
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 
-def _connect(database: Path) -> sqlite3.Connection:
+@contextmanager
+def _connect(database: Path):
     database.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(database, timeout=10)
     connection.row_factory = sqlite3.Row
@@ -44,7 +46,14 @@ def _connect(database: Path) -> sqlite3.Connection:
     connection.execute(
         "CREATE INDEX IF NOT EXISTS idx_pandit_public_search ON pandit_profiles(status, city, state)"
     )
-    return connection
+    try:
+        yield connection
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
 
 
 def _public_record(row: sqlite3.Row) -> dict[str, Any]:
