@@ -757,7 +757,7 @@ def astronomy_status():
         "jpl_unavailable_reasons": ([reason for condition, reason in [(not JPL_EPHEMERIS_PATH.is_file(), "local DE440s file missing"), (importlib.util.find_spec("skyfield") is None, "Skyfield dependency missing")] if condition]),
         "available_modes": ["auto", "approximate", "jpl"],
         "certified_vedic_engine": False,
-        "limitations": ["approximate Lahiri ayanamsa", "mean Rahu/Ketu", "JPL sunrise/sunset uses standard unobstructed horizon only; local terrain/buildings are not modeled", "approximate ascendant and whole-sign houses", "regional Panchang and Acharya validation pending"],
+        "limitations": ["approximate Lahiri ayanamsa also governs JPL-mode nakshatra/yoga transition boundaries", "mean Rahu/Ketu", "JPL sunrise/sunset uses standard unobstructed horizon only; local terrain/buildings are not modeled", "approximate ascendant and whole-sign houses", "regional Panchang and Acharya validation pending"],
     }
 
 
