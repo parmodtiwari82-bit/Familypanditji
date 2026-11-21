@@ -731,3 +731,61 @@ def test_frontend_exposes_advanced_jyotish_calculator():
     assert 'id="advancedJyotishButton"' in html
     assert "/api/jyotish/advanced" in html
     assert "D9 नवांश" in html
+
+
+
+def test_advanced_jyotish_returns_supported_divisional_charts():
+    response = client.post("/api/jyotish/advanced", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 26.4499, "longitude": 80.3319, "timezone": "Asia/Kolkata"
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    charts = payload["divisional_charts"]
+    assert set(charts) == {"d2_hora", "d3_drekkana", "d7_saptamsa", "d10_dashamsa", "d12_dwadasamsa"}
+    for chart in charts.values():
+        assert len(chart) == 9
+        assert all(item["rashi"] for item in chart.values())
+        assert all(0 <= item["source_longitude_degrees"] < 360 for item in chart.values())
+
+
+def test_divisional_sign_known_parashari_boundaries():
+    from advanced_jyotish import divisional_sign
+    # First/second Hora in an odd sign: Leo/Cancer; in an even sign: Cancer/Leo.
+    assert divisional_sign(1.0, 2, "hora") == "सिंह"
+    assert divisional_sign(16.0, 2, "hora") == "कर्क"
+    assert divisional_sign(31.0, 2, "hora") == "कर्क"
+    assert divisional_sign(46.0, 2, "hora") == "सिंह"
+    # Drekkana starts from the sign itself, fifth and ninth signs.
+    assert divisional_sign(1.0, 3, "drekkana") == "मेष"
+    assert divisional_sign(11.0, 3, "drekkana") == "सिंह"
+    assert divisional_sign(21.0, 3, "drekkana") == "धनु"
+
+
+def test_divisional_sign_supports_seven_and_ten_part_vargas():
+    from advanced_jyotish import divisional_sign
+    # D7: odd signs start from the same sign; even signs from the seventh.
+    assert divisional_sign(1.0, 7, "saptamsa") == "मेष"
+    assert divisional_sign(31.0, 7, "saptamsa") == "वृश्चिक"
+    # D10: odd signs start from the same sign; even signs from the ninth.
+    assert divisional_sign(1.0, 10, "dashamsa") == "मेष"
+    assert divisional_sign(31.0, 10, "dashamsa") == "मकर"
+    # D12 starts from the natal sign for both odd and even signs.
+    assert divisional_sign(1.0, 12, "dwadasamsa") == "मेष"
+    assert divisional_sign(31.0, 12, "dwadasamsa") == "वृषभ"
+
+
+def test_divisional_sign_normalizes_longitude_and_rejects_unknown_method():
+    from advanced_jyotish import divisional_sign
+    assert divisional_sign(361.0, 3, "drekkana") == divisional_sign(1.0, 3, "drekkana")
+    import pytest
+    with pytest.raises(ValueError):
+        divisional_sign(10.0, 3, "unknown")
+
+
+def test_advanced_jyotish_ui_lists_all_supported_vargas():
+    from pathlib import Path
+    html = (Path(__file__).resolve().parents[1] / "index.html").read_text(encoding="utf-8")
+    for label in ("D2 होरा", "D3 द्रेष्काण", "D7 सप्तांश", "D9 नवांश", "D10 दशांश", "D12 द्वादशांश"):
+        assert label in html
+    assert "data.divisional_charts" in html
