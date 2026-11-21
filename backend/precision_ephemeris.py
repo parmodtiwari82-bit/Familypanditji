@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from math import atan2, cos, degrees, radians, sin, tan
 
 from vedic_calc import ayanamsa_lahiri_approx, jd, norm
 
@@ -210,6 +211,53 @@ def calculate_panchang_limb_transitions(moment: datetime, ephemeris_path: str | 
             probe_dt += step
         return {limb: found[limb].isoformat() if limb in found else None
                 for limb in ("tithi", "nakshatra", "yoga", "karana")}
+    finally:
+        close = getattr(kernel, "close", None)
+        if callable(close):
+            close()
+
+
+def calculate_tropical_ascendant(moment: datetime, latitude: float, longitude: float,
+                                 ephemeris_path: str | Path) -> float:
+    """Calculate tropical ascendant using Skyfield apparent Greenwich sidereal time.
+
+    The sidereal-time angle is taken from Skyfield's time scale. Obliquity of date
+    still uses the project's compact polynomial approximation, so this is an
+    improved ascendant input, not a certified high-precision house calculation.
+    """
+    if moment.tzinfo is None or moment.utcoffset() is None:
+        raise ValueError("moment must be timezone-aware")
+    if not -90 <= latitude <= 90 or not -180 <= longitude <= 180:
+        raise ValueError("latitude/longitude are outside valid ranges")
+    if not EPHEMERIS_START_YEAR <= moment.year <= EPHEMERIS_END_YEAR:
+        raise ValueError(
+            f"DE440s supports dates from {EPHEMERIS_START_YEAR} through {EPHEMERIS_END_YEAR}"
+        )
+    path = Path(ephemeris_path).expanduser()
+    if not path.is_file():
+        raise FileNotFoundError(f"JPL ephemeris file not found: {path}")
+    try:
+        from skyfield.api import load, load_file
+    except ImportError as exc:
+        raise RuntimeError(
+            "Optional astronomy dependencies are missing; install backend/requirements-astronomy.txt"
+        ) from exc
+
+    kernel = load_file(str(path))
+    try:
+        timescale = load.timescale(builtin=True)
+        instant = timescale.from_datetime(moment.astimezone(timezone.utc))
+        local_sidereal_degrees = norm(float(instant.gast) * 15.0 + longitude)
+        centuries = (jd(moment) - 2451545.0) / 36525.0
+        obliquity = radians(23.439291 - 0.0130042 * centuries)
+        local_sidereal = radians(local_sidereal_degrees)
+        geographic_latitude = radians(latitude)
+        ascendant = degrees(atan2(
+            -cos(local_sidereal),
+            sin(local_sidereal) * cos(obliquity)
+            + tan(geographic_latitude) * sin(obliquity),
+        ))
+        return norm(ascendant)
     finally:
         close = getattr(kernel, "close", None)
         if callable(close):

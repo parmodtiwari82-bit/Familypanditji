@@ -205,7 +205,8 @@ def calculate_panchang(local_dt: datetime, latitude: float, longitude: float,
     }
 
 def calculate_kundli(local_dt: datetime, latitude: float, longitude: float,
-                     tropical_override: dict[str, float] | None = None) -> dict:
+                     tropical_override: dict[str, float] | None = None,
+                     ascendant_tropical_override: float | None = None) -> dict:
     longs = tropical_override or tropical_longitudes(local_dt)
     ayan = ayanamsa_lahiri_approx(local_dt)
     sidereal = {name: norm(value-ayan) for name,value in longs.items()}
@@ -216,7 +217,8 @@ def calculate_kundli(local_dt: datetime, latitude: float, longitude: float,
     lst = radians(norm(gmst+longitude))
     eps = radians(23.439291 - .0130042*T)
     lat = radians(latitude)
-    asc = norm(degrees(atan2(-cos(lst), sin(lst)*cos(eps)+tan(lat)*sin(eps))))
+    asc = (norm(ascendant_tropical_override) if ascendant_tropical_override is not None
+           else norm(degrees(atan2(-cos(lst), sin(lst)*cos(eps)+tan(lat)*sin(eps)))))
     asc_sidereal = norm(asc-ayan)
     planets = {name: {"longitude_degrees": round(value,4), "rashi": sign_name(value), "nakshatra": nakshatra_name(value)} for name,value in sidereal.items()}
     return {
@@ -224,9 +226,10 @@ def calculate_kundli(local_dt: datetime, latitude: float, longitude: float,
         "ayanamsa": "Lahiri-style approximate", "ayanamsa_degrees": round(ayan,5),
         "lagna": {"longitude_degrees": round(asc_sidereal,4), "rashi": sign_name(asc_sidereal)},
         "planets": planets,
-        "house_system": "whole_sign_from_approximate_ascendant",
-        "calculation": "free_low_precision_orbital_approximation",
-        "accuracy_note_hi": "यह निःशुल्क प्रारंभिक जन्मकुंडली गणना है, प्रमाणित ज्योतिषीय पंचांग/Swiss Ephemeris स्तर की सटीकता का दावा नहीं। जन्म समय में कुछ मिनट का अंतर लग्न बदल सकता है। दशा, वर्ग कुंडली, वक्री/अस्त स्थिति और मुहूर्त के लिए अलग सत्यापित गणना व आचार्य समीक्षा आवश्यक है।",
+        "house_system": ("whole_sign_from_skyfield_apparent_sidereal_time_approximate_obliquity" if ascendant_tropical_override is not None else "whole_sign_from_approximate_ascendant"),
+        "ascendant_calculation": ("Skyfield_apparent_GMST_plus_approximate_obliquity" if ascendant_tropical_override is not None else "approximate_GMST_and_obliquity"),
+        "calculation": ("JPL_DE440s_planetary_positions_with_Skyfield_sidereal_time_and_approximate_Vedic_conventions" if tropical_override is not None else "free_low_precision_orbital_approximation"),
+        "accuracy_note_hi": ("ग्रहों की स्थिति JPL DE440s और लग्न का sidereal time Skyfield से लिया गया है; अयनांश व obliquity अभी अनुमानित हैं। जन्म समय में कुछ मिनट का अंतर लग्न बदल सकता है। इसे प्रमाणित कुंडली न मानें; योग्य ज्योतिषाचार्य से सत्यापन आवश्यक है।" if tropical_override is not None else "यह निःशुल्क प्रारंभिक जन्मकुंडली गणना है, प्रमाणित ज्योतिषीय पंचांग/Swiss Ephemeris स्तर की सटीकता का दावा नहीं। जन्म समय में कुछ मिनट का अंतर लग्न बदल सकता है। दशा, वर्ग कुंडली, वक्री/अस्त स्थिति और मुहूर्त के लिए अलग सत्यापित गणना व आचार्य समीक्षा आवश्यक है।"),
     }
 
 def parse_local_datetime(day: str, clock: str, timezone_name: str) -> datetime:

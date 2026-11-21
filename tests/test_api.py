@@ -846,6 +846,7 @@ def test_jpl_mode_uses_injected_ephemeris_positions_and_labels_remaining_approxi
         "Sun": 10.0, "Moon": 20.0, "Mercury": 30.0, "Venus": 40.0,
         "Mars": 50.0, "Jupiter": 60.0, "Saturn": 70.0,
     })
+    monkeypatch.setattr(main, "calculate_tropical_ascendant", lambda moment, lat, lon, path: 123.4)
     response = client.post("/api/kundli/calculate", json={
         "birth_date": "1990-12-10", "birth_time": "00:40",
         "latitude": 26.45, "longitude": 80.33, "timezone": "Asia/Kolkata",
@@ -855,6 +856,8 @@ def test_jpl_mode_uses_injected_ephemeris_positions_and_labels_remaining_approxi
     payload = response.json()
     assert payload["engine"]["id"] == "jpl_de440s_skyfield"
     assert payload["engine"]["ayanamsa"] == "approximate_Lahiri"
+    assert payload["ascendant_calculation"] == "Skyfield_apparent_GMST_plus_approximate_obliquity"
+    assert payload["house_system"] == "whole_sign_from_skyfield_apparent_sidereal_time_approximate_obliquity"
     assert payload["planets"]["Sun"]["longitude_degrees"] != 10.0
     assert "lagna_and_houses" in payload["engine"]
 
