@@ -1087,3 +1087,12 @@ def test_public_pandit_directory_only_accepts_verified_status_filter():
     assert client.get("/api/pandits", params={"status": "unverified"}).status_code == 422
     assert client.get("/api/pandits", params={"status": "verified"}).status_code == 200
     assert client.get("/api/pandits", params={"status": "all"}).status_code == 200
+
+
+def test_frontend_exposes_verified_only_pandit_directory_search_without_booking_controls():
+    html = (Path(__file__).resolve().parents[1] / "index.html").read_text(encoding="utf-8")
+    for control in ("panditDirectory", "panditCity", "panditService", "panditLanguage", "panditSearchButton", "panditDirectoryResults"):
+        assert control in html
+    assert "/api/pandits?" in html
+    assert "booking_available!==false" in html
+    assert "कोई live verified पंडित प्रोफ़ाइल उपलब्ध नहीं है" in html
