@@ -534,7 +534,7 @@ def test_operational_readiness_probe_is_not_cached():
 
 def test_service_worker_versions_its_cache_and_keeps_api_responses_network_only():
     worker = (Path(__file__).resolve().parent.parent / "sw.js").read_text(encoding="utf-8")
-    assert 'const CACHE_NAME = "family-pandit-shell-v2"' in worker
+    assert 'const CACHE_NAME = "family-pandit-shell-v3"' in worker
     assert 'const CACHE_PREFIX = "family-pandit-shell-"' in worker
     assert '"/privacy", "/terms"' in worker
     assert 'url.pathname.startsWith("/api/")' in worker
@@ -686,3 +686,12 @@ def test_free_kundli_rejects_invalid_birth_input():
         "latitude": 26.4, "longitude": 80.3, "timezone": "Asia/Kolkata",
     })
     assert response.status_code == 422
+
+
+def test_frontend_exposes_free_panchang_and_kundli_forms_without_geolocation():
+    html = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    for control in ("panchangForm", "pDate", "pLat", "pLon", "kundliForm", "kDate", "kTime", "kLat", "kLon"):
+        assert control in html
+    assert "/api/panchang/calculate?" in html
+    assert "/api/kundli/calculate" in html
+    assert "geolocation" not in html.lower()
