@@ -11,6 +11,7 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from vedic_calc import calculate_kundli, calculate_panchang, parse_local_datetime
 
 APP_VERSION = "0.3.0"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -110,6 +111,14 @@ async def security_headers(request, call_next):
     if request.url.scheme == "https":
         response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
     return response
+
+class BirthChartRequest(BaseModel):
+    birth_date: str = Field(min_length=10, max_length=10)
+    birth_time: str = Field(min_length=4, max_length=8)
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    timezone: str = Field(default="Asia/Kolkata", min_length=3, max_length=64)
+
 
 class AskRequest(BaseModel):
     question: str = Field(min_length=1, max_length=4000)
@@ -480,6 +489,38 @@ def ecosystem_modules():
             return json.load(handle)
     except (OSError, json.JSONDecodeError):
         raise HTTPException(status_code=503, detail="Ecosystem module catalogue is unavailable.")
+
+
+
+@app.get("/api/panchang/calculate")
+def calculate_daily_panchang(
+    date: str = Field(..., description="Local date YYYY-MM-DD"),
+    time: str = "12:00",
+    latitude: float = Field(..., ge=-90, le=90),
+    longitude: float = Field(..., ge=-180, le=180),
+    timezone_name: str = "Asia/Kolkata",
+):
+    """Calculate an approximate Panchang for the supplied local date/time and coordinates."""
+    try:
+        local_dt = parse_local_datetime(date, time, timezone_name)
+        result = calculate_panchang(local_dt, latitude, longitude)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    result.update({"latitude": latitude, "longitude": longitude, "timezone": timezone_name})
+    return result
+
+
+@app.post("/api/kundli/calculate")
+def calculate_birth_chart(payload: BirthChartRequest):
+    """Calculate a free, low-precision starter birth chart; no birth data is stored."""
+    try:
+        local_dt = parse_local_datetime(payload.birth_date, payload.birth_time, payload.timezone)
+        result = calculate_kundli(local_dt, payload.latitude, payload.longitude)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    result["timezone"] = payload.timezone
+    result["data_retention"] = "not_stored_by_this_endpoint"
+    return result
 
 
 @app.get("/api/panchang/overview")
