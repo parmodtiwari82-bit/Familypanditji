@@ -769,7 +769,7 @@ def test_divisional_sign_supports_seven_and_ten_part_vargas():
     assert divisional_sign(31.0, 7, "saptamsa") == "वृश्चिक"
     # D10: odd signs start from the same sign; even signs from the ninth.
     assert divisional_sign(1.0, 10, "dashamsa") == "मेष"
-    assert divisional_sign(31.0, 10, "dashamsa") == "धनु"
+    assert divisional_sign(31.0, 10, "dashamsa") == "मकर"
     # D12 starts from the natal sign for both odd and even signs.
     assert divisional_sign(1.0, 12, "dwadasamsa") == "मेष"
     assert divisional_sign(31.0, 12, "dwadasamsa") == "वृषभ"
