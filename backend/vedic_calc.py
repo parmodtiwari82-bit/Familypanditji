@@ -128,9 +128,15 @@ def calculate_panchang(local_dt: datetime, latitude: float, longitude: float) ->
     longs = tropical_longitudes(local_dt)
     moon_sun = norm(longs["Moon"]-longs["Sun"])
     tithi_index = min(29, int(moon_sun/12))
-    yoga_index = int(norm(longs["Sun"]+longs["Moon"])/(360/27))
+    yoga_index = int(norm(longs["Sun"]+longs["Moon"]-2*ayanamsa_lahiri_approx(local_dt))/(360/27))
     karana_index = int(moon_sun/6)
-    weekday = ["सोमवार","मंगलवार","बुधवार","गुरुवार","शुक्रवार","शनिवार","रविवार"][(local_dt.weekday()+6)%7]
+    if karana_index == 0:
+        karana = "किंस्तुघ्न"
+    elif karana_index >= 57:
+        karana = ["शकुनि", "चतुष्पद", "नाग"][karana_index-57]
+    else:
+        karana = ["बव","बालव","कौलव","तैतिल","गर","वणिज","विष्टि"][(karana_index-1)%7]
+    weekday = ["सोमवार","मंगलवार","बुधवार","गुरुवार","शुक्रवार","शनिवार","रविवार"][local_dt.weekday()]
     sunrise_utc = solar_event(local_dt.date(),latitude,longitude,True)
     sunset_utc = solar_event(local_dt.date(),latitude,longitude,False)
     tz = local_dt.tzinfo
@@ -138,7 +144,7 @@ def calculate_panchang(local_dt: datetime, latitude: float, longitude: float) ->
         "date": local_dt.date().isoformat(), "weekday": weekday,
         "tithi": TITHIS[tithi_index], "tithi_number": tithi_index+1,
         "nakshatra": nakshatra_name(norm(longs["Moon"]-ayanamsa_lahiri_approx(local_dt))),
-        "yoga": YOGAS[yoga_index], "karana": KARANAS[karana_index] if karana_index < len(KARANAS) else KARANAS[(karana_index-7)%7],
+        "yoga": YOGAS[yoga_index], "karana": karana,
         "moon_sign": sign_name(norm(longs["Moon"]-ayanamsa_lahiri_approx(local_dt))),
         "sun_sign": sign_name(norm(longs["Sun"]-ayanamsa_lahiri_approx(local_dt))),
         "sunrise": datetime.fromisoformat(sunrise_utc).astimezone(tz).isoformat() if sunrise_utc else None,
