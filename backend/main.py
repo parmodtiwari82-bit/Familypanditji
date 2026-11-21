@@ -997,6 +997,26 @@ def puja_guides(category: str | None = None, q: str | None = None):
         "guides": guides,
     }
 
+@app.get("/api/puja-guides/{guide_id}")
+def puja_guide_detail(guide_id: str):
+    """Return one exact guide by stable id; preserve its draft/review warning."""
+    catalog_path = PROJECT_ROOT / "data" / "puja_guides.json"
+    try:
+        with catalog_path.open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        raise HTTPException(status_code=503, detail="Puja guide catalogue is unavailable.")
+    guide = next((item for item in payload.get("guides", [])
+                  if item.get("id") == guide_id), None)
+    if guide is None:
+        raise HTTPException(status_code=404, detail="Puja guide was not found.")
+    return {
+        "status": payload.get("status", "draft_requires_acharya_review"),
+        "note": payload.get("note", ""),
+        "guide": guide,
+    }
+
+
 @app.get("/api/samskaras")
 def samskara_catalogue():
     """Return the draft sixteen-samskara reference with explicit acharya review status."""
@@ -1006,6 +1026,27 @@ def samskara_catalogue():
             return json.load(handle)
     except (OSError, json.JSONDecodeError):
         raise HTTPException(status_code=503, detail="Samskara catalogue is unavailable.")
+
+
+@app.get("/api/samskaras/{samskara_id}")
+def samskara_detail(samskara_id: str):
+    """Return one samskara entry without implying a universal ritual procedure."""
+    catalog_path = PROJECT_ROOT / "data" / "samskaras.json"
+    try:
+        with catalog_path.open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        raise HTTPException(status_code=503, detail="Samskara catalogue is unavailable.")
+    item = next((entry for entry in payload.get("samskaras", [])
+                 if entry.get("id") == samskara_id), None)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Samskara was not found.")
+    return {
+        "status": payload.get("status", "draft_requires_acharya_review"),
+        "note_hi": payload.get("note_hi", ""),
+        "note_en": payload.get("note_en", ""),
+        "samskara": item,
+    }
 
 
 @app.get("/api/mantras")

@@ -1162,3 +1162,31 @@ def test_temple_directory_frontend_has_search_and_official_link_safety():
     assert "/api/temples?" in html
     assert "parsed.protocol!=='https:'" in html
     assert "noopener noreferrer" in html
+
+
+
+def test_puja_guide_detail_returns_one_draft_with_review_notice():
+    response = client.get("/api/puja-guides/daily-puja")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["guide"]["id"] == "daily-puja"
+    assert payload["guide"]["review_required"] is True
+    assert len(payload["guide"]["steps_hi"]) >= 1
+
+
+def test_puja_guide_detail_returns_404_for_unknown_id():
+    assert client.get("/api/puja-guides/not-a-real-guide").status_code == 404
+
+
+def test_samskara_detail_returns_one_entry_with_review_notice():
+    response = client.get("/api/samskaras/vivaha")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["samskara"]["id"] == "vivaha"
+    assert payload["samskara"]["review_required"] is True
+
+
+def test_samskara_detail_returns_404_for_unknown_id():
+    assert client.get("/api/samskaras/not-a-real-samskara").status_code == 404
