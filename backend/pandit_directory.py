@@ -40,9 +40,14 @@ def _connect(database: Path):
             verifier_qualification TEXT,
             verification_method TEXT,
             evidence_reference TEXT,
-            review_notes TEXT
+            review_notes TEXT,
+            contact_phone TEXT NOT NULL DEFAULT ''
         )"""
     )
+    # Forward-compatible migration for databases created before self-onboarding.
+    columns = {row[1] for row in connection.execute("PRAGMA table_info(pandit_profiles)")}
+    if "contact_phone" not in columns:
+        connection.execute("ALTER TABLE pandit_profiles ADD COLUMN contact_phone TEXT NOT NULL DEFAULT ''")
     connection.execute(
         "CREATE INDEX IF NOT EXISTS idx_pandit_public_search ON pandit_profiles(status, city, state)"
     )
@@ -82,13 +87,14 @@ def create_pending_profile(database: Path, profile: dict[str, Any]) -> dict[str,
             """INSERT INTO pandit_profiles (
                 profile_id, display_name, city, state, country,
                 service_categories_json, languages_json, tradition, biography,
-                qualification_summary, status, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_review', ?, ?)""",
+                qualification_summary, status, created_at, updated_at, contact_phone
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_review', ?, ?, ?)""",
             (
                 profile_id, profile["display_name"], profile["city"], profile["state"],
                 profile["country"], json.dumps(profile["service_categories"], ensure_ascii=False),
                 json.dumps(profile["languages"], ensure_ascii=False), profile["tradition"],
                 profile["biography"], profile["qualification_summary"], now, now,
+                profile.get("contact_phone", "").strip(),
             ),
         )
     return {"profile_id": profile_id, "status": "pending_review"}
@@ -154,3 +160,31 @@ def get_profile_status(database: Path, profile_id: str) -> dict[str, Any] | None
             (profile_id,),
         ).fetchone()
     return dict(row) if row else None
+
+
+def list_pending_profiles(database: Path, limit: int = 100) -> list[dict[str, Any]]:
+    """Return pending applications, including private contact, for authenticated admins only."""
+    with _connect(database) as connection:
+        rows = connection.execute(
+            """SELECT profile_id, display_name, city, state, country,
+                      service_categories_json, languages_json, tradition, biography,
+                      qualification_summary, contact_phone, created_at, updated_at
+               FROM pandit_profiles WHERE status='pending_review'
+               ORDER BY created_at ASC LIMIT ?""",
+            (limit,),
+        ).fetchall()
+    return [{
+        "profile_id": row["profile_id"],
+        "display_name": row["display_name"],
+        "city": row["city"],
+        "state": row["state"],
+        "country": row["country"],
+        "service_categories": json.loads(row["service_categories_json"]),
+        "languages": json.loads(row["languages_json"]),
+        "tradition": row["tradition"],
+        "biography": row["biography"],
+        "qualification_summary": row["qualification_summary"],
+        "contact_phone": row["contact_phone"],
+        "created_at": row["created_at"],
+        "status": "pending_review",
+    } for row in rows]
