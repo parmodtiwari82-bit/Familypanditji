@@ -42,3 +42,27 @@ def test_ephemeris_requires_explicit_local_file(tmp_path):
         calculate_tropical_longitudes(
             datetime(2026, 11, 21, tzinfo=timezone.utc), tmp_path / "missing.bsp"
         )
+
+
+def test_jpl_sunrise_requires_timezone_aware_datetime(tmp_path):
+    from precision_ephemeris import calculate_sunrise_sunset
+    with pytest.raises(ValueError, match="timezone-aware"):
+        calculate_sunrise_sunset(datetime(2026, 11, 21, 12, 0), 26.45, 80.33, tmp_path / "missing.bsp")
+
+
+def test_jpl_sunrise_rejects_invalid_coordinates(tmp_path):
+    from precision_ephemeris import calculate_sunrise_sunset
+    with pytest.raises(ValueError, match="latitude/longitude"):
+        calculate_sunrise_sunset(datetime(2026, 11, 21, 12, 0, tzinfo=timezone.utc), 91, 80.33, tmp_path / "missing.bsp")
+
+
+def test_jpl_sunrise_enforces_de440s_date_range(tmp_path):
+    from precision_ephemeris import calculate_sunrise_sunset
+    with pytest.raises(ValueError, match="1849 through 2150"):
+        calculate_sunrise_sunset(datetime(1800, 1, 1, tzinfo=timezone.utc), 26.45, 80.33, tmp_path / "missing.bsp")
+
+
+def test_jpl_sunrise_requires_local_ephemeris_file(tmp_path):
+    from precision_ephemeris import calculate_sunrise_sunset
+    with pytest.raises(FileNotFoundError, match="JPL ephemeris file not found"):
+        calculate_sunrise_sunset(datetime(2026, 11, 21, 12, 0, tzinfo=timezone.utc), 26.45, 80.33, tmp_path / "missing.bsp")

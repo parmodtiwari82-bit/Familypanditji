@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from vedic_calc import calculate_kundli, calculate_panchang, parse_local_datetime
 from advanced_jyotish import calculate_advanced_jyotish
-from precision_ephemeris import calculate_tropical_longitudes, mean_node_longitudes
+from precision_ephemeris import calculate_tropical_longitudes, calculate_sunrise_sunset, mean_node_longitudes
 
 APP_VERSION = "0.3.0"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -603,9 +603,10 @@ def resolve_astronomy_engine(moment: datetime, requested: str) -> tuple[dict[str
         "id": "jpl_de440s_skyfield", "status": "astronomy_ephemeris_enabled_not_vedic_certified",
         "ephemeris": "NASA/JPL DE440s", "planetary_positions": "geocentric_apparent_tropical_longitudes",
         "ayanamsa": "approximate_Lahiri", "nodes": "approximate_mean_Rahu_Ketu",
-        "sunrise_sunset": "NOAA_simplified_approximation",
+        "sunrise_sunset": "JPL_DE440s_apparent_solar_altitude_standard_horizon_minus_0.833_degrees",
         "lagna_and_houses": "approximate_local_sidereal_time_whole_sign",
-        "note_hi": "ग्रहों के दीर्घांश JPL DE440s से हैं; अयनांश, राहु-केतु, सूर्योदय/सूर्यास्त, लग्न/भाव और वैदिक नियम अभी अनुमानित हैं। इसे प्रमाणित पंचांग/कुंडली न मानें।",
+        "limitations": ["approximate Lahiri ayanamsa", "mean Rahu/Ketu", "standard unobstructed horizon; local terrain/buildings are not modeled", "approximate ascendant and whole-sign houses", "regional Panchang conventions and Acharya validation pending"],
+        "note_hi": "ग्रहों के दीर्घांश और मानक क्षितिज के सूर्योदय/सूर्यास्त JPL DE440s से हैं; अयनांश, राहु-केतु, लग्न/भाव और वैदिक नियम अभी अनुमानित हैं। स्थानीय पहाड़/इमारतें शामिल नहीं हैं। इसे प्रमाणित पंचांग/कुंडली न मानें।",
     }
 
 
@@ -621,7 +622,7 @@ def astronomy_status():
         "request_downloads_ephemeris": False,
         "available_modes": ["auto", "approximate", "jpl"],
         "certified_vedic_engine": False,
-        "limitations": ["approximate Lahiri ayanamsa", "mean Rahu/Ketu", "approximate sunrise/sunset", "approximate ascendant and whole-sign houses", "regional Panchang and Acharya validation pending"],
+        "limitations": ["approximate Lahiri ayanamsa", "mean Rahu/Ketu", "JPL sunrise/sunset uses standard unobstructed horizon only; local terrain/buildings are not modeled", "approximate ascendant and whole-sign houses", "regional Panchang and Acharya validation pending"],
     }
 
 
@@ -639,6 +640,15 @@ def calculate_daily_panchang(
         local_dt = parse_local_datetime(date, time, timezone_name)
         tropical, engine_info = resolve_astronomy_engine(local_dt, engine)
         result = calculate_panchang(local_dt, latitude, longitude, tropical_override=tropical)
+        if tropical is not None:
+            try:
+                solar_events = calculate_sunrise_sunset(local_dt, latitude, longitude, JPL_EPHEMERIS_PATH)
+            except (FileNotFoundError, RuntimeError, ValueError) as exc:
+                raise HTTPException(status_code=503, detail=f"JPL sunrise/sunset unavailable: {exc}") from exc
+            result.update(solar_events)
+            result["sunrise_sunset_status"] = "jpl_de440s_standard_horizon"
+        else:
+            result["sunrise_sunset_status"] = "noaa_simplified_approximation"
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
     result.update({"latitude": latitude, "longitude": longitude, "timezone": timezone_name, "engine": engine_info})
