@@ -612,3 +612,50 @@ def test_admin_review_queue_lists_drafts_without_approval_mutation(monkeypatch):
     assert all(item["review_status"] == "pending_acharya_review" for item in payload["items"])
     assert payload["write_enabled"] is False
     assert response.headers["Cache-Control"] == "no-store"
+
+
+def test_free_panchang_calculation_returns_location_specific_limbs():
+    response = client.get("/api/panchang/calculate", params={
+        "date": "2026-11-21", "time": "12:00", "latitude": 26.4499,
+        "longitude": 80.3319, "timezone_name": "Asia/Kolkata",
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["weekday"] == "शनिवार"
+    assert data["tithi"] and data["nakshatra"] and data["yoga"] and data["karana"]
+    assert data["sunrise"] and data["sunset"]
+    assert data["calculation"] == "free_low_precision_astronomical_approximation"
+    assert "आचार्य" in data["accuracy_note_hi"]
+
+
+def test_free_panchang_rejects_invalid_date_and_coordinates():
+    bad_date = client.get("/api/panchang/calculate", params={
+        "date": "not-a-date", "latitude": 26.4, "longitude": 80.3,
+    })
+    bad_lat = client.get("/api/panchang/calculate", params={
+        "date": "2026-11-21", "latitude": 120, "longitude": 80.3,
+    })
+    assert bad_date.status_code == 422
+    assert bad_lat.status_code == 422
+
+
+def test_free_kundli_calculation_returns_nine_planets_and_no_storage_claim():
+    response = client.post("/api/kundli/calculate", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 26.4499, "longitude": 80.3319, "timezone": "Asia/Kolkata",
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["lagna"]["rashi"]
+    assert len(data["planets"]) == 9
+    assert data["data_retention"] == "not_stored_by_this_endpoint"
+    assert data["calculation"] == "free_low_precision_orbital_approximation"
+    assert data["house_system"] == "whole_sign_from_approximate_ascendant"
+
+
+def test_free_kundli_rejects_invalid_birth_input():
+    response = client.post("/api/kundli/calculate", json={
+        "birth_date": "10/12/1990", "birth_time": "25:61",
+        "latitude": 26.4, "longitude": 80.3, "timezone": "Asia/Kolkata",
+    })
+    assert response.status_code == 422
