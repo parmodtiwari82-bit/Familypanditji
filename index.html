@@ -52,6 +52,10 @@
   <div class="calc-actions"><button type="submit">जन्म कुंडली बनाएँ</button></div>
  </form>
  <div id="kundliCalcStatus" class="hint" aria-live="polite"></div><div id="kundliCalcResult" class="calc-output" aria-live="polite"></div>
+ <div class="section-title" style="margin-top:18px">उन्नत ज्योतिष — D9 नवांश एवं विंशोत्तरी दशा</div>
+ <p class="hint">ऊपर भरे गए जन्म विवरण से प्रारंभिक D9 और महादशा क्रम निकालें। ये परिणाम निम्न-सटीकता गणना पर आधारित हैं, प्रमाणित भविष्यवाणी नहीं।</p>
+ <div class="calc-actions"><button id="advancedJyotishButton" type="button" class="secondary">उन्नत कुंडली विवरण निकालें</button></div>
+ <p id="advancedJyotishStatus" class="hint" aria-live="polite"></p><div id="advancedJyotishResult" class="calc-output" aria-live="polite"></div>
 </section>
 <section class="panel"><div class="section-title">पंचांग के पाँच अंग</div><p id="panchangStatus" class="hint">शैक्षिक परिचय लोड हो रहा है…</p><div id="panchangList" class="grid"></div><p class="hint">यह स्थिर शैक्षिक जानकारी है, आज की तिथि या मुहूर्त की गणना नहीं।</p></section>
 <section class="panel"><div class="section-title">प्रारंभिक ज्ञान-संग्रह</div><p class="hint">ये सामग्री प्रारूप है और आचार्य समीक्षा के अधीन है। हिंदी, संस्कृत या English शब्द से खोजें और विषय के अनुसार छाँटें।</p><div class="row" style="margin:10px 0"><input id="knowledgeSearch" type="search" placeholder="मंत्र, पूजा, Panchang खोजें…" aria-label="ज्ञान-संग्रह खोजें" style="flex:1;min-width:180px"><select id="knowledgeCategory" aria-label="विषय श्रेणी"><option value="">सभी विषय</option><option value="puja">पूजा</option><option value="mantra">मंत्र</option><option value="panchang">पंचांग</option><option value="samskara">संस्कार</option><option value="vrata">व्रत</option></select><button id="knowledgeSearchButton" type="button">खोजें</button></div><p id="knowledgeStatus" class="hint" aria-live="polite">ज्ञान-संग्रह लोड हो रहा है…</p><div id="knowledgeList" class="grid"></div></section>
@@ -193,5 +197,23 @@ document.getElementById('kundliForm').addEventListener('submit',async event=>{
  const payload={birth_date:document.getElementById('kDate').value,birth_time:document.getElementById('kTime').value,latitude:Number(document.getElementById('kLat').value),longitude:Number(document.getElementById('kLon').value),timezone:document.getElementById('kTz').value};
  try{const response=await fetch('/api/kundli/calculate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await response.json();if(!response.ok)throw new Error(data.detail||'कुंडली नहीं बन सकी');const lines=[['जन्म समय',data.birth_datetime_local],['लग्न',data.lagna.rashi+' ('+data.lagna.longitude_degrees+'°)'],['अयनांश',data.ayanamsa+' • '+data.ayanamsa_degrees+'°']];for(const [planet,info] of Object.entries(data.planets))lines.push([planet,info.rashi+' • '+info.nakshatra+' • '+info.longitude_degrees+'°']);lines.push(['गणना सीमा',data.accuracy_note_hi]);showCalcLines('kundliCalcResult',lines);status.textContent='प्रारंभिक कुंडली तैयार • जन्म विवरण इस endpoint में सेव नहीं किया गया'}
  catch(error){status.textContent='त्रुटि: '+error.message}
+});
+
+document.getElementById('advancedJyotishButton').addEventListener('click',async()=>{
+ const status=document.getElementById('advancedJyotishStatus');
+ if(!document.getElementById('kundliForm').reportValidity())return;
+ status.textContent='D9 नवांश और विंशोत्तरी दशा की गणना हो रही है…';
+ document.getElementById('advancedJyotishResult').replaceChildren();
+ const payload={birth_date:document.getElementById('kDate').value,birth_time:document.getElementById('kTime').value,latitude:Number(document.getElementById('kLat').value),longitude:Number(document.getElementById('kLon').value),timezone:document.getElementById('kTz').value};
+ try{
+  const response=await fetch('/api/jyotish/advanced',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const data=await response.json();if(!response.ok)throw new Error(data.detail||'उन्नत गणना नहीं हो सकी');
+  const lines=[['जन्म नक्षत्र',data.vimshottari.birth_nakshatra],['जन्म महादशा स्वामी',data.vimshottari.birth_nakshatra_lord]];
+  for(const [planet,info] of Object.entries(data.navamsa_d9))lines.push(['D9 '+planet,info.rashi+' • '+info.nakshatra+' • '+info.longitude_degrees+'°']);
+  for(const period of data.vimshottari.mahadasha_periods)lines.push(['महादशा '+period.lord,period.start+' से '+period.end+' • लगभग '+period.duration_years_approx+' वर्ष']);
+  lines.push(['गणना सीमा',data.accuracy_note_hi]);
+  showCalcLines('advancedJyotishResult',lines);
+  status.textContent='उन्नत विवरण तैयार • जन्म विवरण इस endpoint में सेव नहीं किया गया';
+ }catch(error){status.textContent='त्रुटि: '+error.message}
 });
 </script></body></html>
