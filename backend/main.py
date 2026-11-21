@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 from vedic_calc import calculate_kundli, calculate_panchang, parse_local_datetime
 from advanced_jyotish import calculate_advanced_jyotish
 from precision_ephemeris import calculate_tropical_longitudes, calculate_sunrise_sunset, mean_node_longitudes
+from pandit_directory import create_pending_profile, get_profile_status, list_verified_profiles, suspend_profile, verify_profile
 
 APP_VERSION = "0.3.0"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -31,6 +32,7 @@ ACHARYA_API_TOKEN = os.getenv("ACHARYA_API_TOKEN", "").strip()
 ACHARYA_REVIEWER_ID = os.getenv("ACHARYA_REVIEWER_ID", "").strip()
 ACHARYA_REVIEWER_QUALIFICATION = os.getenv("ACHARYA_REVIEWER_QUALIFICATION", "").strip()
 REVIEW_AUDIT_DB = Path(os.getenv("REVIEW_AUDIT_DB", str(PROJECT_ROOT / "data" / "review_audit.sqlite3")))
+PANDIT_DIRECTORY_DB = Path(os.getenv("PANDIT_DIRECTORY_DB", str(PROJECT_ROOT / "data" / "pandit_directory.sqlite3")))
 APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
 AI_TIMEOUT_SECONDS = float(os.getenv("AI_TIMEOUT_SECONDS", "25"))
 ASK_RATE_LIMIT_MAX = int(os.getenv("ASK_RATE_LIMIT_MAX", "20"))
@@ -143,6 +145,30 @@ class BirthChartRequest(BaseModel):
     longitude: float = Field(ge=-180, le=180)
     timezone: str = Field(default="Asia/Kolkata", min_length=3, max_length=64)
     engine: str = Field(default="auto", pattern="^(auto|approximate|jpl)$")
+
+
+class PanditProfileCreate(BaseModel):
+    display_name: str = Field(min_length=2, max_length=120)
+    city: str = Field(min_length=2, max_length=100)
+    state: str = Field(min_length=2, max_length=100)
+    country: str = Field(default="India", min_length=2, max_length=80)
+    service_categories: list[str] = Field(min_length=1, max_length=12)
+    languages: list[str] = Field(min_length=1, max_length=8)
+    tradition: str = Field(min_length=2, max_length=160)
+    biography: str = Field(default="", max_length=1200)
+    qualification_summary: str = Field(min_length=2, max_length=240)
+
+
+class PanditVerificationRequest(BaseModel):
+    reviewer_name: str = Field(min_length=2, max_length=120)
+    reviewer_qualification: str = Field(min_length=3, max_length=240)
+    verification_method: str = Field(pattern="^(document_review|in_person|video_call)$")
+    evidence_reference: str = Field(min_length=5, max_length=300)
+    review_notes: str = Field(min_length=10, max_length=2000)
+
+
+class PanditSuspensionRequest(BaseModel):
+    reason: str = Field(min_length=10, max_length=1000)
 
 
 class AskRequest(BaseModel):
@@ -276,6 +302,87 @@ def require_admin_access(authorization: str | None) -> None:
     scheme, _, supplied = (authorization or "").partition(" ")
     if scheme.lower() != "bearer" or not supplied or not hmac.compare_digest(supplied, configured):
         raise HTTPException(status_code=401, detail="Valid admin bearer token required.")
+
+
+@app.post("/api/admin/pandits", status_code=201)
+def admin_create_pandit_profile(payload: PanditProfileCreate,
+                                authorization: str | None = Header(default=None)):
+    """Create a non-public profile; admin creation never implies verification."""
+    require_admin_access(authorization)
+    profile = payload.model_dump()
+    profile["service_categories"] = list(dict.fromkeys(x.strip() for x in payload.service_categories if x.strip()))
+    profile["languages"] = list(dict.fromkeys(x.strip() for x in payload.languages if x.strip()))
+    if not profile["service_categories"] or not profile["languages"]:
+        raise HTTPException(status_code=422, detail="At least one valid service and language are required.")
+    try:
+        return create_pending_profile(PANDIT_DIRECTORY_DB, profile)
+    except sqlite3.Error:
+        raise HTTPException(status_code=503, detail="Pandit directory storage is unavailable.")
+
+
+@app.post("/api/admin/pandits/{profile_id}/verify")
+def admin_verify_pandit_profile(profile_id: str, payload: PanditVerificationRequest,
+                                authorization: str | None = Header(default=None)):
+    """Record an explicit platform review; never claim government certification."""
+    require_admin_access(authorization)
+    try:
+        changed = verify_profile(PANDIT_DIRECTORY_DB, profile_id, payload.model_dump())
+    except sqlite3.Error:
+        raise HTTPException(status_code=503, detail="Pandit directory storage is unavailable.")
+    if not changed:
+        raise HTTPException(status_code=404, detail="Pending Pandit profile was not found.")
+    return {"profile_id": profile_id, "status": "verified", "verification_scope": "platform_reviewed_profile",
+            "note_hi": "प्रोफ़ाइल की दी गई जानकारी और संदर्भित योग्यता-साक्ष्य की प्लेटफ़ॉर्म समीक्षा दर्ज हुई है; यह सरकारी प्रमाणन नहीं है।"}
+
+
+@app.post("/api/admin/pandits/{profile_id}/suspend")
+def admin_suspend_pandit_profile(profile_id: str, payload: PanditSuspensionRequest,
+                                 authorization: str | None = Header(default=None)):
+    require_admin_access(authorization)
+    try:
+        changed = suspend_profile(PANDIT_DIRECTORY_DB, profile_id, payload.reason)
+    except sqlite3.Error:
+        raise HTTPException(status_code=503, detail="Pandit directory storage is unavailable.")
+    if not changed:
+        raise HTTPException(status_code=404, detail="Verified Pandit profile was not found.")
+    return {"profile_id": profile_id, "status": "suspended"}
+
+
+@app.get("/api/admin/pandits/{profile_id}/status")
+def admin_pandit_profile_status(profile_id: str, authorization: str | None = Header(default=None)):
+    require_admin_access(authorization)
+    try:
+        result = get_profile_status(PANDIT_DIRECTORY_DB, profile_id)
+    except sqlite3.Error:
+        raise HTTPException(status_code=503, detail="Pandit directory storage is unavailable.")
+    if result is None:
+        raise HTTPException(status_code=404, detail="Pandit profile was not found.")
+    return result
+
+
+@app.get("/api/pandits")
+def public_verified_pandit_directory(
+    city: str | None = Query(default=None, max_length=100),
+    state: str | None = Query(default=None, max_length=100),
+    service: str | None = Query(default=None, max_length=120),
+    language: str | None = Query(default=None, max_length=40),
+    status: str = Query(default="verified", pattern="^(verified|all)$"),
+    limit: int = Query(default=50, ge=1, le=100),
+):
+    """Return only platform-reviewed profiles; pending/suspended records never appear."""
+    try:
+        items = list_verified_profiles(PANDIT_DIRECTORY_DB, city, state, service, language, limit)
+    except sqlite3.Error:
+        raise HTTPException(status_code=503, detail="Pandit directory storage is unavailable.")
+    return {
+        "status": "directory_beta_no_booking",
+        "count": len(items),
+        "items": items,
+        "pandits": items,
+        "booking_enabled": False,
+        "booking_available": False,
+        "note_hi": "अभी केवल प्लेटफ़ॉर्म द्वारा समीक्षा की गई सार्वजनिक प्रोफ़ाइलें दिखाई जाती हैं। बुकिंग और भुगतान सुविधा चालू नहीं है।",
+    }
 
 
 @app.get("/api/admin/review-queue")
@@ -565,6 +672,7 @@ def trust_status():
                 "skyfield_installed": importlib.util.find_spec("skyfield") is not None,
                 "ready": JPL_EPHEMERIS_PATH.is_file() and importlib.util.find_spec("skyfield") is not None,
             },
+            "pandit_directory_discovery_api": True,
             "verified_pandit_booking": False,
             "commerce_and_payments": False,
             "production_voice_service": False,

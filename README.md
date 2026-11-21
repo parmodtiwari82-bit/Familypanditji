@@ -31,7 +31,7 @@ No verified Pandit profiles, booking lifecycle, e-commerce, payments, user accou
  
 ## Production launch handoff
 
-See [LAUNCH_HANDOFF.md](LAUNCH_HANDOFF.md) for the owner-input checklist, external integration evidence and mandatory release gates. See [STAGING_SMOKE_TESTS.md](STAGING_SMOKE_TESTS.md) for staging API, browser, security and go/no-go checks. The current repository remains a development beta; do not treat CI success or a container build as production launch approval. `GET /api/trust/status` reports implemented calculation endpoints separately from still-missing verified booking, commerce, production voice, expert review and operational release gates.
+See [LAUNCH_HANDOFF.md](LAUNCH_HANDOFF.md) for the owner-input checklist, external integration evidence and mandatory release gates. See [STAGING_SMOKE_TESTS.md](STAGING_SMOKE_TESTS.md) for staging API, browser, security and go/no-go checks. The current repository remains a development beta; do not treat CI success or a container build as production launch approval. `GET /api/trust/status` reports implemented calculation endpoints and the Pandit discovery API foundation separately from still-missing live verified listings, booking, commerce, production voice, expert review and operational release gates.
 
 ## Deployment\n\nSee [DEPLOYMENT.md](DEPLOYMENT.md) for the Docker build, hosting configuration and pre-launch checklist. A container build does not itself deploy the application.\n\n## Run locally
 
@@ -126,3 +126,8 @@ See [ADMIN_CONTENT_WORKFLOW.md](ADMIN_CONTENT_WORKFLOW.md) and [schemas/content-
 - It reports the current catalogue sizes for knowledge, puja guides, samskaras and mantras where available.
 - Required evidence includes source title, author/tradition, edition/publication, page/section, reviewer identity and qualification, review date, decision and notes.
 - This is deliberately a read-only workflow blueprint. It does not authenticate reviewers, accept submissions, or approve content. All starter content remains draft until a secure editorial system and genuine acharya sign-off exist.
+
+
+## Pandit directory foundation
+
+The public `GET /api/pandits` endpoint returns only profiles that an authenticated platform admin has explicitly reviewed; pending and suspended profiles are never public. Admin-only `POST /api/admin/pandits` creates a pending profile, `POST /api/admin/pandits/{profile_id}/verify` records the review method, reviewer qualification, evidence reference and notes, and `POST /api/admin/pandits/{profile_id}/suspend` removes a verified profile from public results. Set `ADMIN_API_TOKEN` to a random secret of at least 32 characters and optionally set `PANDIT_DIRECTORY_DB` to a persistent SQLite volume. Verification means platform review of submitted profile/evidence only; it is not government certification or a guarantee of service quality. The public directory currently has no live listings, and this foundation does not implement applications, messaging, availability, booking or payment.

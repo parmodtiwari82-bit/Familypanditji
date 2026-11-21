@@ -977,6 +977,7 @@ def test_trust_status_reports_implemented_calculation_apis_and_remaining_release
     assert capabilities["advanced_jyotish_api"] is True
     assert set(capabilities["divisional_charts"]) == {"D2", "D3", "D7", "D9", "D10", "D12"}
     assert set(capabilities["vimshottari_periods"]) == {"mahadasha", "antardasha", "pratyantardasha"}
+    assert capabilities["pandit_directory_discovery_api"] is True
     assert capabilities["verified_pandit_booking"] is False
     assert payload["production_release_ready"] is False
     assert payload["release_blockers"]
@@ -988,3 +989,101 @@ def test_module_catalogue_does_not_claim_unimplemented_muhurta_or_certified_jyot
     assert "optional JPL DE440s" in modules["panchang"]["description"]
     assert "D2/D3/D7/D9/D10/D12" in modules["jyotish"]["description"]
     assert modules["pandit-directory"]["status"] == "planned"
+
+
+def test_public_pandit_directory_returns_no_unverified_profiles(monkeypatch, tmp_path):
+    import main
+    monkeypatch.setattr(main, "PANDIT_DIRECTORY_DB", tmp_path / "pandits.sqlite3")
+    response = client.get("/api/pandits")
+    assert response.status_code == 200
+    assert response.json()["status"] == "directory_beta_no_booking"
+    assert response.json()["items"] == []
+    assert response.json()["pandits"] == []
+    assert response.json()["booking_enabled"] is False
+
+
+def test_admin_pandit_review_lifecycle_only_publishes_verified_profiles(monkeypatch, tmp_path):
+    import main
+    token = "pandit-directory-admin-" + "p" * 40
+    monkeypatch.setattr(main, "ADMIN_API_TOKEN", token)
+    monkeypatch.setattr(main, "PANDIT_DIRECTORY_DB", tmp_path / "pandits.sqlite3")
+    headers = {"Authorization": f"Bearer {token}"}
+    profile = {
+        "display_name": "Acharya Example", "city": "Kanpur", "state": "Uttar Pradesh",
+        "country": "India", "service_categories": ["Vivah Puja", "Griha Pravesh"],
+        "languages": ["Hindi", "Sanskrit"], "tradition": "Smarta",
+        "biography": "Profile biography for directory testing.",
+        "qualification_summary": "Traditional Vedic studies",
+    }
+    created = client.post("/api/admin/pandits", json=profile, headers=headers)
+    assert created.status_code == 201
+    profile_id = created.json()["profile_id"]
+    assert created.json()["status"] == "pending_review"
+    assert client.get("/api/pandits?city=Kanpur").json()["items"] == []
+
+    review = {
+        "reviewer_name": "Platform reviewer",
+        "reviewer_qualification": "Reviewer qualification record",
+        "verification_method": "document_review",
+        "evidence_reference": "secure-evidence-ref-001",
+        "review_notes": "Identity and qualification documents checked against the submitted profile.",
+    }
+    verified = client.post(f"/api/admin/pandits/{profile_id}/verify", json=review, headers=headers)
+    assert verified.status_code == 200
+    assert verified.json()["verification_scope"] == "platform_reviewed_profile"
+    public = client.get("/api/pandits?city=kanpur&service=Vivah%20Puja&language=Hindi")
+    assert public.status_code == 200
+    assert public.json()["count"] == 1
+    item = public.json()["items"][0]
+    assert item["display_name"] == "Acharya Example"
+    assert item["directory_status"] == "platform_reviewed_profile"
+    assert "government certification" in item["verification_scope"]
+    assert "evidence_reference" not in item
+    assert "verifier_name" not in item
+    assert public.json()["booking_enabled"] is False
+
+    suspended = client.post(
+        f"/api/admin/pandits/{profile_id}/suspend",
+        json={"reason": "Profile is suspended pending a complaint review."}, headers=headers,
+    )
+    assert suspended.status_code == 200
+    assert client.get("/api/pandits?city=Kanpur").json()["items"] == []
+
+
+def test_pandit_directory_admin_endpoints_require_admin_token(monkeypatch, tmp_path):
+    import main
+    monkeypatch.setattr(main, "PANDIT_DIRECTORY_DB", tmp_path / "pandits.sqlite3")
+    monkeypatch.setattr(main, "ADMIN_API_TOKEN", "x" * 40)
+    response = client.post("/api/admin/pandits", json={
+        "display_name": "Acharya Example", "city": "Kanpur", "state": "Uttar Pradesh",
+        "service_categories": ["Vivah Puja"], "languages": ["Hindi"],
+        "tradition": "Smarta", "qualification_summary": "Vedic studies",
+    })
+    assert response.status_code == 401
+    assert client.get("/api/admin/pandits/not-a-profile/status").status_code == 401
+
+
+def test_pandit_directory_rejects_incomplete_verification_evidence(monkeypatch, tmp_path):
+    import main
+    token = "pandit-directory-admin-" + "q" * 40
+    monkeypatch.setattr(main, "ADMIN_API_TOKEN", token)
+    monkeypatch.setattr(main, "PANDIT_DIRECTORY_DB", tmp_path / "pandits.sqlite3")
+    headers = {"Authorization": f"Bearer {token}"}
+    created = client.post("/api/admin/pandits", json={
+        "display_name": "Acharya Example", "city": "Lucknow", "state": "Uttar Pradesh",
+        "service_categories": ["Puja"], "languages": ["Hindi"],
+        "tradition": "Smarta", "qualification_summary": "Vedic studies",
+    }, headers=headers)
+    profile_id = created.json()["profile_id"]
+    invalid = client.post(f"/api/admin/pandits/{profile_id}/verify", json={
+        "reviewer_name": "Reviewer", "reviewer_qualification": "Qualified reviewer",
+        "verification_method": "guess", "evidence_reference": "x", "review_notes": "too short",
+    }, headers=headers)
+    assert invalid.status_code == 422
+    assert client.get("/api/pandits").json()["items"] == []
+
+
+def test_public_pandit_directory_only_accepts_verified_status_filter():
+    assert client.get("/api/pandits", params={"status": "unverified"}).status_code == 422
+    assert client.get("/api/pandits", params={"status": "verified"}).status_code == 200
+    assert client.get("/api/pandits", params={"status": "all"}).status_code == 200
