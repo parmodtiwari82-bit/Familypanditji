@@ -34,6 +34,18 @@
  <div id="panditDirectoryResults" class="grid"></div>
  <p class="hint">ऑनलाइन उपलब्धता, बुकिंग, संदेश और भुगतान अभी चालू नहीं हैं।</p>
 </section>
+<section class="panel" id="templeDirectory">
+ <div class="section-title">मंदिर एवं तीर्थ खोजें</div>
+ <p class="hint">प्रारंभिक सूची में आधिकारिक मंदिर/ट्रस्ट वेबसाइटों के स्रोत-लिंक दिए गए हैं। दर्शन समय, नियम, टिकट और सेवाएँ यात्रा से पहले संबंधित आधिकारिक वेबसाइट पर दोबारा जाँचें।</p>
+ <div class="calc-grid">
+  <label>मंदिर, देवता या शहर<input id="templeQuery" type="search" maxlength="120" placeholder="जैसे Kashi, Shiva, Puri"></label>
+  <label>राज्य<input id="templeState" type="text" maxlength="100" placeholder="जैसे Uttar Pradesh"></label>
+  <label>देवता<input id="templeDeity" type="text" maxlength="120" placeholder="जैसे भगवान शिव"></label>
+ </div>
+ <div class="calc-actions"><button id="templeSearchButton" type="button">मंदिर खोजें</button></div>
+ <p id="templeDirectoryStatus" class="hint" aria-live="polite">आधिकारिक स्रोतों वाली मंदिर सूची खोजें।</p>
+ <div id="templeDirectoryResults" class="grid"></div>
+</section>
 <section class="panel"><div class="section-title">मंत्र पुस्तकालय</div><p class="hint">हिंदी, संस्कृत या English शब्द से मंत्र खोजें।</p><div class="row" style="margin:10px 0"><input id="mantraSearch" type="search" placeholder="गायत्री, Gayatri…" aria-label="मंत्र खोजें" style="flex:1;min-width:180px"><button id="mantraSearchButton" class="secondary" type="button">खोजें</button></div><p id="mantraStatus" class="hint">मंत्र-संग्रह लोड हो रहा है…</p><div id="mantraList" class="grid"></div><p class="hint">मंत्र-पाठ और उच्चारण अपनी परंपरा के योग्य आचार्य से सत्यापित करें।</p></section>
 
 <section class="panel" id="panchangCalculator">
@@ -96,6 +108,36 @@ async function loadReleaseReadiness(){const status=document.getElementById('rele
 loadReleaseReadiness();
 async function runGlobalSearch(){const input=document.getElementById('globalSearch'),status=document.getElementById('globalSearchStatus'),target=document.getElementById('globalSearchResults'),query=input.value.trim();if(!query){status.textContent='कृपया खोज शब्द लिखें।';target.replaceChildren();return}status.textContent='खोज जारी है…';target.replaceChildren();try{const params=new URLSearchParams({q:query,language:lang.value,limit:'30'});const response=await fetch('/api/search?'+params.toString());if(!response.ok)throw new Error('Search unavailable');const data=await response.json();status.textContent=data.total_matches+' परिणाम मिले • सभी प्रारंभिक सामग्री आचार्य समीक्षा के अधीन है';for(const item of data.results){const card=document.createElement('article');card.className='tile';card.style.cursor='default';const title=document.createElement('b');title.textContent=item.title;const kind=document.createElement('div');kind.className='hint';kind.textContent=({knowledge:'ज्ञान',mantra:'मंत्र', 'puja-guide':'पूजा मार्गदर्शिका'}[item.type]||item.type)+' • आचार्य समीक्षा अपेक्षित';const snippet=document.createElement('p');snippet.className='hint';snippet.textContent=item.snippet;const ask=document.createElement('button');ask.className='secondary';ask.textContent='इस विषय पर पूछें';ask.onclick=()=>send(item.title+' के बारे में बताइए');card.append(title,kind,snippet,ask);target.append(card)}}catch(error){status.textContent='खोज सेवा अभी उपलब्ध नहीं है।'}}
 document.getElementById('globalSearchButton').onclick=runGlobalSearch;document.getElementById('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')runGlobalSearch()});
+async function loadTempleDirectory(){
+ const status=document.getElementById('templeDirectoryStatus');
+ const target=document.getElementById('templeDirectoryResults');
+ const params=new URLSearchParams();
+ for(const [key,id] of [['q','templeQuery'],['state','templeState'],['deity','templeDeity']]){
+  const value=document.getElementById(id).value.trim();if(value)params.set(key,value);
+ }
+ status.textContent='मंदिर सूची खोजी जा रही है…';target.replaceChildren();
+ try{
+  const response=await fetch('/api/temples?'+params.toString());if(!response.ok)throw new Error('Temple directory unavailable');
+  const data=await response.json();status.textContent=data.count+' मंदिर मिले • स्रोत: आधिकारिक मंदिर/ट्रस्ट वेबसाइट';
+  for(const temple of data.temples){
+   const card=document.createElement('article');card.className='tile';card.style.cursor='default';
+   const title=document.createElement('b');title.textContent=temple.name_hi+' • '+temple.name_en;
+   const location=document.createElement('div');location.className='hint';location.textContent=temple.city+', '+temple.state+', '+temple.country;
+   const deity=document.createElement('p');deity.className='hint';deity.textContent='आराध्य: '+temple.deity;
+   const services=document.createElement('p');services.className='hint';services.textContent=temple.official_services.join(' • ');
+   const links=document.createElement('div');links.className='row';
+   for(const [label,url] of [['आधिकारिक वेबसाइट',temple.official_website],['दर्शन/जानकारी',temple.official_information_url]]){
+    try{const parsed=new URL(url);if(parsed.protocol!=='https:')continue;const link=document.createElement('a');link.href=parsed.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label;links.append(link)}catch(error){}
+   }
+   card.append(title,location,deity,services,links);target.append(card);
+  }
+  if(!data.count)status.textContent='कोई मंदिर नहीं मिला। दूसरा नाम, देवता या राज्य आज़माएँ।';
+ }catch(error){status.textContent='मंदिर सूची अभी उपलब्ध नहीं है। कृपया बाद में प्रयास करें।'}
+}
+document.getElementById('templeSearchButton').addEventListener('click',loadTempleDirectory);
+for(const id of ['templeQuery','templeState','templeDeity']){
+ document.getElementById(id).addEventListener('keydown',event=>{if(event.key==='Enter')loadTempleDirectory()});
+}
 async function loadPanditDirectory(){
  const status=document.getElementById('panditDirectoryStatus');
  const target=document.getElementById('panditDirectoryResults');
