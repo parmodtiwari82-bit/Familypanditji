@@ -353,6 +353,67 @@ def test_jyotish_guide_is_transparent_and_does_not_claim_calculations():
     assert "सहमति" in payload["privacy"]
 
 
+def test_public_pandit_application_stays_private_until_admin_review(monkeypatch, tmp_path):
+    import main as backend_main
+
+    monkeypatch.setattr(backend_main, "PANDIT_DIRECTORY_DB", tmp_path / "applications.sqlite3")
+    payload = {
+        "display_name": "Pandit Test",
+        "contact_phone": "+91 9876543210",
+        "city": "Kanpur",
+        "state": "Uttar Pradesh",
+        "country": "India",
+        "service_categories": ["Vivah Puja"],
+        "languages": ["Hindi", "Sanskrit"],
+        "tradition": "Smarta",
+        "biography": "Traditional ritual services.",
+        "qualification_summary": "Acharya course",
+        "privacy_consent": True,
+        "website": "",
+    }
+    created = client.post("/api/pandit-applications", json=payload)
+    assert created.status_code == 201
+    assert created.json()["status"] == "pending_review"
+    assert created.json()["public_listing"] is False
+    assert client.get("/api/pandits").json()["count"] == 0
+
+    token = "test-admin-token-" + "b" * 40
+    monkeypatch.setattr(backend_main, "ADMIN_API_TOKEN", token)
+    queue = client.get("/api/admin/pandits/pending", headers={"Authorization": f"Bearer {token}"})
+    assert queue.status_code == 200
+    assert queue.json()["count"] == 1
+    private = queue.json()["items"][0]
+    assert private["contact_phone"] == payload["contact_phone"]
+    assert private["profile_id"] == created.json()["profile_id"]
+
+
+def test_pandit_application_requires_privacy_consent_and_valid_contact(tmp_path, monkeypatch):
+    import main as backend_main
+
+    monkeypatch.setattr(backend_main, "PANDIT_DIRECTORY_DB", tmp_path / "applications.sqlite3")
+    payload = {
+        "display_name": "Pandit Test", "contact_phone": "123", "city": "Kanpur",
+        "state": "Uttar Pradesh", "service_categories": ["Puja"], "languages": ["Hindi"],
+        "tradition": "Smarta", "qualification_summary": "Acharya", "privacy_consent": False,
+    }
+    assert client.post("/api/pandit-applications", json=payload).status_code == 422
+    payload["contact_phone"] = "+91 9876543210"
+    assert client.post("/api/pandit-applications", json=payload).status_code == 422
+
+
+def test_pandit_application_rejects_honeypot_submission(monkeypatch, tmp_path):
+    import main as backend_main
+
+    monkeypatch.setattr(backend_main, "PANDIT_DIRECTORY_DB", tmp_path / "applications.sqlite3")
+    payload = {
+        "display_name": "Pandit Test", "contact_phone": "+91 9876543210", "city": "Kanpur",
+        "state": "Uttar Pradesh", "service_categories": ["Puja"], "languages": ["Hindi"],
+        "tradition": "Smarta", "qualification_summary": "Acharya", "privacy_consent": True,
+        "website": "spam",
+    }
+    assert client.post("/api/pandit-applications", json=payload).status_code == 422
+
+
 def test_pandit_directory_does_not_fabricate_profiles_or_claim_booking():
     response = client.get("/api/pandits")
     assert response.status_code == 200
