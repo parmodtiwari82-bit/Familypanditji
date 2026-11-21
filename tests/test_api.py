@@ -1149,7 +1149,7 @@ def test_temple_directory_includes_all_twelve_dwadasha_jyotirlingas():
     response = client.get("/api/temples")
     assert response.status_code == 200
     jyotirlingas = [item for item in response.json()["temples"]
-                    if "Dwadasha Jyotirlinga" in item.get("pilgrimage_circuit", [])]
+                    if "Dwadasha Jyotirlinga" in item.get("pilgrimage_circuits", [])]
     assert len(jyotirlingas) == 12
     assert len({item["id"] for item in jyotirlingas}) == 12
     assert all(item["deity"] == "भगवान शिव" for item in jyotirlingas)
