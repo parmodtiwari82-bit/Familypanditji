@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from vedic_calc import calculate_kundli, calculate_panchang, parse_local_datetime
 from advanced_jyotish import calculate_advanced_jyotish
-from precision_ephemeris import calculate_tropical_longitudes, calculate_sunrise_sunset, mean_node_longitudes
+from precision_ephemeris import calculate_tropical_longitudes, calculate_sunrise_sunset, calculate_panchang_limb_transitions, mean_node_longitudes
 from pandit_directory import create_pending_profile, get_profile_status, list_verified_profiles, suspend_profile, verify_profile
 
 APP_VERSION = "0.3.0"
@@ -734,6 +734,7 @@ def resolve_astronomy_engine(moment: datetime, requested: str) -> tuple[dict[str
         "ephemeris": "NASA/JPL DE440s", "planetary_positions": "geocentric_apparent_tropical_longitudes",
         "ayanamsa": "approximate_Lahiri", "nodes": "approximate_mean_Rahu_Ketu",
         "sunrise_sunset": "JPL_DE440s_apparent_solar_altitude_standard_horizon_minus_0.833_degrees",
+        "panchang_transition_times": "JPL_DE440s_scan_and_binary_search_with_approximate_Lahiri_ayanamsa",
         "lagna_and_houses": "approximate_local_sidereal_time_whole_sign",
         "limitations": ["approximate Lahiri ayanamsa", "mean Rahu/Ketu", "standard unobstructed horizon; local terrain/buildings are not modeled", "approximate ascendant and whole-sign houses", "regional Panchang conventions and Acharya validation pending"],
         "note_hi": "ग्रहों के दीर्घांश और मानक क्षितिज के सूर्योदय/सूर्यास्त JPL DE440s से हैं; अयनांश, राहु-केतु, लग्न/भाव और वैदिक नियम अभी अनुमानित हैं। स्थानीय पहाड़/इमारतें शामिल नहीं हैं। इसे प्रमाणित पंचांग/कुंडली न मानें।",
@@ -780,6 +781,11 @@ def calculate_daily_panchang(
             except (FileNotFoundError, RuntimeError, ValueError) as exc:
                 raise HTTPException(status_code=503, detail=f"JPL sunrise/sunset unavailable: {exc}") from exc
             result.update(solar_events)
+            try:
+                result["limb_ends_at"] = calculate_panchang_limb_transitions(local_dt, JPL_EPHEMERIS_PATH)
+            except (FileNotFoundError, RuntimeError, ValueError) as exc:
+                raise HTTPException(status_code=503, detail=f"JPL Panchang transition calculation unavailable: {exc}") from exc
+            result["transition_times_status"] = "jpl_de440s_with_approximate_lahiri_conventions"
             result["sunrise_sunset_status"] = "jpl_de440s_standard_horizon"
         else:
             result["sunrise_sunset_status"] = "noaa_simplified_approximation"
