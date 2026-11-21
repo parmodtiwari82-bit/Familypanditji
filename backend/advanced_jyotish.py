@@ -86,6 +86,7 @@ def calculate_vimshottari(local_birth: datetime, moon_sidereal_longitude: float)
             "end": md_end.isoformat(),
             "duration_years_approx": round(years, 4),
             "is_birth_balance": offset == 0,
+            "active_at_birth": cursor <= local_birth < md_end,
             "antardashas": _subperiods(md_origin, lord, float(DASHA_YEARS[lord]), local_birth, 1),
         }
         periods.append(period)
