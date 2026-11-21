@@ -124,6 +124,49 @@ def acos_safe(x: float) -> float:
     from math import acos
     return acos(max(-1,min(1,x)))
 
+def _panchang_indices(moment: datetime) -> dict[str, int]:
+    """Return the four moving Panchang limb indices at a timezone-aware instant."""
+    longs = tropical_longitudes(moment)
+    ayan = ayanamsa_lahiri_approx(moment)
+    moon_sun = norm(longs["Moon"] - longs["Sun"])
+    return {
+        "tithi": min(29, int(moon_sun / 12.0)),
+        "nakshatra": int(norm(longs["Moon"] - ayan) / (360.0 / 27.0)),
+        "yoga": int(norm(longs["Sun"] + longs["Moon"] - 2.0 * ayan) / (360.0 / 27.0)),
+        "karana": min(59, int(moon_sun / 6.0)),
+    }
+
+
+def _next_limb_transition(local_dt: datetime, limb: str) -> str | None:
+    """Find the next approximate limb boundary using a coarse scan + binary search.
+
+    This deliberately reports an estimate, not a certified Panchang transition.
+    """
+    initial = _panchang_indices(local_dt)[limb]
+    left = local_dt
+    right = local_dt + timedelta(hours=48)
+    step = timedelta(minutes=10)
+    probe = left + step
+    found = None
+    while probe <= right:
+        if _panchang_indices(probe)[limb] != initial:
+            found = probe
+            break
+        left = probe
+        probe += step
+    if found is None:
+        return None
+    right = found
+    # Resolve the bracket to approximately one second.
+    while (right - left).total_seconds() > 1:
+        middle = left + (right - left) / 2
+        if _panchang_indices(middle)[limb] == initial:
+            left = middle
+        else:
+            right = middle
+    return right.isoformat()
+
+
 def calculate_panchang(local_dt: datetime, latitude: float, longitude: float) -> dict:
     longs = tropical_longitudes(local_dt)
     moon_sun = norm(longs["Moon"]-longs["Sun"])
@@ -149,6 +192,12 @@ def calculate_panchang(local_dt: datetime, latitude: float, longitude: float) ->
         "sun_sign": sign_name(norm(longs["Sun"]-ayanamsa_lahiri_approx(local_dt))),
         "sunrise": datetime.fromisoformat(sunrise_utc).astimezone(tz).isoformat() if sunrise_utc else None,
         "sunset": datetime.fromisoformat(sunset_utc).astimezone(tz).isoformat() if sunset_utc else None,
+        "limb_ends_at": {
+            "tithi": _next_limb_transition(local_dt, "tithi"),
+            "nakshatra": _next_limb_transition(local_dt, "nakshatra"),
+            "yoga": _next_limb_transition(local_dt, "yoga"),
+            "karana": _next_limb_transition(local_dt, "karana"),
+        },
         "calculation": "free_low_precision_astronomical_approximation",
         "accuracy_note_hi": "यह निःशुल्क प्रारंभिक खगोलीय गणना है। स्थानीय पंचांग, अयनांश, दृश्य क्षितिज और परंपरा के अनुसार अंतर हो सकता है। पूजा/व्रत के अंतिम निर्णय से पहले स्थानीय प्रमाणित पंचांग/आचार्य से मिलान करें।",
     }
