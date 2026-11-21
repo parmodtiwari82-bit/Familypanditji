@@ -110,8 +110,8 @@ def calculate_vimshottari(local_birth: datetime, moon_sidereal_longitude: float)
 def divisional_sign(longitude: float, division: int, method: str) -> str:
     """Map a sidereal longitude to a classical varga sign for supported methods."""
     from vedic_calc import SIGNS
-    if division < 1 or 360 % division != 0:
-        raise ValueError("division must be a positive divisor of 360")
+    if not isinstance(division, int) or division < 1 or division > 30:
+        raise ValueError("division must be an integer between 1 and 30")
     value = norm(longitude)
     rashi = int(value // 30)
     part = min(division - 1, int((value % 30) / (30.0 / division)))
