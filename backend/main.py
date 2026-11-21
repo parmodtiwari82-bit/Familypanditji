@@ -705,17 +705,6 @@ def readiness_probe():
     return payload if ready else JSONResponse(status_code=503, content=payload)
 
 
-def _readiness_error_payload(checks: dict[str, bool]) -> dict[str, Any]:
-    from fastapi.responses import JSONResponse
-    # The caller below converts this structured diagnostic into HTTP 503.
-    return {
-        "status": "not_ready", "ready": False,
-        "checks_passed": sum(checks.values()), "checks_total": len(checks),
-        "checks": checks,
-        "scope": "local_application_files_and_catalogue_structure_only",
-        "note_hi": "आवश्यक ऐप फाइल या कैटलॉग अनुपलब्ध/अमान्य है।",
-    }
-
 
 @app.get("/health")
 def health():
