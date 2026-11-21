@@ -857,8 +857,9 @@ def test_jpl_mode_uses_injected_ephemeris_positions_and_labels_remaining_approxi
 
 def test_jpl_panchang_does_not_present_approximate_transition_times_as_jpl(monkeypatch, tmp_path):
     import main
-    monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", tmp_path / "de440s.bsp")
-    monkeypatch.setattr(main.JPL_EPHEMERIS_PATH, "is_file", lambda: True)
+    ephemeris = tmp_path / "de440s.bsp"
+    ephemeris.write_bytes(b"stub")
+    monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", ephemeris)
     monkeypatch.setattr(main, "calculate_tropical_longitudes", lambda moment, path: {
         "Sun": 10.0, "Moon": 20.0, "Mercury": 30.0, "Venus": 40.0,
         "Mars": 50.0, "Jupiter": 60.0, "Saturn": 70.0,
