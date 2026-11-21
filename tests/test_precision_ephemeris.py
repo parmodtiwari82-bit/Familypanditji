@@ -90,3 +90,27 @@ def test_jpl_panchang_transitions_validate_scan_horizon(tmp_path):
     from precision_ephemeris import calculate_panchang_limb_transitions
     with pytest.raises(ValueError, match="max_hours"):
         calculate_panchang_limb_transitions(datetime(2026, 11, 21, tzinfo=timezone.utc), tmp_path / "missing.bsp", max_hours=0)
+
+
+def test_jpl_ascendant_requires_timezone_aware_datetime(tmp_path):
+    from precision_ephemeris import calculate_tropical_ascendant
+    with pytest.raises(ValueError, match="timezone-aware"):
+        calculate_tropical_ascendant(datetime(2026, 11, 21), 26.45, 80.33, tmp_path / "missing.bsp")
+
+
+def test_jpl_ascendant_rejects_invalid_coordinates(tmp_path):
+    from precision_ephemeris import calculate_tropical_ascendant
+    with pytest.raises(ValueError, match="latitude/longitude"):
+        calculate_tropical_ascendant(datetime(2026, 11, 21, tzinfo=timezone.utc), 91, 80.33, tmp_path / "missing.bsp")
+
+
+def test_jpl_ascendant_enforces_de440s_date_range(tmp_path):
+    from precision_ephemeris import calculate_tropical_ascendant
+    with pytest.raises(ValueError, match="1849 through 2150"):
+        calculate_tropical_ascendant(datetime(1700, 1, 1, tzinfo=timezone.utc), 26.45, 80.33, tmp_path / "missing.bsp")
+
+
+def test_jpl_ascendant_requires_local_ephemeris_file(tmp_path):
+    from precision_ephemeris import calculate_tropical_ascendant
+    with pytest.raises(FileNotFoundError, match="JPL ephemeris file not found"):
+        calculate_tropical_ascendant(datetime(2026, 11, 21, tzinfo=timezone.utc), 26.45, 80.33, tmp_path / "missing.bsp")
