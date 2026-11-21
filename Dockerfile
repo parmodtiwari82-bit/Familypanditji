@@ -2,16 +2,27 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PORT=8000
+    PORT=8000 \
+    JPL_EPHEMERIS_PATH=/app/backend/data/ephemeris/de440s.bsp
 
 WORKDIR /app
 
 COPY backend/requirements.txt /app/backend/requirements.txt
+COPY backend/requirements-astronomy.txt /app/backend/requirements-astronomy.txt
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r /app/backend/requirements.txt \
+    && pip install --no-cache-dir -r /app/backend/requirements-astronomy.txt \
     && useradd --create-home --uid 10001 appuser
 
 COPY --chown=appuser:appuser . /app
+
+# Bundle the freely available NASA/JPL DE440s data so "auto" selects the
+# Skyfield/JPL astronomy engine in this image instead of silently falling
+# back to the low-precision dependency-free approximation.
+RUN mkdir -p /app/backend/data/ephemeris \
+    && python /app/scripts/download_ephemeris.py --directory /app/backend/data/ephemeris \
+    && test -s /app/backend/data/ephemeris/de440s.bsp \
+    && chown -R appuser:appuser /app/backend/data/ephemeris
 
 USER appuser
 EXPOSE 8000

@@ -17,20 +17,23 @@ def main() -> int:
     destination = Path(args.directory).expanduser().resolve()
     destination.mkdir(parents=True, exist_ok=True)
 
+    path = destination / "de440s.bsp"
+    if path.exists() and path.stat().st_size >= 1_000_000:
+        print(f"Already present: {path}")
+        return 0
+
     try:
-        from skyfield.api import load
+        from skyfield.api import Loader
     except ImportError as exc:
         parser.error(
             "Skyfield is not installed. Run: pip install -r backend/requirements-astronomy.txt"
         )
         raise exc
 
-    path = destination / "de440s.bsp"
-    if path.exists():
-        print(f"Already present: {path}")
-        return 0
-    # Skyfield downloads the official JPL DE440s file only when this command is run.
-    load("de440s.bsp", directory=str(destination))
+    # Skyfield's Loader owns the download directory; Loader.__call__ does not
+    # accept a directory keyword argument.
+    loader = Loader(str(destination))
+    loader("de440s.bsp")
     if not path.is_file() or path.stat().st_size < 1_000_000:
         raise RuntimeError("DE440s download did not produce a valid local file")
     print(f"Downloaded DE440s: {path} ({path.stat().st_size:,} bytes)")
