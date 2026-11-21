@@ -7,7 +7,7 @@ against a trusted regional Panchang/Acharya before ritual or life decisions.
 from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta, timezone
-from math import atan2, cos, degrees, floor, radians, sin, sqrt, tan
+from math import atan, atan2, cos, degrees, floor, radians, sin, sqrt, tan
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 SIGNS = ["मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुम्भ", "मीन"]
