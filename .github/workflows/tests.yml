@@ -83,6 +83,7 @@ jobs:
           fi
           python - <<'PY'
           import json
+          from urllib.error import HTTPError
           from urllib.request import Request, urlopen
 
           base = "http://127.0.0.1:8000"
@@ -104,8 +105,12 @@ jobs:
               headers={"Content-Type": "application/json"},
               method="POST",
           )
-          with urlopen(request, timeout=30) as response:
-              chart = json.load(response)
+          try:
+              with urlopen(request, timeout=30) as response:
+                  chart = json.load(response)
+          except HTTPError as error:
+              print("Kundli API HTTP error:", error.code, error.read().decode("utf-8", "replace"))
+              raise
           assert chart["engine"]["id"] == "jpl_de440s_skyfield", chart.get("engine")
           assert len(chart["planets"]) == 9, chart.get("planets")
           assert chart["data_retention"] == "not_stored_by_this_endpoint"
