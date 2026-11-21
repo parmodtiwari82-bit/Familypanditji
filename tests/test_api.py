@@ -652,6 +652,8 @@ def test_free_panchang_calculation_returns_location_specific_limbs():
     assert data["tithi"] and data["nakshatra"] and data["yoga"] and data["karana"]
     assert data["sunrise"] and data["sunset"]
     assert data["calculation"] == "free_low_precision_astronomical_approximation"
+    assert set(data["limb_ends_at"]) == {"tithi", "nakshatra", "yoga", "karana"}
+    assert all(data["limb_ends_at"][limb].endswith("+05:30") for limb in data["limb_ends_at"])
     assert "आचार्य" in data["accuracy_note_hi"]
 
 
