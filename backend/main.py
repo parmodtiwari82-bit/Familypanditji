@@ -380,6 +380,7 @@ def public_verified_pandit_directory(
         "items": items,
         "pandits": items,
         "booking_enabled": False,
+        "booking_available": False,
         "note_hi": "अभी केवल प्लेटफ़ॉर्म द्वारा समीक्षा की गई सार्वजनिक प्रोफ़ाइलें दिखाई जाती हैं। बुकिंग और भुगतान सुविधा चालू नहीं है।",
     }
 
