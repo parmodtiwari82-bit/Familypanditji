@@ -1312,3 +1312,38 @@ def test_frontend_uses_individual_puja_and_samskara_detail_endpoints():
     assert "'/api/samskaras/'+encodeURIComponent(item.id)" in html
     assert "विस्तृत जानकारी खोलें" in html
     assert "aria-live" in html
+
+
+def test_admin_can_reject_pending_pandit_application_without_publication(monkeypatch, tmp_path):
+    import main as backend_main
+    backend_main._pandit_application_rate_windows.clear()
+    monkeypatch.setattr(backend_main, "PANDIT_DIRECTORY_DB", tmp_path / "applications.sqlite3")
+    token = "test-admin-token-" + "r" * 40
+    monkeypatch.setattr(backend_main, "ADMIN_API_TOKEN", token)
+    payload = {
+        "display_name": "Pandit Reject Test", "contact_phone": "+91 9876543210",
+        "city": "Kanpur", "state": "Uttar Pradesh", "country": "India",
+        "service_categories": ["Vivah Puja"], "languages": ["Hindi"],
+        "tradition": "Smarta", "biography": "Traditional ritual services.",
+        "qualification_summary": "Acharya course", "privacy_consent": True, "website": "",
+    }
+    created = client.post("/api/pandit-applications", json=payload)
+    assert created.status_code == 201
+    profile_id = created.json()["profile_id"]
+    rejected = client.post(
+        f"/api/admin/pandits/{profile_id}/reject",
+        json={"reason": "Submitted qualification details need clarification."},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert rejected.status_code == 200
+    assert rejected.json()["status"] == "rejected"
+    assert client.get("/api/admin/pandits/pending", headers={"Authorization": f"Bearer {token}"}).json()["count"] == 0
+    assert client.get("/api/admin/pandits").status_code == 405
+    status = client.get(f"/api/admin/pandits/{profile_id}/status", headers={"Authorization": f"Bearer {token}"})
+    assert status.status_code == 200
+    assert status.json()["status"] == "rejected"
+    assert client.post(
+        f"/api/admin/pandits/{profile_id}/reject",
+        json={"reason": "Second attempt should not change decision."},
+        headers={"Authorization": f"Bearer {token}"},
+    ).status_code == 404

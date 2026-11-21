@@ -48,6 +48,10 @@ def _connect(database: Path):
     columns = {row[1] for row in connection.execute("PRAGMA table_info(pandit_profiles)")}
     if "contact_phone" not in columns:
         connection.execute("ALTER TABLE pandit_profiles ADD COLUMN contact_phone TEXT NOT NULL DEFAULT ''")
+    if "rejected_at" not in columns:
+        connection.execute("ALTER TABLE pandit_profiles ADD COLUMN rejected_at TEXT")
+    if "rejection_reason" not in columns:
+        connection.execute("ALTER TABLE pandit_profiles ADD COLUMN rejection_reason TEXT")
     connection.execute(
         "CREATE INDEX IF NOT EXISTS idx_pandit_public_search ON pandit_profiles(status, city, state)"
     )
@@ -156,10 +160,22 @@ def list_verified_profiles(database: Path, city: str | None = None,
 def get_profile_status(database: Path, profile_id: str) -> dict[str, Any] | None:
     with _connect(database) as connection:
         row = connection.execute(
-            "SELECT profile_id, status, created_at, updated_at, verified_at FROM pandit_profiles WHERE profile_id=?",
+            "SELECT profile_id, CASE WHEN rejected_at IS NOT NULL THEN 'rejected' ELSE status END AS status, created_at, updated_at, verified_at, rejected_at, rejection_reason FROM pandit_profiles WHERE profile_id=?",
             (profile_id,),
         ).fetchone()
     return dict(row) if row else None
+
+
+def reject_pending_profile(database: Path, profile_id: str, reason: str) -> bool:
+    """Record a rejection without deleting the application or exposing it publicly."""
+    now = datetime.now(timezone.utc).isoformat()
+    with _connect(database) as connection:
+        cursor = connection.execute(
+            """UPDATE pandit_profiles SET rejected_at=?, rejection_reason=?, updated_at=?
+               WHERE profile_id=? AND status='pending_review' AND rejected_at IS NULL""",
+            (now, reason.strip(), now, profile_id),
+        )
+        return cursor.rowcount == 1
 
 
 def list_pending_profiles(database: Path, limit: int = 100) -> list[dict[str, Any]]:
@@ -169,7 +185,7 @@ def list_pending_profiles(database: Path, limit: int = 100) -> list[dict[str, An
             """SELECT profile_id, display_name, city, state, country,
                       service_categories_json, languages_json, tradition, biography,
                       qualification_summary, contact_phone, created_at, updated_at
-               FROM pandit_profiles WHERE status='pending_review'
+               FROM pandit_profiles WHERE status='pending_review' AND rejected_at IS NULL
                ORDER BY created_at ASC LIMIT ?""",
             (limit,),
         ).fetchall()
