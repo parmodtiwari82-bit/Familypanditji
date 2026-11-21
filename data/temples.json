@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "notice_hi": "यह निर्देशिका आधिकारिक मंदिर/सरकारी पर्यटन स्रोतों पर आधारित है। चारधाम के लिंक उत्तराखंड सरकार के यात्रा-पंजीकरण और पर्यटन सूचना पोर्टल हैं, मंदिरों की निजी वेबसाइट नहीं। यात्रा से पहले वर्तमान कपाट, मौसम, मार्ग, पंजीकरण, दर्शन, प्रवेश और सेवाएँ आधिकारिक पोर्टल पर दोबारा जाँचें।",
+  "version": "1.2.0",
+  "notice_hi": "यह निर्देशिका आधिकारिक मंदिर/सरकारी पर्यटन स्रोतों पर आधारित है। चारधाम के लिंक उत्तराखंड सरकार के यात्रा-पंजीकरण और पर्यटन सूचना पोर्टल हैं, मंदिरों की निजी वेबसाइट नहीं। यात्रा से पहले वर्तमान कपाट, मौसम, मार्ग, पंजीकरण, दर्शन, प्रवेश और सेवाएँ आधिकारिक पोर्टल पर दोबारा जाँचें। द्वादश ज्योतिर्लिंग सूची में मंदिर-प्रशासन या सरकारी पर्यटन के आधिकारिक सूचना स्रोत दिए गए हैं; जहाँ मंदिर की अपनी वेबसाइट उपलब्ध/पुष्ट नहीं है, वहाँ सरकारी पर्यटन सूचना लिंक को स्पष्ट रूप से उसी रूप में चिह्नित किया गया है।",
   "last_catalogue_reviewed": "2026-11-21",
   "temples": [
     {
@@ -21,7 +21,10 @@
         "Live darshan"
       ],
       "source_status": "official_temple_trust_website",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuit": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "mahakaleshwar-ujjain",
@@ -41,7 +44,10 @@
         "Atithi Niwas information"
       ],
       "source_status": "official_temple_management_website",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuit": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "somnath-gujarat",
@@ -61,7 +67,10 @@
         "Tirth Darshan information"
       ],
       "source_status": "official_shree_somnath_trust_website",
-      "last_checked_on": "2026-11-21"
+      "last_checked_on": "2026-11-21",
+      "pilgrimage_circuit": [
+        "Dwadasha Jyotirlinga"
+      ]
     },
     {
       "id": "tirumala-venkateswara",
@@ -158,7 +167,10 @@
         "Yatra safety and visitor guidance"
       ],
       "source_status": "official_uttarakhand_tourism_government_portal",
-      "pilgrimage_circuit": "Uttarakhand Char Dham",
+      "pilgrimage_circuit": [
+        "Uttarakhand Char Dham",
+        "Dwadasha Jyotirlinga"
+      ],
       "last_checked_on": "2026-11-21"
     },
     {
@@ -179,6 +191,160 @@
       ],
       "source_status": "official_uttarakhand_tourism_government_portal",
       "pilgrimage_circuit": "Uttarakhand Char Dham",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "mallikarjuna-srisailam",
+      "name_hi": "श्री मल्लिकार्जुन स्वामी ज्योतिर्लिंग",
+      "name_en": "Sri Mallikarjuna Swamy Jyotirlinga",
+      "deity": "भगवान शिव",
+      "city": "Srisailam",
+      "state": "Andhra Pradesh",
+      "country": "India",
+      "address": "Sri Bhramaramba Mallikarjuna Swamy Devasthanam, Srisailam, Andhra Pradesh, India",
+      "official_website": "https://www.srisailadevasthanam.org/en-in/home",
+      "official_information_url": "https://utsav.gov.in/public/view-darshan/srisailam-temple",
+      "official_services": [
+        "Darshan and seva information",
+        "Online booking and pilgrim facilities"
+      ],
+      "source_status": "official_temple_devasthanam_website",
+      "pilgrimage_circuit": "Dwadasha Jyotirlinga",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "omkareshwar-madhya-pradesh",
+      "name_hi": "श्री ओंकारेश्वर ज्योतिर्लिंग",
+      "name_en": "Shri Omkareshwar Jyotirlinga",
+      "deity": "भगवान शिव",
+      "city": "Omkareshwar",
+      "state": "Madhya Pradesh",
+      "country": "India",
+      "address": "Shri Omkareshwar Mandir Trust, Omkareshwar, Khandwa, Madhya Pradesh, India",
+      "official_website": "https://www.shriomkareshwar.org/",
+      "official_information_url": "https://www.shriomkareshwar.org/Schedules.aspx",
+      "official_services": [
+        "Darshan and ritual schedule",
+        "Official temple information and booking support"
+      ],
+      "source_status": "official_temple_trust_website",
+      "pilgrimage_circuit": "Dwadasha Jyotirlinga",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "bhimashankar-maharashtra",
+      "name_hi": "श्री भीमाशंकर ज्योतिर्लिंग",
+      "name_en": "Shri Bhimashankar Jyotirlinga",
+      "deity": "भगवान शिव",
+      "city": "Bhimashankar",
+      "state": "Maharashtra",
+      "country": "India",
+      "address": "Bhimashankar, Pune district, Maharashtra, India",
+      "official_website": "https://maharashtratourism.gov.in/temple/bhimashankar/",
+      "official_information_url": "https://maharashtratourism.gov.in/temple/bhimashankar/",
+      "official_services": [
+        "Government temple and pilgrimage information",
+        "Visitor and regional tourism guidance"
+      ],
+      "source_status": "official_maharashtra_tourism_government_portal",
+      "pilgrimage_circuit": "Dwadasha Jyotirlinga",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "trimbakeshwar-maharashtra",
+      "name_hi": "श्री त्र्यंबकेश्वर ज्योतिर्लिंग",
+      "name_en": "Shri Trimbakeshwar Jyotirlinga",
+      "deity": "भगवान शिव",
+      "city": "Trimbak",
+      "state": "Maharashtra",
+      "country": "India",
+      "address": "Trimbakeshwar Jyotirling Mandir, Trimbak, Nashik, Maharashtra 422212, India",
+      "official_website": "https://www.trimbakeshwartrust.com/",
+      "official_information_url": "https://www.trimbakeshwartrust.com/",
+      "official_services": [
+        "Official darshan information",
+        "Online darshan and puja services",
+        "Bhaktniwas information"
+      ],
+      "source_status": "official_temple_devasthan_trust_website",
+      "pilgrimage_circuit": "Dwadasha Jyotirlinga",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "vaidyanath-deoghar",
+      "name_hi": "श्री बाबा बैद्यनाथ ज्योतिर्लिंग",
+      "name_en": "Shri Baba Baidyanath Jyotirlinga",
+      "deity": "भगवान शिव",
+      "city": "Deoghar",
+      "state": "Jharkhand",
+      "country": "India",
+      "address": "Baba Mandir Campus, Deoghar, Jharkhand 814112, India",
+      "official_website": "https://www.babadham.org/",
+      "official_information_url": "https://www.babadham.org/timings/",
+      "official_services": [
+        "Temple administration notices",
+        "Darshan and aarti information",
+        "Official warning about unauthorized booking agents"
+      ],
+      "source_status": "official_temple_administration_website",
+      "pilgrimage_circuit": "Dwadasha Jyotirlinga",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "nageshwar-dwarka",
+      "name_hi": "श्री नागेश्वर ज्योतिर्लिंग",
+      "name_en": "Shri Nageshwar Jyotirlinga",
+      "deity": "भगवान शिव",
+      "city": "Dwarka",
+      "state": "Gujarat",
+      "country": "India",
+      "address": "Nageshwar, Devbhumi Dwarka, Gujarat, India",
+      "official_website": "https://gujarattourism.com/saurashtra/devbhoomi-dwarka/nageshwar-jyotirlinga.html",
+      "official_information_url": "https://gujarattourism.com/saurashtra/devbhoomi-dwarka/nageshwar-jyotirlinga.html",
+      "official_services": [
+        "Government tourism and pilgrimage information",
+        "Location and visitor guidance"
+      ],
+      "source_status": "official_gujarat_tourism_government_portal",
+      "pilgrimage_circuit": "Dwadasha Jyotirlinga",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "ramanathaswamy-rameswaram",
+      "name_hi": "श्री रामनाथस्वामी ज्योतिर्लिंग",
+      "name_en": "Arulmigu Ramanathaswamy Temple",
+      "deity": "भगवान शिव",
+      "city": "Rameswaram",
+      "state": "Tamil Nadu",
+      "country": "India",
+      "address": "Arulmigu Ramanathaswamy Temple, Rameswaram, Ramanathapuram district, Tamil Nadu 623526, India",
+      "official_website": "https://rameswaramramanathar.hrce.tn.gov.in/",
+      "official_information_url": "https://rameswaramramanathar.hrce.tn.gov.in/",
+      "official_services": [
+        "Temple administration information",
+        "Official opening hours and visitor information"
+      ],
+      "source_status": "official_tamil_nadu_hrce_temple_portal",
+      "pilgrimage_circuit": "Dwadasha Jyotirlinga",
+      "last_checked_on": "2026-11-21"
+    },
+    {
+      "id": "grishneshwar-verul",
+      "name_hi": "श्री घृष्णेश्वर ज्योतिर्लिंग",
+      "name_en": "Shri Grishneshwar Jyotirlinga",
+      "deity": "भगवान शिव",
+      "city": "Verul",
+      "state": "Maharashtra",
+      "country": "India",
+      "address": "Grishneshwar Temple, Verul, Chhatrapati Sambhajinagar district, Maharashtra, India",
+      "official_website": "https://maharashtratourism.gov.in/temple/ghrishneshwar/",
+      "official_information_url": "https://maharashtratourism.gov.in/temple/ghrishneshwar/",
+      "official_services": [
+        "Government temple and pilgrimage information",
+        "Visitor and regional tourism guidance"
+      ],
+      "source_status": "official_maharashtra_tourism_government_portal",
+      "pilgrimage_circuit": "Dwadasha Jyotirlinga",
       "last_checked_on": "2026-11-21"
     }
   ]
