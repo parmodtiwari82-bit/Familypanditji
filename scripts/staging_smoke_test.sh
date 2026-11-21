@@ -48,7 +48,7 @@ request() {
 }
 
 for path in /health /ready /api/trust/status /api/release/readiness /api/modules \
-  /api/panchang/overview /api/jyotish/guide /api/pandits /api/search?q=Gayatri\&language=en \
+  /api/panchang/overview /api/jyotish/guide /api/pandits /api/temples /api/search?q=Gayatri\&language=en \
   /api/mantras /api/puja-guides /api/samskaras /api/content/review-policy \
   /manifest.webmanifest /sw.js /icons/panditji.svg /privacy /terms; do
   safe_name="${path//\//_}"
