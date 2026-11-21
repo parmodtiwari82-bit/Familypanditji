@@ -21,7 +21,7 @@ The app footer links to `/privacy` and `/terms`. These are preliminary beta noti
 
 ## Important current limitations
 
-This is a development beta, not a production-ready religious service. The five starter knowledge entries, sixteen-samskara overview and puja/aarti guide catalogue are drafts and require acharya review. AI-generated responses are not scripture-verified and are marked for human review. The PWA caches only the app shell; live chat/API calls require connectivity. The Panchang/Kundli starter endpoints now perform low-precision astronomical calculations using dependency-free orbital approximations. They are not yet validated against a regional Panchang or high-precision ephemeris; no muhurta recommendation, Vimshottari dasha, divisional charts, retrograde/combustion validation or professional-grade horoscope engine is claimed. Birth data is not persisted by the calculation endpoint. No verified pandit directory, verified pandit directory, booking, e-commerce, payment, user accounts, admin console, or production voice-cloning/TTS service is integrated. Browser speech and available voice choices depend on the device and browser; pitch is adjusted, but this does not guarantee a dedicated deep spiritual voice or production voice service.
+This is a development beta, not a production-ready religious service. The five starter knowledge entries, sixteen-samskara overview and puja/aarti guide catalogue are drafts and require acharya review. AI-generated responses are not scripture-verified and are marked for human review. The PWA caches only the app shell; live chat/API calls require connectivity. The Panchang/Kundli starter endpoints now perform low-precision astronomical calculations using dependency-free orbital approximations. They are not yet validated against a regional Panchang or high-precision ephemeris; no muhurta recommendation, retrograde/combustion validation or professional-grade horoscope engine is claimed. The advanced Jyotish endpoint now exposes preliminary D9 Navamsa and Vimshottari Mahadasha derivations, both explicitly approximate and dependent on the low-precision starter ephemeris. Birth data is not persisted by the calculation endpoint. No verified pandit directory, verified pandit directory, booking, e-commerce, payment, user accounts, admin console, or production voice-cloning/TTS service is integrated. Browser speech and available voice choices depend on the device and browser; pitch is adjusted, but this does not guarantee a dedicated deep spiritual voice or production voice service.
 
 ## Production launch handoff
 
@@ -67,7 +67,7 @@ pytest -q
 3. Reviewed knowledge library — starter drafts only; acharya review and source citations remain.
 4. Sixteen samskaras and life-event guidance — overview catalogue added; detailed procedures, source citations and acharya review remain.
 5. Puja and aarti guidance — introductory bilingual draft guides added; tradition-specific vidhi, mantras, citations and acharya review remain.
-6. Panchang, muhurta, horoscope and kundli — not integrated.
+6. Panchang and Kundli starter calculations plus preliminary D9/Vimshottari derivations — beta foundations integrated; validated ephemeris, regional Panchang comparison, muhurta and professional interpretation remain outstanding.
 7. Pandit discovery, profiles, verification and booking — not integrated.
 8. Temple, pilgrimage and seva discovery — static guidance only.
 9. Puja samagri catalogue and e-commerce — not integrated.
