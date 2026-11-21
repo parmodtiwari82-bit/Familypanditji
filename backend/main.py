@@ -605,7 +605,8 @@ def resolve_astronomy_engine(moment: datetime, requested: str) -> tuple[dict[str
         "ayanamsa": "approximate_Lahiri", "nodes": "approximate_mean_Rahu_Ketu",
         "sunrise_sunset": "JPL_DE440s_apparent_solar_altitude_standard_horizon_minus_0.833_degrees",
         "lagna_and_houses": "approximate_local_sidereal_time_whole_sign",
-        "note_hi": "ग्रहों के दीर्घांश JPL DE440s से हैं; अयनांश, राहु-केतु, सूर्योदय/सूर्यास्त, लग्न/भाव और वैदिक नियम अभी अनुमानित हैं। इसे प्रमाणित पंचांग/कुंडली न मानें।",
+        "limitations": ["approximate Lahiri ayanamsa", "mean Rahu/Ketu", "standard unobstructed horizon; local terrain/buildings are not modeled", "approximate ascendant and whole-sign houses", "regional Panchang conventions and Acharya validation pending"],
+        "note_hi": "ग्रहों के दीर्घांश और मानक क्षितिज के सूर्योदय/सूर्यास्त JPL DE440s से हैं; अयनांश, राहु-केतु, लग्न/भाव और वैदिक नियम अभी अनुमानित हैं। स्थानीय पहाड़/इमारतें शामिल नहीं हैं। इसे प्रमाणित पंचांग/कुंडली न मानें।",
     }
 
 
@@ -640,7 +641,10 @@ def calculate_daily_panchang(
         tropical, engine_info = resolve_astronomy_engine(local_dt, engine)
         result = calculate_panchang(local_dt, latitude, longitude, tropical_override=tropical)
         if tropical is not None:
-            solar_events = calculate_sunrise_sunset(local_dt, latitude, longitude, JPL_EPHEMERIS_PATH)
+            try:
+                solar_events = calculate_sunrise_sunset(local_dt, latitude, longitude, JPL_EPHEMERIS_PATH)
+            except (FileNotFoundError, RuntimeError, ValueError) as exc:
+                raise HTTPException(status_code=503, detail=f"JPL sunrise/sunset unavailable: {exc}") from exc
             result.update(solar_events)
             result["sunrise_sunset_status"] = "jpl_de440s_standard_horizon"
         else:
