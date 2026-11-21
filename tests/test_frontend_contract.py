@@ -17,3 +17,21 @@ def test_panchang_ui_discloses_engine_accuracy_and_missing_transition_times():
     assert "data.sunrise_sunset_status" in html
     assert "इस इंजन मोड में उपलब्ध नहीं" in html
     assert "Skyfield + स्थानीय फ़ाइल आवश्यक" in html
+
+
+def test_indian_city_presets_fill_panchang_and_birth_coordinates_without_gps():
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    assert "INDIA_CITY_PRESETS" in html
+    assert "bindCityPreset('pCity','pLat','pLon')" in html
+    assert "bindCityPreset('kCity','kLat','kLon')" in html
+    assert "कानपुर / Kanpur" in html
+    assert "लखनऊ / Lucknow" in html
+    assert "कोई GPS permission नहीं ली जाती" in html
+
+
+def test_city_preset_coordinates_remain_editable_after_selection():
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    assert 'id="pLat" type="number"' in html
+    assert 'id="pLon" type="number"' in html
+    assert 'id="kLat" type="number"' in html
+    assert 'id="kLon" type="number"' in html
