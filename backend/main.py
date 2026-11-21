@@ -1,3 +1,4 @@
+import hmac
 import json
 import os
 import threading
@@ -6,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -17,6 +18,7 @@ KNOWLEDGE_PATH = PROJECT_ROOT / "data" / "knowledge_hi.json"
 AI_API_KEY = os.getenv("AI_API_KEY", "").strip()
 AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 AI_MODEL = os.getenv("AI_MODEL", "").strip()
+ADMIN_API_TOKEN = os.getenv("ADMIN_API_TOKEN", "").strip()
 APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
 AI_TIMEOUT_SECONDS = float(os.getenv("AI_TIMEOUT_SECONDS", "25"))
 ASK_RATE_LIMIT_MAX = int(os.getenv("ASK_RATE_LIMIT_MAX", "20"))
@@ -226,6 +228,61 @@ def service_worker():
 @app.get("/icons/panditji.svg", include_in_schema=False)
 def app_icon():
     return FileResponse(PROJECT_ROOT / "icons" / "panditji.svg", media_type="image/svg+xml")
+
+
+
+def require_admin_access(authorization: str | None) -> None:
+    """Authenticate the read-only admin API using a deployment-managed bearer secret."""
+    configured = ADMIN_API_TOKEN
+    if len(configured) < 32:
+        raise HTTPException(
+            status_code=503,
+            detail="Admin access is disabled: configure a random ADMIN_API_TOKEN of at least 32 characters.",
+        )
+    scheme, _, supplied = (authorization or "").partition(" ")
+    if scheme.lower() != "bearer" or not supplied or not hmac.compare_digest(supplied, configured):
+        raise HTTPException(status_code=401, detail="Valid admin bearer token required.")
+
+
+@app.get("/api/admin/review-queue")
+def admin_review_queue(authorization: str | None = Header(default=None)):
+    """Return draft content metadata to authenticated admins; never approve or publish."""
+    require_admin_access(authorization)
+    catalogues = [
+        ("knowledge", PROJECT_ROOT / "data" / "knowledge_hi.json", "entries"),
+        ("puja_guides", PROJECT_ROOT / "data" / "puja_guides.json", "guides"),
+        ("samskaras", PROJECT_ROOT / "data" / "samskaras.json", "samskaras"),
+    ]
+    items = []
+    for content_type, path, collection_key in catalogues:
+        try:
+            with path.open(encoding="utf-8") as handle:
+                payload = json.load(handle)
+            records = payload.get(collection_key, [])
+            if not isinstance(records, list):
+                raise ValueError("Catalogue collection must be a list.")
+        except (OSError, json.JSONDecodeError, ValueError):
+            raise HTTPException(status_code=503, detail=f"{content_type} catalogue is unavailable.")
+        for record in records:
+            if record.get("review_required") is True:
+                items.append({
+                    "content_id": record.get("id"),
+                    "content_type": content_type,
+                    "title": record.get("title") or record.get("title_hi") or record.get("name_hi"),
+                    "review_status": "pending_acharya_review",
+                    "source_metadata_present": False,
+                    "reviewer_metadata_present": False,
+                })
+    items.sort(key=lambda item: (item["content_type"], str(item["content_id"] or "")))
+    return {
+        "access": "authenticated_admin_read_only",
+        "status": "review_required",
+        "count": len(items),
+        "items": items,
+        "write_enabled": False,
+        "note_hi": "यह केवल सुरक्षित समीक्षा-कतार है। इस API से सामग्री स्वीकृत, अस्वीकृत या प्रकाशित नहीं की जा सकती।",
+    }
+
 
 @app.get("/api/content/review-policy")
 def content_review_policy():

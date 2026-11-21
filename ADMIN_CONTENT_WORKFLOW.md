@@ -40,3 +40,10 @@ Before enabling this console, choose and configure a managed identity provider o
 ## Current release blocker
 
 This document and schema are implementation specifications only. They do not provide authentication, database persistence, reviewer verification, audit storage or a working admin dashboard. Do not claim the admin workflow is live until those dependencies and tests are complete.
+
+
+## Implemented foundation: authenticated read-only review queue
+
+The API now exposes `GET /api/admin/review-queue`, protected by an `Authorization: Bearer` secret configured as `ADMIN_API_TOKEN`. The secret must be a random value of at least 32 characters and must be stored only in the deployment secret manager. If it is missing or too short, the endpoint remains disabled (503); missing or incorrect credentials receive 401. Comparison uses a constant-time function.
+
+The queue lists catalogue items still marked `review_required`, with source/reviewer metadata explicitly shown as absent. This is a single shared-secret gate for a read-only endpoint, **not** individual admin accounts, role-based access, MFA, or a full login system. No approval, rejection, editing, or publishing endpoint exists. Do not expose this token in browser JavaScript or local storage; call the endpoint only from a trusted server-side admin tool over HTTPS. A managed identity provider, database-backed audit trail and role separation remain required before enabling review writes.

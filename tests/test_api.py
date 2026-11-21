@@ -575,3 +575,40 @@ def test_ask_rate_limit_does_not_block_other_api_routes(monkeypatch):
     assert first.status_code == 200
     assert blocked.status_code == 429
     assert health.status_code == 200
+
+
+def test_admin_review_queue_requires_configured_token(monkeypatch):
+    import main as backend_main
+
+    monkeypatch.setattr(backend_main, "ADMIN_API_TOKEN", "")
+    response = client.get("/api/admin/review-queue")
+    assert response.status_code == 503
+
+
+def test_admin_review_queue_rejects_missing_or_invalid_token(monkeypatch):
+    import main as backend_main
+
+    monkeypatch.setattr(backend_main, "ADMIN_API_TOKEN", "x" * 40)
+    assert client.get("/api/admin/review-queue").status_code == 401
+    assert client.get(
+        "/api/admin/review-queue",
+        headers={"Authorization": "Bearer " + "y" * 40},
+    ).status_code == 401
+
+
+def test_admin_review_queue_lists_drafts_without_approval_mutation(monkeypatch):
+    import main as backend_main
+
+    token = "test-admin-token-" + "a" * 40
+    monkeypatch.setattr(backend_main, "ADMIN_API_TOKEN", token)
+    response = client.get(
+        "/api/admin/review-queue",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["access"] == "authenticated_admin_read_only"
+    assert payload["count"] >= 1
+    assert all(item["review_status"] == "pending_acharya_review" for item in payload["items"])
+    assert payload["write_enabled"] is False
+    assert response.headers["Cache-Control"] == "no-store"
