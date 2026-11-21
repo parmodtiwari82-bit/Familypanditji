@@ -30,6 +30,7 @@
   <div class="calc-grid">
    <label>तारीख<input id="pDate" type="date" required></label>
    <label>समय<input id="pTime" type="time" value="12:00" required></label>
+   <label>शहर/स्थान (वैकल्पिक quick fill)<select id="pCity"><option value="">शहर चुनें — coordinates लगभग होंगे</option></select></label>
    <label>अक्षांश (Latitude)<input id="pLat" type="number" min="-90" max="90" step="any" placeholder="जैसे 26.45" required></label>
    <label>देशांतर (Longitude)<input id="pLon" type="number" min="-180" max="180" step="any" placeholder="जैसे 80.33" required></label>
    <label>Timezone<input id="pTz" type="text" value="Asia/Kolkata" required></label>
@@ -46,6 +47,7 @@
   <div class="calc-grid">
    <label>जन्म तारीख<input id="kDate" type="date" required></label>
    <label>जन्म समय<input id="kTime" type="time" required></label>
+   <label>जन्म शहर/स्थान (वैकल्पिक quick fill)<select id="kCity"><option value="">शहर चुनें — coordinates लगभग होंगे</option></select></label>
    <label>जन्म स्थान अक्षांश<input id="kLat" type="number" min="-90" max="90" step="any" placeholder="जैसे 26.45" required></label>
    <label>जन्म स्थान देशांतर<input id="kLon" type="number" min="-180" max="180" step="any" placeholder="जैसे 80.33" required></label>
    <label>Timezone<input id="kTz" type="text" value="Asia/Kolkata" required></label>
@@ -187,6 +189,33 @@ let deferredInstallPrompt=null;const installButton=document.getElementById('inst
 function localISODate(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 document.getElementById('pDate').value=localISODate();
 document.getElementById('kDate').value=localISODate();
+const INDIA_CITY_PRESETS=[
+ {id:'kanpur',name:'कानपुर / Kanpur',lat:26.4499,lon:80.3319},
+ {id:'lucknow',name:'लखनऊ / Lucknow',lat:26.8467,lon:80.9462},
+ {id:'varanasi',name:'वाराणसी / Varanasi',lat:25.3176,lon:82.9739},
+ {id:'prayagraj',name:'प्रयागराज / Prayagraj',lat:25.4358,lon:81.8463},
+ {id:'ayodhya',name:'अयोध्या / Ayodhya',lat:26.7922,lon:82.1998},
+ {id:'agra',name:'आगरा / Agra',lat:27.1767,lon:78.0081},
+ {id:'mathura',name:'मथुरा / Mathura',lat:27.4924,lon:77.6737},
+ {id:'haridwar',name:'हरिद्वार / Haridwar',lat:29.9457,lon:78.1642},
+ {id:'delhi',name:'दिल्ली / Delhi',lat:28.6139,lon:77.2090},
+ {id:'jaipur',name:'जयपुर / Jaipur',lat:26.9124,lon:75.7873},
+ {id:'bhopal',name:'भोपाल / Bhopal',lat:23.2599,lon:77.4126},
+ {id:'ujjain',name:'उज्जैन / Ujjain',lat:23.1765,lon:75.7885},
+ {id:'mumbai',name:'मुंबई / Mumbai',lat:19.0760,lon:72.8777},
+ {id:'kolkata',name:'कोलकाता / Kolkata',lat:22.5726,lon:88.3639},
+ {id:'chennai',name:'चेन्नई / Chennai',lat:13.0827,lon:80.2707},
+ {id:'bengaluru',name:'बेंगलुरु / Bengaluru',lat:12.9716,lon:77.5946},
+ {id:'hyderabad',name:'हैदराबाद / Hyderabad',lat:17.3850,lon:78.4867},
+ {id:'patna',name:'पटना / Patna',lat:25.5941,lon:85.1376}
+];
+function bindCityPreset(selectId,latId,lonId){
+ const select=document.getElementById(selectId);
+ for(const city of INDIA_CITY_PRESETS){const option=document.createElement('option');option.value=city.id;option.textContent=city.name;select.append(option)}
+ select.addEventListener('change',()=>{const city=INDIA_CITY_PRESETS.find(item=>item.id===select.value);if(!city)return;document.getElementById(latId).value=city.lat;document.getElementById(lonId).value=city.lon;document.getElementById(selectId==='pCity'?'pTz':'kTz').value='Asia/Kolkata'});
+}
+bindCityPreset('pCity','pLat','pLon');
+bindCityPreset('kCity','kLat','kLon');
 function showCalcLines(target,items){const box=document.getElementById(target);box.replaceChildren();for(const [label,value] of items){const line=document.createElement('div');const strong=document.createElement('strong');strong.textContent=label+': ';line.append(strong,document.createTextNode(value??'उपलब्ध नहीं'));box.append(line)}}
 document.getElementById('panchangForm').addEventListener('submit',async event=>{
  event.preventDefault();const status=document.getElementById('panchangCalcStatus');const out=document.getElementById('panchangCalcResult');status.textContent='पंचांग गणना हो रही है…';out.replaceChildren();
