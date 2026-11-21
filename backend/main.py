@@ -16,10 +16,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from vedic_calc import calculate_kundli, calculate_panchang, parse_local_datetime
 from advanced_jyotish import calculate_advanced_jyotish
+from precision_ephemeris import calculate_tropical_longitudes, mean_node_longitudes
 
 APP_VERSION = "0.3.0"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 KNOWLEDGE_PATH = PROJECT_ROOT / "data" / "knowledge_hi.json"
+JPL_EPHEMERIS_PATH = Path(os.getenv("JPL_EPHEMERIS_PATH", str(PROJECT_ROOT / "backend" / "data" / "ephemeris" / "de440s.bsp"))).expanduser()
 AI_API_KEY = os.getenv("AI_API_KEY", "").strip()
 AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 AI_MODEL = os.getenv("AI_MODEL", "").strip()
@@ -139,6 +141,7 @@ class BirthChartRequest(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     timezone: str = Field(default="Asia/Kolkata", min_length=3, max_length=64)
+    engine: str = Field(default="auto", pattern="^(auto|approximate|jpl)$")
 
 
 class AskRequest(BaseModel):
@@ -577,6 +580,51 @@ def ecosystem_modules():
         raise HTTPException(status_code=503, detail="Ecosystem module catalogue is unavailable.")
 
 
+def resolve_astronomy_engine(moment: datetime, requested: str) -> tuple[dict[str, float] | None, dict[str, Any]]:
+    """Select an explicitly reported calculation source; never download ephemeris on requests."""
+    if requested not in {"auto", "approximate", "jpl"}:
+        raise ValueError("engine must be auto, approximate or jpl")
+    use_jpl = requested == "jpl" or (requested == "auto" and JPL_EPHEMERIS_PATH.is_file())
+    if not use_jpl:
+        return None, {
+            "id": "free_approximate", "status": "approximate",
+            "planetary_positions": "dependency_free_low_precision_orbital_approximation",
+            "ayanamsa": "approximate_Lahiri", "nodes": "approximate_mean_nodes",
+            "sunrise_sunset": "NOAA_simplified_approximation",
+            "note_hi": "JPL ephemeris उपलब्ध/चयनित नहीं है; परिणाम प्रारंभिक अनुमान पर आधारित हैं।",
+        }
+    try:
+        tropical = calculate_tropical_longitudes(moment, JPL_EPHEMERIS_PATH)
+    except (FileNotFoundError, RuntimeError, ValueError) as exc:
+        raise HTTPException(status_code=503, detail=f"JPL engine unavailable: {exc}") from exc
+    rahu, ketu = mean_node_longitudes(moment)
+    tropical.update({"Rahu": rahu, "Ketu": ketu})
+    return tropical, {
+        "id": "jpl_de440s_skyfield", "status": "astronomy_ephemeris_enabled_not_vedic_certified",
+        "ephemeris": "NASA/JPL DE440s", "planetary_positions": "geocentric_apparent_tropical_longitudes",
+        "ayanamsa": "approximate_Lahiri", "nodes": "approximate_mean_Rahu_Ketu",
+        "sunrise_sunset": "NOAA_simplified_approximation",
+        "lagna_and_houses": "approximate_local_sidereal_time_whole_sign",
+        "note_hi": "ग्रहों के दीर्घांश JPL DE440s से हैं; अयनांश, राहु-केतु, सूर्योदय/सूर्यास्त, लग्न/भाव और वैदिक नियम अभी अनुमानित हैं। इसे प्रमाणित पंचांग/कुंडली न मानें।",
+    }
+
+
+@app.get("/api/astronomy/status")
+def astronomy_status():
+    """Expose local ephemeris readiness and the exact limits of the available engine."""
+    return {
+        "optional_dependency": "Skyfield",
+        "jpl_ephemeris_configured": JPL_EPHEMERIS_PATH.is_file(),
+        "jpl_ephemeris_path_configured": bool(os.getenv("JPL_EPHEMERIS_PATH", "").strip()),
+        "default_ephemeris_path": str(JPL_EPHEMERIS_PATH),
+        "supported_years": [1849, 2150],
+        "request_downloads_ephemeris": False,
+        "available_modes": ["auto", "approximate", "jpl"],
+        "certified_vedic_engine": False,
+        "limitations": ["approximate Lahiri ayanamsa", "mean Rahu/Ketu", "approximate sunrise/sunset", "approximate ascendant and whole-sign houses", "regional Panchang and Acharya validation pending"],
+    }
+
+
 @app.get("/api/panchang/calculate")
 def calculate_daily_panchang(
     date: str = Query(..., description="Local date YYYY-MM-DD"),
@@ -584,14 +632,16 @@ def calculate_daily_panchang(
     latitude: float = Query(..., ge=-90, le=90),
     longitude: float = Query(..., ge=-180, le=180),
     timezone_name: str = Query(default="Asia/Kolkata"),
+    engine: str = Query(default="auto", pattern="^(auto|approximate|jpl)$"),
 ):
-    """Calculate an approximate Panchang for the supplied local date/time and coordinates."""
+    """Calculate Panchang limbs with a reported ephemeris and convention scope."""
     try:
         local_dt = parse_local_datetime(date, time, timezone_name)
-        result = calculate_panchang(local_dt, latitude, longitude)
+        tropical, engine_info = resolve_astronomy_engine(local_dt, engine)
+        result = calculate_panchang(local_dt, latitude, longitude, tropical_override=tropical)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
-    result.update({"latitude": latitude, "longitude": longitude, "timezone": timezone_name})
+    result.update({"latitude": latitude, "longitude": longitude, "timezone": timezone_name, "engine": engine_info})
     return result
 
 
@@ -600,10 +650,12 @@ def calculate_birth_chart(payload: BirthChartRequest):
     """Calculate a free, low-precision starter birth chart; no birth data is stored."""
     try:
         local_dt = parse_local_datetime(payload.birth_date, payload.birth_time, payload.timezone)
-        result = calculate_kundli(local_dt, payload.latitude, payload.longitude)
+        tropical, engine_info = resolve_astronomy_engine(local_dt, payload.engine)
+        result = calculate_kundli(local_dt, payload.latitude, payload.longitude, tropical_override=tropical)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
     result["timezone"] = payload.timezone
+    result["engine"] = engine_info
     result["data_retention"] = "not_stored_by_this_endpoint"
     return result
 
@@ -613,10 +665,12 @@ def calculate_advanced_birth_chart(payload: BirthChartRequest):
     """Calculate approximate D9 and Vimshottari foundations; birth data is not stored."""
     try:
         local_dt = parse_local_datetime(payload.birth_date, payload.birth_time, payload.timezone)
-        result = calculate_advanced_jyotish(local_dt, payload.latitude, payload.longitude)
+        tropical, engine_info = resolve_astronomy_engine(local_dt, payload.engine)
+        result = calculate_advanced_jyotish(local_dt, payload.latitude, payload.longitude, tropical_override=tropical)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
     result["timezone"] = payload.timezone
+    result["engine"] = engine_info
     result["data_retention"] = "not_stored_by_this_endpoint"
     return result
 
