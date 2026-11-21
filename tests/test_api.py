@@ -722,3 +722,10 @@ def test_advanced_jyotish_rejects_invalid_timezone_and_coordinates():
         "latitude": 96, "longitude": 80.3, "timezone": "Asia/Kolkata"
     })
     assert bad_coordinates.status_code == 422
+
+
+def test_frontend_exposes_advanced_jyotish_calculator():
+    html = (Path(__file__).resolve().parents[1] / "index.html").read_text(encoding="utf-8")
+    assert 'id="advancedJyotishButton"' in html
+    assert "/api/jyotish/advanced" in html
+    assert "D9 नवांश" in html
