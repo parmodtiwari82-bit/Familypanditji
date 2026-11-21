@@ -1347,3 +1347,58 @@ def test_admin_can_reject_pending_pandit_application_without_publication(monkeyp
         json={"reason": "Second attempt should not change decision."},
         headers={"Authorization": f"Bearer {token}"},
     ).status_code == 404
+
+
+
+def test_admin_can_erase_pending_or_rejected_application_only_with_confirmation(monkeypatch, tmp_path):
+    import main as backend_main
+    backend_main._pandit_application_rate_windows.clear()
+    monkeypatch.setattr(backend_main, "PANDIT_DIRECTORY_DB", tmp_path / "erase.sqlite3")
+    token = "test-admin-token-" + "e" * 40
+    monkeypatch.setattr(backend_main, "ADMIN_API_TOKEN", token)
+    headers = {"Authorization": f"Bearer {token}"}
+    payload = {
+        "display_name": "Pandit Erase Test", "contact_phone": "+91 9876543210",
+        "city": "Kanpur", "state": "Uttar Pradesh", "country": "India",
+        "service_categories": ["Vivah Puja"], "languages": ["Hindi"],
+        "tradition": "Smarta", "biography": "Traditional ritual services.",
+        "qualification_summary": "Acharya course", "privacy_consent": True, "website": "",
+    }
+    created = client.post("/api/pandit-applications", json=payload)
+    assert created.status_code == 201
+    profile_id = created.json()["profile_id"]
+    no_confirm = client.post(f"/api/admin/pandits/{profile_id}/erase",
+                             json={"reason": "Retention period ended.", "confirm_delete": False}, headers=headers)
+    assert no_confirm.status_code == 422
+    unauthorized = client.post(f"/api/admin/pandits/{profile_id}/erase",
+                               json={"reason": "Retention period ended.", "confirm_delete": True})
+    assert unauthorized.status_code == 401
+    erased = client.post(f"/api/admin/pandits/{profile_id}/erase",
+                         json={"reason": "Retention period ended.", "confirm_delete": True}, headers=headers)
+    assert erased.status_code == 200
+    assert erased.json()["status"] == "erased"
+    assert client.get(f"/api/admin/pandits/{profile_id}/status", headers=headers).status_code == 404
+
+
+def test_admin_cannot_erase_verified_pandit_profile(monkeypatch, tmp_path):
+    import main as backend_main
+    monkeypatch.setattr(backend_main, "PANDIT_DIRECTORY_DB", tmp_path / "verified-erase.sqlite3")
+    token = "test-admin-token-" + "v" * 40
+    monkeypatch.setattr(backend_main, "ADMIN_API_TOKEN", token)
+    headers = {"Authorization": f"Bearer {token}"}
+    created = client.post("/api/admin/pandits", json={
+        "display_name": "Verified Pandit", "city": "Kanpur", "state": "Uttar Pradesh",
+        "service_categories": ["Puja"], "languages": ["Hindi"],
+        "tradition": "Smarta", "qualification_summary": "Vedic studies",
+    }, headers=headers)
+    profile_id = created.json()["profile_id"]
+    verified = client.post(f"/api/admin/pandits/{profile_id}/verify", json={
+        "reviewer_name": "Reviewer", "reviewer_qualification": "Qualified acharya",
+        "verification_method": "in_person", "evidence_reference": "review-record-123",
+        "review_notes": "Identity and qualifications checked in person.",
+    }, headers=headers)
+    assert verified.status_code == 200
+    denied = client.post(f"/api/admin/pandits/{profile_id}/erase",
+                         json={"reason": "Request to delete record.", "confirm_delete": True}, headers=headers)
+    assert denied.status_code == 404
+    assert client.get("/api/pandits").json()["count"] == 1
