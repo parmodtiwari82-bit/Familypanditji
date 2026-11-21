@@ -1145,6 +1145,26 @@ def test_temple_directory_returns_curated_official_source_records():
         assert temple["last_checked_on"] == "2026-11-21"
 
 
+def test_temple_directory_includes_all_twelve_dwadasha_jyotirlingas():
+    response = client.get("/api/temples")
+    assert response.status_code == 200
+    jyotirlingas = [item for item in response.json()["temples"]
+                    if "Dwadasha Jyotirlinga" in item.get("pilgrimage_circuits", [])]
+    assert len(jyotirlingas) == 12
+    assert len({item["id"] for item in jyotirlingas}) == 12
+    assert all(item["deity"] == "भगवान शिव" for item in jyotirlingas)
+    assert all(item["official_website"].startswith("https://") for item in jyotirlingas)
+    assert all(item["official_information_url"].startswith("https://") for item in jyotirlingas)
+    assert all(item["source_status"].startswith("official_") for item in jyotirlingas)
+    assert {item["id"] for item in jyotirlingas} >= {
+        "somnath-gujarat", "mallikarjuna-srisailam", "mahakaleshwar-ujjain",
+        "omkareshwar-madhya-pradesh", "kedarnath-dham-uttarakhand",
+        "bhimashankar-maharashtra", "kashi-vishwanath-varanasi",
+        "trimbakeshwar-maharashtra", "vaidyanath-deoghar", "nageshwar-dwarka",
+        "ramanathaswamy-rameswaram", "grishneshwar-verul",
+    }
+
+
 def test_temple_directory_includes_four_uttarakhand_char_dham_with_government_sources():
     response = client.get("/api/temples", params={"state": "Uttarakhand"})
     assert response.status_code == 200
@@ -1163,7 +1183,7 @@ def test_temple_directory_filters_by_city_state_and_deity():
     assert city.status_code == 200
     assert [item["id"] for item in city.json()["temples"]] == ["kashi-vishwanath-varanasi"]
     state = client.get("/api/temples", params={"state": "Gujarat"})
-    assert [item["id"] for item in state.json()["temples"]] == ["somnath-gujarat"]
+    assert {item["id"] for item in state.json()["temples"]} >= {"somnath-gujarat", "nageshwar-dwarka"}
     deity = client.get("/api/temples", params={"deity": "भगवान शिव"})
     assert deity.json()["count"] >= 3
 
