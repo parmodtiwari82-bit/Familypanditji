@@ -766,7 +766,7 @@ def test_divisional_sign_supports_seven_and_ten_part_vargas():
     from advanced_jyotish import divisional_sign
     # D7: odd signs start from the same sign; even signs from the seventh.
     assert divisional_sign(1.0, 7, "saptamsa") == "मेष"
-    assert divisional_sign(31.0, 7, "saptamsa") == "तुला"
+    assert divisional_sign(31.0, 7, "saptamsa") == "वृश्चिक"
     # D10: odd signs start from the same sign; even signs from the ninth.
     assert divisional_sign(1.0, 10, "dashamsa") == "मेष"
     assert divisional_sign(31.0, 10, "dashamsa") == "धनु"
