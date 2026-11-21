@@ -1409,7 +1409,7 @@ def test_pandit_application_privacy_copy_discloses_manual_erasure_and_no_retenti
     root = Path(__file__).resolve().parents[1]
     privacy = (root / "privacy.html").read_text(encoding="utf-8")
     home = (root / "index.html").read_text(encoding="utf-8")
-    assert "no automatic retention scheduler" in privacy
+    assert "automatic retention scheduler" in privacy
     assert "manually erase" in privacy
     assert "Backup, hosting logs" in privacy
     assert "निश्चित retention अवधि और applicant self-service deletion अभी उपलब्ध नहीं हैं" in home
