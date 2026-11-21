@@ -3,6 +3,7 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PORT=8000 \
+    PYTHONPATH=/app/backend \
     JPL_EPHEMERIS_PATH=/app/backend/data/ephemeris/de440s.bsp
 
 WORKDIR /app
