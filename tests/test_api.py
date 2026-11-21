@@ -998,6 +998,7 @@ def test_public_pandit_directory_returns_no_unverified_profiles(monkeypatch, tmp
     assert response.status_code == 200
     assert response.json()["status"] == "directory_beta_no_booking"
     assert response.json()["items"] == []
+    assert response.json()["pandits"] == []
     assert response.json()["booking_enabled"] is False
 
 
@@ -1085,3 +1086,4 @@ def test_pandit_directory_rejects_incomplete_verification_evidence(monkeypatch, 
 def test_public_pandit_directory_only_accepts_verified_status_filter():
     assert client.get("/api/pandits", params={"status": "unverified"}).status_code == 422
     assert client.get("/api/pandits", params={"status": "verified"}).status_code == 200
+    assert client.get("/api/pandits", params={"status": "all"}).status_code == 200
