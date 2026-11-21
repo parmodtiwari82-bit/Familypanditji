@@ -695,3 +695,30 @@ def test_frontend_exposes_free_panchang_and_kundli_forms_without_geolocation():
     assert "/api/panchang/calculate?" in html
     assert "/api/kundli/calculate" in html
     assert "geolocation" not in html.lower()
+
+
+def test_advanced_jyotish_returns_d9_and_birth_anchored_vimshottari_without_storage():
+    response = client.post("/api/jyotish/advanced", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 26.4499, "longitude": 80.3319, "timezone": "Asia/Kolkata"
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload["navamsa_d9"]) == 9
+    assert len(payload["vimshottari"]["mahadasha_periods"]) == 9
+    assert payload["vimshottari"]["birth_period"] == payload["vimshottari"]["mahadasha_periods"][0]["lord"]
+    assert payload["data_retention"] == "not_stored_by_this_endpoint"
+    assert "निम्न-सटीकता" in payload["accuracy_note_hi"]
+
+
+def test_advanced_jyotish_rejects_invalid_timezone_and_coordinates():
+    bad_timezone = client.post("/api/jyotish/advanced", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 26.4, "longitude": 80.3, "timezone": "Mars/Olympus"
+    })
+    assert bad_timezone.status_code == 422
+    bad_coordinates = client.post("/api/jyotish/advanced", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 96, "longitude": 80.3, "timezone": "Asia/Kolkata"
+    })
+    assert bad_coordinates.status_code == 422
