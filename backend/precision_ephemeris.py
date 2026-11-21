@@ -7,7 +7,7 @@ this module is an astronomy upgrade component, not a certified Vedic engine.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 from vedic_calc import ayanamsa_lahiri_approx, jd, norm
@@ -77,6 +77,54 @@ def calculate_tropical_longitudes(moment: datetime, ephemeris_path: str | Path) 
             _latitude, longitude, _distance = apparent.frame_latlon(ecliptic_frame)
             positions[display_name] = norm(float(longitude.degrees))
         return positions
+    finally:
+        close = getattr(kernel, "close", None)
+        if callable(close):
+            close()
+
+
+def calculate_sunrise_sunset(moment: datetime, latitude: float, longitude: float,
+                             ephemeris_path: str | Path) -> dict[str, str | None]:
+    """Find standard apparent sunrise/sunset events for the local civil day.
+
+    Uses Skyfield's solar altitude convention (standard refraction + solar radius,
+    approximately -0.833 degrees) with the local DE440s kernel. This is a geometric
+    horizon calculation; terrain, buildings and local horizon obstructions are excluded.
+    """
+    if moment.tzinfo is None or moment.utcoffset() is None:
+        raise ValueError("moment must be timezone-aware")
+    if not -90 <= latitude <= 90 or not -180 <= longitude <= 180:
+        raise ValueError("latitude/longitude are outside valid ranges")
+    if not EPHEMERIS_START_YEAR <= moment.year <= EPHEMERIS_END_YEAR:
+        raise ValueError(
+            f"DE440s supports dates from {EPHEMERIS_START_YEAR} through {EPHEMERIS_END_YEAR}"
+        )
+    path = Path(ephemeris_path).expanduser()
+    if not path.is_file():
+        raise FileNotFoundError(f"JPL ephemeris file not found: {path}")
+    try:
+        from skyfield.api import load, load_file, wgs84
+        from skyfield import almanac
+    except ImportError as exc:
+        raise RuntimeError(
+            "Optional astronomy dependencies are missing; install backend/requirements-astronomy.txt"
+        ) from exc
+
+    kernel = load_file(str(path))
+    try:
+        timescale = load.timescale(builtin=True)
+        observer = wgs84.latlon(latitude_degrees=latitude, longitude_degrees=longitude)
+        event_function = almanac.sunrise_sunset(kernel, observer)
+        local_start = datetime.combine(moment.date(), datetime.min.time(), tzinfo=moment.tzinfo)
+        local_end = local_start + timedelta(days=1)
+        t0 = timescale.from_datetime(local_start.astimezone(timezone.utc))
+        t1 = timescale.from_datetime(local_end.astimezone(timezone.utc))
+        event_times, event_values = almanac.find_discrete(t0, t1, event_function)
+        result: dict[str, str | None] = {"sunrise": None, "sunset": None}
+        for event_time, is_sun_up in zip(event_times, event_values):
+            key = "sunrise" if bool(is_sun_up) else "sunset"
+            result[key] = event_time.utc_datetime().astimezone(moment.tzinfo).isoformat()
+        return result
     finally:
         close = getattr(kernel, "close", None)
         if callable(close):
