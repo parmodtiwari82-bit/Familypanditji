@@ -1,4 +1,5 @@
 import hmac
+import importlib.util
 import json
 import os
 import sqlite3
@@ -584,10 +585,22 @@ def resolve_astronomy_engine(moment: datetime, requested: str) -> tuple[dict[str
     """Select an explicitly reported calculation source; never download ephemeris on requests."""
     if requested not in {"auto", "approximate", "jpl"}:
         raise ValueError("engine must be auto, approximate or jpl")
-    use_jpl = requested == "jpl" or (requested == "auto" and JPL_EPHEMERIS_PATH.is_file())
+    ephemeris_file_exists = JPL_EPHEMERIS_PATH.is_file()
+    skyfield_available = importlib.util.find_spec("skyfield") is not None
+    use_jpl = requested == "jpl" or (requested == "auto" and ephemeris_file_exists and skyfield_available)
+    if requested == "jpl" and not ephemeris_file_exists:
+        raise HTTPException(status_code=503, detail=f"JPL engine unavailable: JPL ephemeris file not found: {JPL_EPHEMERIS_PATH}")
+    if requested == "jpl" and not skyfield_available:
+        raise HTTPException(status_code=503, detail="JPL engine unavailable: install backend/requirements-astronomy.txt (Skyfield).")
     if not use_jpl:
+        missing = []
+        if not ephemeris_file_exists:
+            missing.append("local DE440s file")
+        if not skyfield_available:
+            missing.append("Skyfield dependency")
         return None, {
             "id": "free_approximate", "status": "approximate",
+            "fallback_reason": "JPL unavailable: " + ", ".join(missing) if missing else None,
             "planetary_positions": "dependency_free_low_precision_orbital_approximation",
             "ayanamsa": "approximate_Lahiri", "nodes": "approximate_mean_nodes",
             "sunrise_sunset": "NOAA_simplified_approximation",
@@ -616,10 +629,14 @@ def astronomy_status():
     return {
         "optional_dependency": "Skyfield",
         "jpl_ephemeris_configured": JPL_EPHEMERIS_PATH.is_file(),
+        "skyfield_installed": importlib.util.find_spec("skyfield") is not None,
+        "jpl_ready": JPL_EPHEMERIS_PATH.is_file() and importlib.util.find_spec("skyfield") is not None,
+        "ephemeris_file_size_bytes": JPL_EPHEMERIS_PATH.stat().st_size if JPL_EPHEMERIS_PATH.is_file() else None,
         "jpl_ephemeris_path_configured": bool(os.getenv("JPL_EPHEMERIS_PATH", "").strip()),
         "default_ephemeris_path": str(JPL_EPHEMERIS_PATH),
         "supported_years": [1849, 2150],
         "request_downloads_ephemeris": False,
+        "jpl_unavailable_reasons": ([reason for condition, reason in [(not JPL_EPHEMERIS_PATH.is_file(), "local DE440s file missing"), (importlib.util.find_spec("skyfield") is None, "Skyfield dependency missing")] if condition]),
         "available_modes": ["auto", "approximate", "jpl"],
         "certified_vedic_engine": False,
         "limitations": ["approximate Lahiri ayanamsa", "mean Rahu/Ketu", "JPL sunrise/sunset uses standard unobstructed horizon only; local terrain/buildings are not modeled", "approximate ascendant and whole-sign houses", "regional Panchang and Acharya validation pending"],

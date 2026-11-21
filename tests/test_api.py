@@ -838,6 +838,7 @@ def test_jpl_mode_uses_injected_ephemeris_positions_and_labels_remaining_approxi
     ephemeris = tmp_path / "de440s.bsp"
     ephemeris.write_bytes(b"stub")
     monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", ephemeris)
+    monkeypatch.setattr(main.importlib.util, "find_spec", lambda name: object())
     monkeypatch.setattr(main, "calculate_tropical_longitudes", lambda moment, path: {
         "Sun": 10.0, "Moon": 20.0, "Mercury": 30.0, "Venus": 40.0,
         "Mars": 50.0, "Jupiter": 60.0, "Saturn": 70.0,
@@ -860,6 +861,7 @@ def test_jpl_panchang_does_not_present_approximate_transition_times_as_jpl(monke
     ephemeris = tmp_path / "de440s.bsp"
     ephemeris.write_bytes(b"stub")
     monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", ephemeris)
+    monkeypatch.setattr(main.importlib.util, "find_spec", lambda name: object())
     monkeypatch.setattr(main, "calculate_sunrise_sunset", lambda moment, lat, lon, path: {"sunrise": "2026-11-21T06:18:00+05:30", "sunset": "2026-11-21T17:12:00+05:30"})
     monkeypatch.setattr(main, "calculate_tropical_longitudes", lambda moment, path: {
         "Sun": 10.0, "Moon": 20.0, "Mercury": 30.0, "Venus": 40.0,
@@ -900,6 +902,7 @@ def test_jpl_panchang_uses_ephemeris_sunrise_sunset_and_reports_horizon_limit(mo
     ephemeris = tmp_path / "de440s.bsp"
     ephemeris.write_bytes(b"stub")
     monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", ephemeris)
+    monkeypatch.setattr(main.importlib.util, "find_spec", lambda name: object())
     monkeypatch.setattr(main, "calculate_tropical_longitudes", lambda moment, path: {
         "Sun": 10.0, "Moon": 20.0, "Mercury": 30.0, "Venus": 40.0,
         "Mars": 50.0, "Jupiter": 60.0, "Saturn": 70.0,
@@ -917,3 +920,45 @@ def test_jpl_panchang_uses_ephemeris_sunrise_sunset_and_reports_horizon_limit(mo
     assert payload["sunset"] == "2026-11-21T17:12:00+05:30"
     assert payload["sunrise_sunset_status"] == "jpl_de440s_standard_horizon"
     assert "standard unobstructed horizon; local terrain/buildings are not modeled" in payload["engine"]["limitations"]
+
+
+def test_astronomy_status_reports_both_jpl_prerequisites(monkeypatch, tmp_path):
+    import main
+    ephemeris = tmp_path / "de440s.bsp"
+    ephemeris.write_bytes(b"stub")
+    monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", ephemeris)
+    monkeypatch.setattr(main.importlib.util, "find_spec", lambda name: None)
+    payload = client.get("/api/astronomy/status").json()
+    assert payload["jpl_ephemeris_configured"] is True
+    assert payload["skyfield_installed"] is False
+    assert payload["jpl_ready"] is False
+    assert "Skyfield dependency missing" in payload["jpl_unavailable_reasons"]
+
+
+def test_auto_engine_falls_back_if_ephemeris_exists_but_skyfield_is_missing(monkeypatch, tmp_path):
+    import main
+    ephemeris = tmp_path / "de440s.bsp"
+    ephemeris.write_bytes(b"stub")
+    monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", ephemeris)
+    monkeypatch.setattr(main.importlib.util, "find_spec", lambda name: None)
+    response = client.get("/api/panchang/calculate", params={
+        "date": "2026-11-21", "time": "12:00", "latitude": 26.45,
+        "longitude": 80.33, "timezone_name": "Asia/Kolkata", "engine": "auto",
+    })
+    assert response.status_code == 200
+    assert response.json()["engine"]["id"] == "free_approximate"
+    assert "Skyfield dependency" in response.json()["engine"]["fallback_reason"]
+
+
+def test_explicit_jpl_mode_fails_clearly_when_skyfield_is_missing(monkeypatch, tmp_path):
+    import main
+    ephemeris = tmp_path / "de440s.bsp"
+    ephemeris.write_bytes(b"stub")
+    monkeypatch.setattr(main, "JPL_EPHEMERIS_PATH", ephemeris)
+    monkeypatch.setattr(main.importlib.util, "find_spec", lambda name: None)
+    response = client.get("/api/panchang/calculate", params={
+        "date": "2026-11-21", "time": "12:00", "latitude": 26.45,
+        "longitude": 80.33, "timezone_name": "Asia/Kolkata", "engine": "jpl",
+    })
+    assert response.status_code == 503
+    assert "install backend/requirements-astronomy.txt" in response.json()["detail"]
