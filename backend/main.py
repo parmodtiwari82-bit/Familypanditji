@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -578,11 +578,11 @@ def ecosystem_modules():
 
 @app.get("/api/panchang/calculate")
 def calculate_daily_panchang(
-    date: str = Field(..., description="Local date YYYY-MM-DD"),
-    time: str = "12:00",
-    latitude: float = Field(..., ge=-90, le=90),
-    longitude: float = Field(..., ge=-180, le=180),
-    timezone_name: str = "Asia/Kolkata",
+    date: str = Query(..., description="Local date YYYY-MM-DD"),
+    time: str = Query(default="12:00"),
+    latitude: float = Query(..., ge=-90, le=90),
+    longitude: float = Query(..., ge=-180, le=180),
+    timezone_name: str = Query(default="Asia/Kolkata"),
 ):
     """Calculate an approximate Panchang for the supplied local date/time and coordinates."""
     try:
