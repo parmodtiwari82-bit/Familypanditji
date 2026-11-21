@@ -1130,3 +1130,35 @@ def test_jpl_panchang_reports_transition_provenance_and_all_four_limbs(monkeypat
     assert payload["transition_times_status"] == "jpl_de440s_with_approximate_lahiri_conventions"
     assert payload["limb_ends_at"]["tithi"].endswith("+05:30")
     assert payload["limb_ends_at"]["nakshatra"] is None
+
+
+def test_temple_directory_returns_curated_official_source_records():
+    response = client.get("/api/temples")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["official_source_only"] is True
+    assert payload["count"] >= 5
+    for temple in payload["temples"]:
+        assert temple["official_website"].startswith("https://")
+        assert temple["official_information_url"].startswith("https://")
+        assert temple["source_status"].startswith("official_")
+        assert temple["last_checked_on"] == "2026-11-21"
+
+
+def test_temple_directory_filters_by_city_state_and_deity():
+    city = client.get("/api/temples", params={"q": "Varanasi"})
+    assert city.status_code == 200
+    assert [item["id"] for item in city.json()["temples"]] == ["kashi-vishwanath-varanasi"]
+    state = client.get("/api/temples", params={"state": "Gujarat"})
+    assert [item["id"] for item in state.json()["temples"]] == ["somnath-gujarat"]
+    deity = client.get("/api/temples", params={"deity": "भगवान शिव"})
+    assert deity.json()["count"] >= 3
+
+
+def test_temple_directory_frontend_has_search_and_official_link_safety():
+    html = (Path(__file__).resolve().parents[1] / "index.html").read_text(encoding="utf-8")
+    for control in ("templeDirectory", "templeQuery", "templeState", "templeDeity", "templeSearchButton", "templeDirectoryResults"):
+        assert control in html
+    assert "/api/temples?" in html
+    assert "parsed.protocol!=='https:'" in html
+    assert "noopener noreferrer" in html
