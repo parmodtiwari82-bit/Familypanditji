@@ -56,7 +56,7 @@
       "name_en": "Pandit Discovery and Booking",
       "group": "marketplace",
       "status": "planned",
-      "description": "पहचान और योग्यता सत्यापन, उपलब्धता, बुकिंग और समीक्षा।"
+      "description": "Admin-managed verified-only public discovery API foundation उपलब्ध; अभी कोई live verified listing नहीं, और booking, availability, messaging तथा payment workflow बाकी।"
     },
     {
       "id": "temples",
