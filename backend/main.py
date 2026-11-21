@@ -23,6 +23,7 @@ from pandit_directory import create_pending_profile, get_profile_status, list_ve
 APP_VERSION = "0.3.0"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 KNOWLEDGE_PATH = PROJECT_ROOT / "data" / "knowledge_hi.json"
+TEMPLE_CATALOG_PATH = PROJECT_ROOT / "data" / "temples.json"
 JPL_EPHEMERIS_PATH = Path(os.getenv("JPL_EPHEMERIS_PATH", str(PROJECT_ROOT / "backend" / "data" / "ephemeris" / "de440s.bsp"))).expanduser()
 AI_API_KEY = os.getenv("AI_API_KEY", "").strip()
 AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
@@ -673,6 +674,7 @@ def trust_status():
                 "ready": JPL_EPHEMERIS_PATH.is_file() and importlib.util.find_spec("skyfield") is not None,
             },
             "pandit_directory_discovery_api": True,
+            "temple_discovery_api": True,
             "verified_pandit_booking": False,
             "commerce_and_payments": False,
             "production_voice_service": False,
@@ -687,6 +689,42 @@ def trust_status():
     }
 
 
+@app.get("/api/temples")
+def search_temples(
+    q: str | None = Query(default=None, max_length=120),
+    state: str | None = Query(default=None, max_length=100),
+    deity: str | None = Query(default=None, max_length=120),
+    limit: int = Query(default=50, ge=1, le=100),
+):
+    """Search a curated starter directory containing official temple information links."""
+    catalogue = load_temple_catalogue()
+    temples = catalogue["temples"]
+    query = normalize_search_text(q or "")
+    state_filter = normalize_search_text(state or "")
+    deity_filter = normalize_search_text(deity or "")
+    results = []
+    for temple in temples:
+        searchable = normalize_search_text(" ".join([
+            str(temple.get("name_hi", "")), str(temple.get("name_en", "")),
+            str(temple.get("city", "")), str(temple.get("state", "")),
+            str(temple.get("deity", "")), " ".join(temple.get("official_services", [])),
+        ]))
+        if query and query not in searchable:
+            continue
+        if state_filter and state_filter not in normalize_search_text(temple.get("state", "")):
+            continue
+        if deity_filter and deity_filter not in normalize_search_text(temple.get("deity", "")):
+            continue
+        results.append(temple)
+    return {
+        "count": len(results[:limit]),
+        "temples": results[:limit],
+        "last_catalogue_reviewed": catalogue.get("last_catalogue_reviewed"),
+        "notice_hi": catalogue.get("notice_hi"),
+        "official_source_only": True,
+    }
+
+
 @app.get("/api/modules")
 def ecosystem_modules():
     """Return the product module catalogue and clearly-labelled implementation status."""
@@ -697,6 +735,18 @@ def ecosystem_modules():
     except (OSError, json.JSONDecodeError):
         raise HTTPException(status_code=503, detail="Ecosystem module catalogue is unavailable.")
 
+
+
+
+def load_temple_catalogue() -> dict[str, Any]:
+    try:
+        with TEMPLE_CATALOG_PATH.open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise HTTPException(status_code=503, detail="Temple catalogue is unavailable.") from exc
+    if not isinstance(payload.get("temples"), list):
+        raise HTTPException(status_code=503, detail="Temple catalogue format is invalid.")
+    return payload
 
 def resolve_astronomy_engine(moment: datetime, requested: str) -> tuple[dict[str, float] | None, dict[str, Any]]:
     """Select an explicitly reported calculation source; never download ephemeris on requests."""
