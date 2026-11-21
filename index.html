@@ -21,6 +21,19 @@
 <section class="panel"><div class="section-title">भरोसा एवं विकास स्थिति</div><p id="trustStatus" class="hint" aria-live="polite">स्थिति जाँची जा रही है…</p><div id="trustList" class="grid"></div><div class="section-title" style="margin-top:18px">लॉन्च तैयारी जाँच</div><p id="releaseStatus" class="hint" aria-live="polite">लॉन्च चेकलिस्ट जाँची जा रही है…</p><div id="releaseChecklist" class="grid"></div></section>
 <section class="panel"><div class="section-title">पूरे इकोसिस्टम में खोजें</div><p class="hint">एक ही खोज में ज्ञान, मंत्र और पूजा मार्गदर्शिकाएँ खोजें।</p><div class="row"><input id="globalSearch" type="search" placeholder="जैसे गायत्री, पूजा, पंचांग…" aria-label="पूरे इकोसिस्टम में खोजें" style="flex:1;min-width:180px"><button id="globalSearchButton" type="button">खोजें</button></div><p id="globalSearchStatus" class="hint" aria-live="polite">हिंदी, संस्कृत या English में खोजें।</p><div id="globalSearchResults" class="grid"></div></section>
 <section class="panel"><div class="section-title">सनातन धर्म डिजिटल इकोसिस्टम</div><p class="hint">हर सेवा की वास्तविक स्थिति स्पष्ट रूप से दिखाई जाएगी। नियोजित सेवा को चालू सुविधा न समझें।</p><div id="moduleList" class="grid"><div class="hint">सेवाओं की सूची लोड हो रही है…</div></div></section>
+<section class="panel" id="panditDirectory">
+ <div class="section-title">सत्यापित पंडित खोजें</div>
+ <p class="hint">यह सूची केवल उन प्रोफ़ाइलों को दिखाती है जिनकी जानकारी और संदर्भित योग्यता-साक्ष्य की प्लेटफ़ॉर्म समीक्षा दर्ज है। यह सरकारी प्रमाणन नहीं है। अभी कोई live verified listing उपलब्ध न भी हो सकती है।</p>
+ <div class="calc-grid">
+  <label>शहर<input id="panditCity" type="text" maxlength="100" placeholder="जैसे Kanpur"></label>
+  <label>सेवा<input id="panditService" type="text" maxlength="120" placeholder="जैसे Vivah Puja"></label>
+  <label>भाषा<input id="panditLanguage" type="text" maxlength="40" placeholder="जैसे Hindi"></label>
+ </div>
+ <div class="calc-actions"><button id="panditSearchButton" type="button">सत्यापित पंडित खोजें</button></div>
+ <p id="panditDirectoryStatus" class="hint" aria-live="polite">सत्यापित प्रोफ़ाइलें खोजने के लिए फ़िल्टर भरें या सीधे खोजें।</p>
+ <div id="panditDirectoryResults" class="grid"></div>
+ <p class="hint">ऑनलाइन उपलब्धता, बुकिंग, संदेश और भुगतान अभी चालू नहीं हैं।</p>
+</section>
 <section class="panel"><div class="section-title">मंत्र पुस्तकालय</div><p class="hint">हिंदी, संस्कृत या English शब्द से मंत्र खोजें।</p><div class="row" style="margin:10px 0"><input id="mantraSearch" type="search" placeholder="गायत्री, Gayatri…" aria-label="मंत्र खोजें" style="flex:1;min-width:180px"><button id="mantraSearchButton" class="secondary" type="button">खोजें</button></div><p id="mantraStatus" class="hint">मंत्र-संग्रह लोड हो रहा है…</p><div id="mantraList" class="grid"></div><p class="hint">मंत्र-पाठ और उच्चारण अपनी परंपरा के योग्य आचार्य से सत्यापित करें।</p></section>
 
 <section class="panel" id="panchangCalculator">
@@ -83,6 +96,38 @@ async function loadReleaseReadiness(){const status=document.getElementById('rele
 loadReleaseReadiness();
 async function runGlobalSearch(){const input=document.getElementById('globalSearch'),status=document.getElementById('globalSearchStatus'),target=document.getElementById('globalSearchResults'),query=input.value.trim();if(!query){status.textContent='कृपया खोज शब्द लिखें।';target.replaceChildren();return}status.textContent='खोज जारी है…';target.replaceChildren();try{const params=new URLSearchParams({q:query,language:lang.value,limit:'30'});const response=await fetch('/api/search?'+params.toString());if(!response.ok)throw new Error('Search unavailable');const data=await response.json();status.textContent=data.total_matches+' परिणाम मिले • सभी प्रारंभिक सामग्री आचार्य समीक्षा के अधीन है';for(const item of data.results){const card=document.createElement('article');card.className='tile';card.style.cursor='default';const title=document.createElement('b');title.textContent=item.title;const kind=document.createElement('div');kind.className='hint';kind.textContent=({knowledge:'ज्ञान',mantra:'मंत्र', 'puja-guide':'पूजा मार्गदर्शिका'}[item.type]||item.type)+' • आचार्य समीक्षा अपेक्षित';const snippet=document.createElement('p');snippet.className='hint';snippet.textContent=item.snippet;const ask=document.createElement('button');ask.className='secondary';ask.textContent='इस विषय पर पूछें';ask.onclick=()=>send(item.title+' के बारे में बताइए');card.append(title,kind,snippet,ask);target.append(card)}}catch(error){status.textContent='खोज सेवा अभी उपलब्ध नहीं है।'}}
 document.getElementById('globalSearchButton').onclick=runGlobalSearch;document.getElementById('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')runGlobalSearch()});
+async function loadPanditDirectory(){
+ const status=document.getElementById('panditDirectoryStatus');
+ const target=document.getElementById('panditDirectoryResults');
+ const params=new URLSearchParams({status:'verified'});
+ for(const [key,id] of [['city','panditCity'],['service','panditService'],['language','panditLanguage']]){
+  const value=document.getElementById(id).value.trim();
+  if(value)params.set(key,value);
+ }
+ status.textContent='सत्यापित प्रोफ़ाइलें खोजी जा रही हैं…';
+ target.replaceChildren();
+ try{
+  const response=await fetch('/api/pandits?'+params.toString());
+  if(!response.ok)throw new Error('Directory unavailable');
+  const data=await response.json();
+  if(data.booking_available!==false)throw new Error('Unexpected booking state');
+  if(!data.pandits.length){status.textContent='इन फ़िल्टरों के लिए अभी कोई live verified पंडित प्रोफ़ाइल उपलब्ध नहीं है।';return;}
+  status.textContent=data.count+' सत्यापित प्रोफ़ाइल मिलीं।';
+  for(const pandit of data.pandits){
+   const card=document.createElement('article');card.className='tile';card.style.cursor='default';
+   const title=document.createElement('b');title.textContent=pandit.display_name;
+   const location=document.createElement('div');location.className='hint';location.textContent=pandit.city+', '+pandit.state+', '+pandit.country;
+   const details=document.createElement('p');details.className='hint';details.textContent=pandit.service_categories.join(' • ')+' | '+pandit.languages.join(', ');
+   const tradition=document.createElement('p');tradition.className='hint';tradition.textContent='परंपरा: '+pandit.tradition+' • '+pandit.qualification_summary;
+   const scope=document.createElement('p');scope.className='hint';scope.textContent=pandit.verification_scope;
+   card.append(title,location,details,tradition,scope);target.append(card);
+  }
+ }catch(error){status.textContent='पंडित निर्देशिका अभी उपलब्ध नहीं है। कृपया बाद में प्रयास करें।'}
+}
+document.getElementById('panditSearchButton').addEventListener('click',loadPanditDirectory);
+for(const id of ['panditCity','panditService','panditLanguage']){
+ document.getElementById(id).addEventListener('keydown',event=>{if(event.key==='Enter')loadPanditDirectory()});
+}
 async function loadModules(){const target=document.getElementById('moduleList');try{const response=await fetch('/api/modules');if(!response.ok)throw new Error('API unavailable');const data=await response.json();target.replaceChildren();for(const module of data.modules){const card=document.createElement('article');card.className='tile';card.style.cursor='default';const title=document.createElement('b');title.textContent=module.name_hi;const english=document.createElement('div');english.className='hint';english.textContent=module.name_en;const desc=document.createElement('p');desc.className='hint';desc.textContent=module.description;const status=document.createElement('span');status.className='pill';status.style.borderColor='var(--gold)';status.style.color='var(--saffron)';status.textContent=module.status==='beta'?'बीटा संस्करण':'आगामी चरण';card.append(title,english,desc,status);target.append(card)}}catch(error){target.textContent='सेवाओं की सूची अभी उपलब्ध नहीं है।'}}
 let lastAnswer='';
 let isSending=false;
