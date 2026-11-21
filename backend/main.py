@@ -555,8 +555,16 @@ def trust_status():
             "all_content_is_draft": True,
         },
         "capabilities": {
-            "panchang_live_calculation": False,
-            "kundli_calculation": False,
+            "panchang_calculation_api": True,
+            "kundli_calculation_api": True,
+            "advanced_jyotish_api": True,
+            "divisional_charts": ["D2", "D3", "D7", "D9", "D10", "D12"],
+            "vimshottari_periods": ["mahadasha", "antardasha", "pratyantardasha"],
+            "optional_jpl_ephemeris": {
+                "configured": JPL_EPHEMERIS_PATH.is_file(),
+                "skyfield_installed": importlib.util.find_spec("skyfield") is not None,
+                "ready": JPL_EPHEMERIS_PATH.is_file() and importlib.util.find_spec("skyfield") is not None,
+            },
             "verified_pandit_booking": False,
             "commerce_and_payments": False,
             "production_voice_service": False,
@@ -566,6 +574,7 @@ def trust_status():
             "planned": sum(1 for item in modules if item.get("status") == "planned"),
         },
         "production_release_ready": False,
+        "release_blockers": ["Acharya review and source verification for religious content", "Vedic calculation convention and regional Panchang validation", "verified Pandit onboarding and booking workflow", "commerce/payment integrations if enabled", "production hosting, monitoring, backup and security review", "legal operator, grievance and privacy review"],
         "note": "यह स्थिति-पृष्ठ पारदर्शिता के लिए है; यह आचार्य सत्यापन, सुरक्षा ऑडिट या production deployment का प्रमाण नहीं है।",
     }
 
