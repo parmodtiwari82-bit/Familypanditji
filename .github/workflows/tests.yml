@@ -83,6 +83,7 @@ jobs:
           fi
           python - <<'PY'
           import json
+          import subprocess
           from urllib.error import HTTPError
           from urllib.request import Request, urlopen
 
@@ -110,6 +111,8 @@ jobs:
                   chart = json.load(response)
           except HTTPError as error:
               print("Kundli API HTTP error:", error.code, error.read().decode("utf-8", "replace"))
+              print("Container application logs:")
+              subprocess.run(["docker", "logs", "ai-family-pandit-ji-ci"], check=False)
               raise
           assert chart["engine"]["id"] == "jpl_de440s_skyfield", chart.get("engine")
           assert len(chart["planets"]) == 9, chart.get("planets")
