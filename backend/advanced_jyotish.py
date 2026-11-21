@@ -152,9 +152,10 @@ def calculate_divisional_charts(sidereal: dict[str, float]) -> dict:
     return charts
 
 
-def calculate_advanced_jyotish(local_birth: datetime, latitude: float, longitude: float) -> dict:
+def calculate_advanced_jyotish(local_birth: datetime, latitude: float, longitude: float,
+                               tropical_override: dict[str, float] | None = None) -> dict:
     """Return selected varga charts and a birth-anchored Vimshottari sequence."""
-    tropical = tropical_longitudes(local_birth)
+    tropical = tropical_override or tropical_longitudes(local_birth)
     ayan = ayanamsa_lahiri_approx(local_birth)
     sidereal = {name: norm(value - ayan) for name, value in tropical.items()}
     navamsa = {
