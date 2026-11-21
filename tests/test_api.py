@@ -612,3 +612,30 @@ def test_admin_review_queue_lists_drafts_without_approval_mutation(monkeypatch):
     assert all(item["review_status"] == "pending_acharya_review" for item in payload["items"])
     assert payload["write_enabled"] is False
     assert response.headers["Cache-Control"] == "no-store"
+
+def test_acharya_review_submission_records_audit_without_publishing(monkeypatch, tmp_path):
+    import main as backend_main
+    token = "acharya-test-token-" + "b" * 40
+    monkeypatch.setattr(backend_main, "ACHARYA_API_TOKEN", token)
+    monkeypatch.setattr(backend_main, "ACHARYA_REVIEWER_ID", "acharya-test-01")
+    monkeypatch.setattr(backend_main, "ACHARYA_REVIEWER_QUALIFICATION", "Test reviewer qualification")
+    monkeypatch.setattr(backend_main, "REVIEW_AUDIT_DB", tmp_path / "audit.sqlite3")
+    payload = {"content_id":"gayatri-mantra","content_type":"knowledge","decision":"approved","language":"hi","tradition_or_sampradaya":"Test tradition","source_title":"Source title","source_author_or_tradition":"Source author","edition_or_publication":"Test edition","page_or_section":"Chapter 1","review_notes":"Review notes with enough detail."}
+    response = client.post("/api/admin/reviews", json=payload, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 201
+    assert response.json()["published"] is False
+    events = client.get("/api/admin/review-events", headers={"Authorization": "Bearer " + "a" * 40})
+    assert events.status_code == 200 and events.json()["count"] == 1
+
+
+def test_acharya_review_submission_requires_auth_and_pending_content(monkeypatch, tmp_path):
+    import main as backend_main
+    token = "acharya-test-token-" + "c" * 40
+    monkeypatch.setattr(backend_main, "ACHARYA_API_TOKEN", token)
+    monkeypatch.setattr(backend_main, "ACHARYA_REVIEWER_ID", "acharya-test-02")
+    monkeypatch.setattr(backend_main, "ACHARYA_REVIEWER_QUALIFICATION", "Test reviewer qualification")
+    monkeypatch.setattr(backend_main, "REVIEW_AUDIT_DB", tmp_path / "audit.sqlite3")
+    payload = {"content_id":"not-found","content_type":"knowledge","decision":"approved","language":"hi","tradition_or_sampradaya":"Tradition","source_title":"Source","source_author_or_tradition":"Author","edition_or_publication":"Edition","page_or_section":"Page 1","review_notes":"Detailed review notes."}
+    assert client.post("/api/admin/reviews", json=payload).status_code == 401
+    assert client.post("/api/admin/reviews", json=payload, headers={"Authorization": f"Bearer {token}"}).status_code == 404
+    assert not (tmp_path / "audit.sqlite3").exists()
