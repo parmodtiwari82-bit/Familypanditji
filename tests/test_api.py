@@ -760,3 +760,32 @@ def test_divisional_sign_known_parashari_boundaries():
     assert divisional_sign(1.0, 3, "drekkana") == "मेष"
     assert divisional_sign(11.0, 3, "drekkana") == "सिंह"
     assert divisional_sign(21.0, 3, "drekkana") == "धनु"
+
+
+def test_divisional_sign_supports_seven_and_ten_part_vargas():
+    from advanced_jyotish import divisional_sign
+    # D7: odd signs start from the same sign; even signs from the seventh.
+    assert divisional_sign(1.0, 7, "saptamsa") == "मेष"
+    assert divisional_sign(31.0, 7, "saptamsa") == "तुला"
+    # D10: odd signs start from the same sign; even signs from the ninth.
+    assert divisional_sign(1.0, 10, "dashamsa") == "मेष"
+    assert divisional_sign(31.0, 10, "dashamsa") == "धनु"
+    # D12 starts from the natal sign for both odd and even signs.
+    assert divisional_sign(1.0, 12, "dwadasamsa") == "मेष"
+    assert divisional_sign(31.0, 12, "dwadasamsa") == "वृषभ"
+
+
+def test_divisional_sign_normalizes_longitude_and_rejects_unknown_method():
+    from advanced_jyotish import divisional_sign
+    assert divisional_sign(361.0, 3, "drekkana") == divisional_sign(1.0, 3, "drekkana")
+    import pytest
+    with pytest.raises(ValueError):
+        divisional_sign(10.0, 3, "unknown")
+
+
+def test_advanced_jyotish_ui_lists_all_supported_vargas():
+    from pathlib import Path
+    html = (Path(__file__).resolve().parents[1] / "index.html").read_text(encoding="utf-8")
+    for label in ("D2 होरा", "D3 द्रेष्काण", "D7 सप्तांश", "D9 नवांश", "D10 दशांश", "D12 द्वादशांश"):
+        assert label in html
+    assert "data.divisional_charts" in html
