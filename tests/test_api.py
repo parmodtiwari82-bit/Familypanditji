@@ -617,6 +617,7 @@ def test_acharya_review_submission_records_audit_without_publishing(monkeypatch,
     import main as backend_main
     token = "acharya-test-token-" + "b" * 40
     monkeypatch.setattr(backend_main, "ACHARYA_API_TOKEN", token)
+    monkeypatch.setattr(backend_main, "ADMIN_API_TOKEN", "a" * 40)
     monkeypatch.setattr(backend_main, "ACHARYA_REVIEWER_ID", "acharya-test-01")
     monkeypatch.setattr(backend_main, "ACHARYA_REVIEWER_QUALIFICATION", "Test reviewer qualification")
     monkeypatch.setattr(backend_main, "REVIEW_AUDIT_DB", tmp_path / "audit.sqlite3")
