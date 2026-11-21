@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from math import atan2, cos, degrees, radians, sin, tan
 
 from vedic_calc import ayanamsa_lahiri_approx, jd, norm
 
@@ -251,10 +252,10 @@ def calculate_tropical_ascendant(moment: datetime, latitude: float, longitude: f
         obliquity = radians(23.439291 - 0.0130042 * centuries)
         local_sidereal = radians(local_sidereal_degrees)
         geographic_latitude = radians(latitude)
-        ascendant = degrees(__import__("math").atan2(
-            -__import__("math").cos(local_sidereal),
-            __import__("math").sin(local_sidereal) * __import__("math").cos(obliquity)
-            + __import__("math").tan(geographic_latitude) * __import__("math").sin(obliquity),
+        ascendant = degrees(atan2(
+            -cos(local_sidereal),
+            sin(local_sidereal) * cos(obliquity)
+            + tan(geographic_latitude) * sin(obliquity),
         ))
         return norm(ascendant)
     finally:
