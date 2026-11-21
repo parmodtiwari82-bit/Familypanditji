@@ -124,9 +124,9 @@ def acos_safe(x: float) -> float:
     from math import acos
     return acos(max(-1,min(1,x)))
 
-def _panchang_indices(moment: datetime) -> dict[str, int]:
+def _panchang_indices(moment: datetime, tropical_override: dict[str, float] | None = None) -> dict[str, int]:
     """Return the four moving Panchang limb indices at a timezone-aware instant."""
-    longs = tropical_longitudes(moment)
+    longs = tropical_override or tropical_longitudes(moment)
     ayan = ayanamsa_lahiri_approx(moment)
     moon_sun = norm(longs["Moon"] - longs["Sun"])
     return {
@@ -167,8 +167,9 @@ def _next_limb_transition(local_dt: datetime, limb: str) -> str | None:
     return right.isoformat()
 
 
-def calculate_panchang(local_dt: datetime, latitude: float, longitude: float) -> dict:
-    longs = tropical_longitudes(local_dt)
+def calculate_panchang(local_dt: datetime, latitude: float, longitude: float,
+                       tropical_override: dict[str, float] | None = None) -> dict:
+    longs = tropical_override or tropical_longitudes(local_dt)
     moon_sun = norm(longs["Moon"]-longs["Sun"])
     tithi_index = min(29, int(moon_sun/12))
     yoga_index = int(norm(longs["Sun"]+longs["Moon"]-2*ayanamsa_lahiri_approx(local_dt))/(360/27))
@@ -192,18 +193,20 @@ def calculate_panchang(local_dt: datetime, latitude: float, longitude: float) ->
         "sun_sign": sign_name(norm(longs["Sun"]-ayanamsa_lahiri_approx(local_dt))),
         "sunrise": datetime.fromisoformat(sunrise_utc).astimezone(tz).isoformat() if sunrise_utc else None,
         "sunset": datetime.fromisoformat(sunset_utc).astimezone(tz).isoformat() if sunset_utc else None,
-        "limb_ends_at": {
+        "limb_ends_at": ({
             "tithi": _next_limb_transition(local_dt, "tithi"),
             "nakshatra": _next_limb_transition(local_dt, "nakshatra"),
             "yoga": _next_limb_transition(local_dt, "yoga"),
             "karana": _next_limb_transition(local_dt, "karana"),
-        },
-        "calculation": "free_low_precision_astronomical_approximation",
+        } if tropical_override is None else None),
+        "transition_times_status": ("estimated_low_precision" if tropical_override is None else "not_calculated_for_jpl_mode"),
+        "calculation": ("free_low_precision_astronomical_approximation" if tropical_override is None else "jpl_de440s_planetary_positions_with_approximate_vedic_conventions"),
         "accuracy_note_hi": "यह निःशुल्क प्रारंभिक खगोलीय गणना है। स्थानीय पंचांग, अयनांश, दृश्य क्षितिज और परंपरा के अनुसार अंतर हो सकता है। पूजा/व्रत के अंतिम निर्णय से पहले स्थानीय प्रमाणित पंचांग/आचार्य से मिलान करें।",
     }
 
-def calculate_kundli(local_dt: datetime, latitude: float, longitude: float) -> dict:
-    longs = tropical_longitudes(local_dt)
+def calculate_kundli(local_dt: datetime, latitude: float, longitude: float,
+                     tropical_override: dict[str, float] | None = None) -> dict:
+    longs = tropical_override or tropical_longitudes(local_dt)
     ayan = ayanamsa_lahiri_approx(local_dt)
     sidereal = {name: norm(value-ayan) for name,value in longs.items()}
     # Approximate local sidereal time and ascendant from ecliptic horizon intersection.

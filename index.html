@@ -33,6 +33,7 @@
    <label>अक्षांश (Latitude)<input id="pLat" type="number" min="-90" max="90" step="any" placeholder="जैसे 26.45" required></label>
    <label>देशांतर (Longitude)<input id="pLon" type="number" min="-180" max="180" step="any" placeholder="जैसे 80.33" required></label>
    <label>Timezone<input id="pTz" type="text" value="Asia/Kolkata" required></label>
+   <label>गणना इंजन<select id="pEngine"><option value="auto">Auto (उपलब्ध हो तो JPL)</option><option value="approximate">निःशुल्क Approximate</option><option value="jpl">JPL DE440s (स्थानीय फ़ाइल आवश्यक)</option></select></label>
   </div>
   <div class="calc-actions"><button type="submit">पंचांग निकालें</button></div>
  </form>
@@ -48,6 +49,7 @@
    <label>जन्म स्थान अक्षांश<input id="kLat" type="number" min="-90" max="90" step="any" placeholder="जैसे 26.45" required></label>
    <label>जन्म स्थान देशांतर<input id="kLon" type="number" min="-180" max="180" step="any" placeholder="जैसे 80.33" required></label>
    <label>Timezone<input id="kTz" type="text" value="Asia/Kolkata" required></label>
+   <label>गणना इंजन<select id="kEngine"><option value="auto">Auto (उपलब्ध हो तो JPL)</option><option value="approximate">निःशुल्क Approximate</option><option value="jpl">JPL DE440s (स्थानीय फ़ाइल आवश्यक)</option></select></label>
   </div>
   <div class="calc-actions"><button type="submit">जन्म कुंडली बनाएँ</button></div>
  </form>
@@ -188,14 +190,14 @@ document.getElementById('kDate').value=localISODate();
 function showCalcLines(target,items){const box=document.getElementById(target);box.replaceChildren();for(const [label,value] of items){const line=document.createElement('div');const strong=document.createElement('strong');strong.textContent=label+': ';line.append(strong,document.createTextNode(value??'उपलब्ध नहीं'));box.append(line)}}
 document.getElementById('panchangForm').addEventListener('submit',async event=>{
  event.preventDefault();const status=document.getElementById('panchangCalcStatus');const out=document.getElementById('panchangCalcResult');status.textContent='पंचांग गणना हो रही है…';out.replaceChildren();
- const params=new URLSearchParams({date:document.getElementById('pDate').value,time:document.getElementById('pTime').value,latitude:document.getElementById('pLat').value,longitude:document.getElementById('pLon').value,timezone_name:document.getElementById('pTz').value});
- try{const response=await fetch('/api/panchang/calculate?'+params);const data=await response.json();if(!response.ok)throw new Error(data.detail||'गणना नहीं हो सकी');showCalcLines('panchangCalcResult',[['वार',data.weekday],['तिथि',data.tithi],['नक्षत्र',data.nakshatra],['योग',data.yoga],['करण',data.karana],['सूर्योदय',data.sunrise],['सूर्यास्त',data.sunset],['तिथि समाप्ति (अनुमानित)',data.limb_ends_at?.tithi],['नक्षत्र समाप्ति (अनुमानित)',data.limb_ends_at?.nakshatra],['योग समाप्ति (अनुमानित)',data.limb_ends_at?.yoga],['करण समाप्ति (अनुमानित)',data.limb_ends_at?.karana],['चन्द्र राशि',data.moon_sign],['सूर्य राशि',data.sun_sign],['गणना',data.accuracy_note_hi]]);status.textContent='गणना पूरी • '+data.date+' • '+data.timezone}
+ const params=new URLSearchParams({date:document.getElementById('pDate').value,time:document.getElementById('pTime').value,latitude:document.getElementById('pLat').value,longitude:document.getElementById('pLon').value,timezone_name:document.getElementById('pTz').value,engine:document.getElementById('pEngine').value});
+ try{const response=await fetch('/api/panchang/calculate?'+params);const data=await response.json();if(!response.ok)throw new Error(data.detail||'गणना नहीं हो सकी');showCalcLines('panchangCalcResult',[['गणना इंजन',data.engine?.id],['वार',data.weekday],['तिथि',data.tithi],['नक्षत्र',data.nakshatra],['योग',data.yoga],['करण',data.karana],['सूर्योदय',data.sunrise],['सूर्यास्त',data.sunset],['तिथि समाप्ति (अनुमानित)',data.limb_ends_at?.tithi],['नक्षत्र समाप्ति (अनुमानित)',data.limb_ends_at?.nakshatra],['योग समाप्ति (अनुमानित)',data.limb_ends_at?.yoga],['करण समाप्ति (अनुमानित)',data.limb_ends_at?.karana],['अंग समाप्ति समय स्थिति',data.transition_times_status],['चन्द्र राशि',data.moon_sign],['सूर्य राशि',data.sun_sign],['गणना',data.accuracy_note_hi]]);status.textContent='गणना पूरी • '+data.date+' • '+data.timezone}
  catch(error){status.textContent='त्रुटि: '+error.message}
 });
 document.getElementById('kundliForm').addEventListener('submit',async event=>{
  event.preventDefault();const status=document.getElementById('kundliCalcStatus');status.textContent='जन्म कुंडली की गणना हो रही है…';document.getElementById('kundliCalcResult').replaceChildren();
- const payload={birth_date:document.getElementById('kDate').value,birth_time:document.getElementById('kTime').value,latitude:Number(document.getElementById('kLat').value),longitude:Number(document.getElementById('kLon').value),timezone:document.getElementById('kTz').value};
- try{const response=await fetch('/api/kundli/calculate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await response.json();if(!response.ok)throw new Error(data.detail||'कुंडली नहीं बन सकी');const lines=[['जन्म समय',data.birth_datetime_local],['लग्न',data.lagna.rashi+' ('+data.lagna.longitude_degrees+'°)'],['अयनांश',data.ayanamsa+' • '+data.ayanamsa_degrees+'°']];for(const [planet,info] of Object.entries(data.planets))lines.push([planet,info.rashi+' • '+info.nakshatra+' • '+info.longitude_degrees+'°']);lines.push(['गणना सीमा',data.accuracy_note_hi]);showCalcLines('kundliCalcResult',lines);status.textContent='प्रारंभिक कुंडली तैयार • जन्म विवरण इस endpoint में सेव नहीं किया गया'}
+ const payload={birth_date:document.getElementById('kDate').value,birth_time:document.getElementById('kTime').value,latitude:Number(document.getElementById('kLat').value),longitude:Number(document.getElementById('kLon').value),timezone:document.getElementById('kTz').value,engine:document.getElementById('kEngine').value};
+ try{const response=await fetch('/api/kundli/calculate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await response.json();if(!response.ok)throw new Error(data.detail||'कुंडली नहीं बन सकी');const lines=[['गणना इंजन',data.engine?.id],['इंजन विवरण',data.engine?.note_hi],['जन्म समय',data.birth_datetime_local],['लग्न',data.lagna.rashi+' ('+data.lagna.longitude_degrees+'°)'],['अयनांश',data.ayanamsa+' • '+data.ayanamsa_degrees+'°']];for(const [planet,info] of Object.entries(data.planets))lines.push([planet,info.rashi+' • '+info.nakshatra+' • '+info.longitude_degrees+'°']);lines.push(['गणना सीमा',data.accuracy_note_hi]);showCalcLines('kundliCalcResult',lines);status.textContent='प्रारंभिक कुंडली तैयार • जन्म विवरण इस endpoint में सेव नहीं किया गया'}
  catch(error){status.textContent='त्रुटि: '+error.message}
 });
 
@@ -208,7 +210,7 @@ document.getElementById('advancedJyotishButton').addEventListener('click',async(
  try{
   const response=await fetch('/api/jyotish/advanced',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   const data=await response.json();if(!response.ok)throw new Error(data.detail||'उन्नत गणना नहीं हो सकी');
-  const lines=[['जन्म नक्षत्र',data.vimshottari.birth_nakshatra],['जन्म महादशा स्वामी',data.vimshottari.birth_nakshatra_lord]];
+  const lines=[['गणना इंजन',data.engine?.id],['इंजन विवरण',data.engine?.note_hi],['जन्म नक्षत्र',data.vimshottari.birth_nakshatra],['जन्म महादशा स्वामी',data.vimshottari.birth_nakshatra_lord]];
   for(const [planet,info] of Object.entries(data.navamsa_d9))lines.push(['D9 नवांश • '+planet,info.rashi+' • '+info.nakshatra+' • '+info.longitude_degrees+'°']);
   const vargaNames={d2_hora:'D2 होरा',d3_drekkana:'D3 द्रेष्काण',d7_saptamsa:'D7 सप्तांश',d10_dashamsa:'D10 दशांश',d12_dwadasamsa:'D12 द्वादशांश'};
   for(const [chart,placements] of Object.entries(data.divisional_charts||{})){lines.push([vargaNames[chart]||chart,'ग्रहों की वर्ग-कुंडली स्थिति']);for(const [planet,info] of Object.entries(placements))lines.push([chart+' • '+planet,info.rashi+' • मूल देशांतर '+info.source_longitude_degrees+'°']);}
