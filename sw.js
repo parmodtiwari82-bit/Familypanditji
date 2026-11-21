@@ -1,4 +1,4 @@
-const CACHE_NAME = "family-pandit-shell-v2";
+const CACHE_NAME = "family-pandit-shell-v3";
 const CACHE_PREFIX = "family-pandit-shell-";
 const APP_SHELL = ["/", "/manifest.webmanifest", "/icons/panditji.svg", "/privacy", "/terms"];
 

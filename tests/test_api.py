@@ -54,7 +54,7 @@ def test_ecosystem_module_catalogue_is_explicit_about_status():
     ids = {item["id"] for item in payload["modules"]}
     assert {"ai-pandit", "panchang", "jyotish", "pandit-directory", "puja-store"} <= ids
     assert next(item for item in payload["modules"] if item["id"] == "ai-pandit")["status"] == "beta"
-    assert next(item for item in payload["modules"] if item["id"] == "panchang")["status"] == "planned"
+    assert next(item for item in payload["modules"] if item["id"] == "panchang")["status"] == "beta"
 
 def test_knowledge_topics_returns_review_labelled_cards():
     response = client.get("/api/knowledge/topics")
@@ -534,7 +534,7 @@ def test_operational_readiness_probe_is_not_cached():
 
 def test_service_worker_versions_its_cache_and_keeps_api_responses_network_only():
     worker = (Path(__file__).resolve().parent.parent / "sw.js").read_text(encoding="utf-8")
-    assert 'const CACHE_NAME = "family-pandit-shell-v2"' in worker
+    assert 'const CACHE_NAME = "family-pandit-shell-v3"' in worker
     assert 'const CACHE_PREFIX = "family-pandit-shell-"' in worker
     assert '"/privacy", "/terms"' in worker
     assert 'url.pathname.startsWith("/api/")' in worker
@@ -640,3 +640,58 @@ def test_acharya_review_submission_requires_auth_and_pending_content(monkeypatch
     assert client.post("/api/admin/reviews", json=payload).status_code == 401
     assert client.post("/api/admin/reviews", json=payload, headers={"Authorization": f"Bearer {token}"}).status_code == 404
     assert not (tmp_path / "audit.sqlite3").exists()
+
+def test_free_panchang_calculation_returns_location_specific_limbs():
+    response = client.get("/api/panchang/calculate", params={
+        "date": "2026-11-21", "time": "12:00", "latitude": 26.4499,
+        "longitude": 80.3319, "timezone_name": "Asia/Kolkata",
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["weekday"] == "शनिवार"
+    assert data["tithi"] and data["nakshatra"] and data["yoga"] and data["karana"]
+    assert data["sunrise"] and data["sunset"]
+    assert data["calculation"] == "free_low_precision_astronomical_approximation"
+    assert "आचार्य" in data["accuracy_note_hi"]
+
+
+def test_free_panchang_rejects_invalid_date_and_coordinates():
+    bad_date = client.get("/api/panchang/calculate", params={
+        "date": "not-a-date", "latitude": 26.4, "longitude": 80.3,
+    })
+    bad_lat = client.get("/api/panchang/calculate", params={
+        "date": "2026-11-21", "latitude": 120, "longitude": 80.3,
+    })
+    assert bad_date.status_code == 422
+    assert bad_lat.status_code == 422
+
+
+def test_free_kundli_calculation_returns_nine_planets_and_no_storage_claim():
+    response = client.post("/api/kundli/calculate", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 26.4499, "longitude": 80.3319, "timezone": "Asia/Kolkata",
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["lagna"]["rashi"]
+    assert len(data["planets"]) == 9
+    assert data["data_retention"] == "not_stored_by_this_endpoint"
+    assert data["calculation"] == "free_low_precision_orbital_approximation"
+    assert data["house_system"] == "whole_sign_from_approximate_ascendant"
+
+
+def test_free_kundli_rejects_invalid_birth_input():
+    response = client.post("/api/kundli/calculate", json={
+        "birth_date": "10/12/1990", "birth_time": "25:61",
+        "latitude": 26.4, "longitude": 80.3, "timezone": "Asia/Kolkata",
+    })
+    assert response.status_code == 422
+
+
+def test_frontend_exposes_free_panchang_and_kundli_forms_without_geolocation():
+    html = (Path(__file__).resolve().parent.parent / "index.html").read_text(encoding="utf-8")
+    for control in ("panchangForm", "pDate", "pLat", "pLon", "kundliForm", "kDate", "kTime", "kLat", "kLon"):
+        assert control in html
+    assert "/api/panchang/calculate?" in html
+    assert "/api/kundli/calculate" in html
+    assert "geolocation" not in html.lower()
