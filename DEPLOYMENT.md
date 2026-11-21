@@ -46,3 +46,7 @@ The app exposes preliminary beta notices at `/privacy` and `/terms`. Before publ
 ## Current release status
 
 Development beta only. No live hosting provider, production domain, provider secrets, expert sign-off, payment gateway, booking workflow or production voice service is configured by this repository alone.
+
+## Review audit storage
+
+Configure separate `ADMIN_API_TOKEN` and `ACHARYA_API_TOKEN` secrets, reviewer identity/qualification, and a durable mounted path for `REVIEW_AUDIT_DB`. Include SQLite audit data in encrypted backups. Never put tokens in browser code or local storage.
