@@ -54,7 +54,7 @@ def test_ecosystem_module_catalogue_is_explicit_about_status():
     ids = {item["id"] for item in payload["modules"]}
     assert {"ai-pandit", "panchang", "jyotish", "pandit-directory", "puja-store"} <= ids
     assert next(item for item in payload["modules"] if item["id"] == "ai-pandit")["status"] == "beta"
-    assert next(item for item in payload["modules"] if item["id"] == "panchang")["status"] == "planned"
+    assert next(item for item in payload["modules"] if item["id"] == "panchang")["status"] == "beta"
 
 def test_knowledge_topics_returns_review_labelled_cards():
     response = client.get("/api/knowledge/topics")
