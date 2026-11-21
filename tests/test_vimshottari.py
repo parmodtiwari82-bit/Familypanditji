@@ -32,3 +32,27 @@ def test_complete_future_subperiods_sum_to_parent_duration():
         for ad in md["antardashas"]:
             pd_total = sum(p["duration_years_approx"] for p in ad["pratyantardashas"])
             assert abs(pd_total - ad["duration_years_approx"]) < 0.0001
+
+
+def test_advanced_api_returns_birth_subperiods():
+    from fastapi.testclient import TestClient
+    from main import app
+
+    response = TestClient(app).post("/api/jyotish/advanced", json={
+        "birth_date": "1990-12-10", "birth_time": "00:40",
+        "latitude": 26.4499, "longitude": 80.3319, "timezone": "Asia/Kolkata"
+    })
+    assert response.status_code == 200
+    data = response.json()["vimshottari"]
+    assert data["birth_antardasha"]
+    assert data["birth_pratyantardasha"]
+    assert len(data["mahadasha_periods"][0]["antardashas"]) == 9
+
+
+def test_frontend_exposes_birth_subperiods():
+    from pathlib import Path
+
+    html = (Path(__file__).resolve().parents[1] / "index.html").read_text(encoding="utf-8")
+    assert "अंतरदशा" in html
+    assert "प्रत्यंतरदशा" in html
+    assert "birth_pratyantardasha" in html
