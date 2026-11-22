@@ -1476,3 +1476,52 @@ def test_pandit_application_privacy_copy_discloses_manual_erasure_and_no_retenti
     assert "Backup, hosting logs" in privacy
     assert "निश्चित retention अवधि और applicant self-service deletion अभी उपलब्ध नहीं हैं" in home
     assert "सुरक्षित रूप से रखे जाएँ" not in home
+
+
+
+def test_jpl_kundli_and_advanced_endpoints_wire_ephemeris_and_ascendant(monkeypatch):
+    """Exercise both API routes with deterministic JPL adapter outputs."""
+    import main as backend_main
+
+    tropical = {
+        "Sun": 280.0, "Moon": 100.0, "Mercury": 275.0,
+        "Venus": 300.0, "Mars": 210.0, "Jupiter": 190.0, "Saturn": 200.0,
+    }
+    engine_info = {
+        "id": "jpl_de440s_skyfield",
+        "status": "jpl_de440s_skyfield",
+        "precision": "JPL DE440s test fixture",
+    }
+    monkeypatch.setattr(
+        backend_main, "resolve_astronomy_engine",
+        lambda moment, requested: (dict(tropical), dict(engine_info)),
+    )
+    monkeypatch.setattr(
+        backend_main, "resolve_ascendant",
+        lambda moment, latitude, longitude, info: 45.0,
+    )
+    payload = {
+        "birth_date": "2001-04-15",
+        "birth_time": "06:20",
+        "latitude": 26.4499,
+        "longitude": 80.3319,
+        "timezone": "Asia/Kolkata",
+        "engine": "jpl",
+    }
+
+    chart_response = client.post("/api/kundli/calculate", json=payload)
+    assert chart_response.status_code == 200
+    chart = chart_response.json()
+    assert chart["engine"]["id"] == "jpl_de440s_skyfield"
+    assert chart["ascendant_calculation"] == "Skyfield_apparent_GMST_plus_approximate_obliquity"
+    assert chart["lagna"]["longitude_degrees"] != 45.0
+    assert {"Sun", "Moon", "Rahu", "Ketu"} <= set(chart["planets"])
+
+    advanced_response = client.post("/api/jyotish/advanced", json=payload)
+    assert advanced_response.status_code == 200
+    advanced = advanced_response.json()
+    assert advanced["engine"]["id"] == "jpl_de440s_skyfield"
+    assert advanced["lagna"] == chart["lagna"]
+    assert {"Sun", "Moon", "Rahu", "Ketu"} <= set(advanced["navamsa_d9"])
+    assert advanced["vimshottari"]["mahadasha_periods"]
+    assert advanced["data_retention"] == "not_stored_by_this_endpoint"
