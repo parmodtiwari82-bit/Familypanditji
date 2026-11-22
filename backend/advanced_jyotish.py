@@ -1,8 +1,8 @@
-"""Advanced, explicitly approximate Jyotish derivations from the starter chart.
+"""Advanced Jyotish derivations with explicit provenance and Vedic-convention limits.
 
-Navamsa and Vimshottari dates are mathematical derivations from the low-precision
-Moon/planet positions in vedic_calc; they are not suitable for predictions or
-ritual decisions until the underlying ephemeris is validated by qualified reviewers.
+Supplied tropical positions (for example, from the JPL DE440s adapter) are used
+as-is. Without them, the dependency-free low-precision positions are used.
+Both paths still rely on approximate Lahiri ayanamsa and need expert validation.
 """
 from __future__ import annotations
 
@@ -155,7 +155,8 @@ def calculate_divisional_charts(sidereal: dict[str, float]) -> dict:
 def calculate_advanced_jyotish(local_birth: datetime, latitude: float, longitude: float,
                                tropical_override: dict[str, float] | None = None) -> dict:
     """Return selected varga charts and a birth-anchored Vimshottari sequence."""
-    tropical = tropical_override or tropical_longitudes(local_birth)
+    uses_supplied_ephemeris = tropical_override is not None
+    tropical = tropical_override if uses_supplied_ephemeris else tropical_longitudes(local_birth)
     ayan = ayanamsa_lahiri_approx(local_birth)
     sidereal = {name: norm(value - ayan) for name, value in tropical.items()}
     navamsa = {
@@ -171,8 +172,17 @@ def calculate_advanced_jyotish(local_birth: datetime, latitude: float, longitude
         "navamsa_d9": navamsa,
         "divisional_charts": calculate_divisional_charts(sidereal),
         "vimshottari": calculate_vimshottari(local_birth, sidereal["Moon"]),
-        "calculation": "advanced_derivations_from_low_precision_starter_ephemeris",
+        "calculation": (
+            "advanced_derivations_from_supplied_ephemeris_with_approximate_lahiri"
+            if uses_supplied_ephemeris
+            else "advanced_derivations_from_low_precision_starter_ephemeris"
+        ),
         "accuracy_note_hi": (
+            "नवांश और विंशोत्तरी की ग्रह-स्थितियाँ दिए गए ephemeris (जैसे JPL DE440s) से ली गई हैं, "
+            "लेकिन लाहिड़ी अयनांश, राहु-केतु पद्धति और वैदिक परंपरा अभी पूर्णतः सत्यापित नहीं हैं। "
+            "इसे प्रमाणित भविष्यवाणी या विवाह/स्वास्थ्य/वित्त निर्णय का आधार न मानें।"
+            if uses_supplied_ephemeris
+            else
             "नवांश और विंशोत्तरी दशा की यह गणना प्रारंभिक निम्न-सटीकता ग्रह-स्थितियों पर आधारित है। "
             "जन्म समय, अयनांश और चन्द्र दीर्घांश की त्रुटि से परिणाम बदल सकते हैं। इसे भविष्यवाणी, "
             "विवाह/स्वास्थ्य/वित्त निर्णय या धार्मिक मुहूर्त के लिए प्रमाणित परिणाम न मानें; "
