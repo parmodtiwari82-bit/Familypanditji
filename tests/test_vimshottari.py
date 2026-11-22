@@ -66,3 +66,27 @@ def test_panchang_ui_displays_estimated_limb_end_times():
     assert "data.limb_ends_at?.nakshatra" in html
     assert "data.limb_ends_at?.yoga" in html
     assert "data.limb_ends_at?.karana" in html
+
+
+def test_advanced_jyotish_uses_supplied_ephemeris_and_discloses_limits():
+    from advanced_jyotish import calculate_advanced_jyotish
+
+    birth = datetime(1990, 12, 10, 0, 40)
+    supplied = {
+        "Sun": 250.0, "Moon": 42.5, "Mars": 120.0, "Mercury": 260.0,
+        "Jupiter": 80.0, "Venus": 280.0, "Saturn": 290.0,
+        "Rahu": 100.0, "Ketu": 280.0,
+    }
+    result = calculate_advanced_jyotish(birth, 26.45, 80.33, supplied)
+    assert result["calculation"] == (
+        "advanced_derivations_from_supplied_ephemeris_with_approximate_lahiri"
+    )
+    assert "JPL DE440s" in result["accuracy_note_hi"]
+    assert result["navamsa_d9"]["Moon"]["longitude_degrees"] != 0
+
+
+def test_advanced_jyotish_marks_low_precision_fallback_when_no_override():
+    from advanced_jyotish import calculate_advanced_jyotish
+
+    result = calculate_advanced_jyotish(datetime(1990, 12, 10, 0, 40), 26.45, 80.33)
+    assert result["calculation"] == "advanced_derivations_from_low_precision_starter_ephemeris"
