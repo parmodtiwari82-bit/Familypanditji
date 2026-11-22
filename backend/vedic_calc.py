@@ -85,6 +85,13 @@ def tropical_longitudes(dt: datetime) -> dict[str, float]:
     result["Ketu"] = norm(result["Rahu"]+180)
     return result
 
+def mean_node_longitudes(dt: datetime) -> tuple[float, float]:
+    """Return mean tropical Rahu/Ketu longitudes for a timezone-aware instant."""
+    days_since_j2000 = jd(dt) - 2451545.0
+    rahu = norm(125.04452 - 0.0529538083 * days_since_j2000)
+    return rahu, norm(rahu + 180.0)
+
+
 def ayanamsa_lahiri_approx(dt: datetime) -> float:
     years = (jd(dt)-2451545.0)/365.2425
     return 23.85675 + years*(50.290966/3600)
@@ -207,7 +214,12 @@ def calculate_panchang(local_dt: datetime, latitude: float, longitude: float,
 def calculate_kundli(local_dt: datetime, latitude: float, longitude: float,
                      tropical_override: dict[str, float] | None = None,
                      ascendant_tropical_override: float | None = None) -> dict:
-    longs = tropical_override or tropical_longitudes(local_dt)
+    longs = dict(tropical_override) if tropical_override is not None else tropical_longitudes(local_dt)
+    if tropical_override is not None:
+        # DE440s supplies the Sun and planets; Rahu/Ketu are mean-node calculations.
+        rahu, ketu = mean_node_longitudes(local_dt)
+        longs.setdefault("Rahu", rahu)
+        longs.setdefault("Ketu", ketu)
     ayan = ayanamsa_lahiri_approx(local_dt)
     sidereal = {name: norm(value-ayan) for name,value in longs.items()}
     # Approximate local sidereal time and ascendant from ecliptic horizon intersection.
