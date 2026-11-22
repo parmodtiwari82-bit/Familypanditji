@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "status": "draft_requires_acharya_review",
   "language": "hi",
   "entries": [
@@ -97,6 +97,176 @@
       "review_required": true,
       "answer_en": "The rules for a vrata differ according to the specific observance and tradition. Verify the tithi with a local Panchang, and decide about fasting in view of your health. Consult a qualified acharya for observance-specific rules.",
       "answer_sa": "व्रतस्य नियमाः व्रतविशेषं परम्परां च आश्रित्य भिन्नाः भवन्ति। तिथिं स्थानीयपञ्चाङ्गेन परीक्षेत। उपवासस्य निर्णयः स्वस्वास्थ्यं विचार्य करणीयः। विशेषनियमाय योग्याचार्यस्य परामर्शः ग्राह्यः।"
+    },
+    {
+      "id": "diya-deepak",
+      "category": "puja",
+      "title": "पूजा में दीपक का सामान्य महत्व",
+      "keywords": [
+        "दीपक",
+        "दीया",
+        "दिया जलाना",
+        "पूजा में दीपक",
+        "deepak",
+        "diya",
+        "lighting a lamp"
+      ],
+      "answer": "हिंदू पूजा-परंपराओं में दीपक प्रकाश, शुभता और ईश्वर-स्मरण का प्रतीक माना जाता है। दीपक रखने की दिशा, तेल या घी का चयन और बत्ती की संख्या अलग-अलग परंपराओं में भिन्न हो सकती है। किसी एक विधि को सभी परिवारों के लिए अनिवार्य न मानें।",
+      "answer_en": "In many Hindu worship traditions, a lamp symbolizes light, auspiciousness and remembrance of the divine. Placement, oil or ghee, and wick practices vary by tradition and family; no single method should be presented as universal.",
+      "answer_sa": "हिन्दूपूजापरम्परासु दीपः प्रकाशस्य, मङ्गलस्य, ईश्वरस्मरणस्य च प्रतीकः मन्यते। दीपस्थापनादिविधयः कुलपरम्परानुसारं भिन्नाः भवन्ति।",
+      "review_required": true
+    },
+    {
+      "id": "aarti-general",
+      "category": "puja",
+      "title": "आरती का सामान्य अर्थ",
+      "keywords": [
+        "आरती क्या है",
+        "आरती का अर्थ",
+        "आरती कैसे करें",
+        "आरती",
+        "aarti",
+        "arti"
+      ],
+      "answer": "आरती पूजा के अंत में या परंपरा के निर्धारित समय पर दीप अथवा ज्योति के साथ की जाने वाली स्तुति-सेवा है। आरती का गीत, क्रम और दीप घुमाने की विधि देवता तथा क्षेत्रीय/पारिवारिक परंपरा के अनुसार बदलती है।",
+      "answer_en": "Aarti is a devotional offering of light accompanied by praise, often performed at the end of worship or at a customary time. Its hymn, sequence and method vary by deity and regional or family tradition.",
+      "answer_sa": "आरती दीपज्योतिषा सह क्रियमाणा स्तुतिसेवा अस्ति। तस्याः गीतं क्रमश्च देवतां कुलपरम्परां च आश्रित्य भिन्नौ भवतः।",
+      "review_required": true
+    },
+    {
+      "id": "sankalpa-basic",
+      "category": "puja",
+      "title": "संकल्प का सामान्य परिचय",
+      "keywords": [
+        "संकल्प",
+        "पूजा संकल्प",
+        "sankalp",
+        "sankalpa",
+        "संकल्प कैसे लें"
+      ],
+      "answer": "संकल्प पूजा या धार्मिक कार्य के उद्देश्य को मन में स्पष्ट करके श्रद्धापूर्वक व्यक्त करना है। विस्तृत संकल्प में तिथि, स्थान, गोत्र आदि का उल्लेख कुछ परंपराओं में होता है; सही पाठ और विवरण के लिए अपनी परंपरा के आचार्य से पूछें।",
+      "answer_en": "Sankalpa is the devotional statement of one's intention for a worship or religious act. Some traditions include details such as date, place and gotra; consult an acharya for the precise wording used in your tradition.",
+      "answer_sa": "सङ्कल्पः धार्मिककर्मणः पूजायाश्च उद्देश्यम् श्रद्धया स्पष्टतया निवेदयितुम् अस्ति। विस्तृतविधिः परम्परानुसारं भिद्यते।",
+      "review_required": true
+    },
+    {
+      "id": "ekadashi-general",
+      "category": "vrata",
+      "title": "एकादशी व्रत का सामान्य परिचय",
+      "keywords": [
+        "एकादशी",
+        "एकादशी व्रत",
+        "एकादशी कब",
+        "ekadashi",
+        "ekadashi vrat"
+      ],
+      "answer": "एकादशी चंद्रमास की शुक्ल और कृष्ण पक्ष की ग्यारहवीं तिथि है। व्रत के नियम, पारण का समय और आहार-संबंधी परंपराएँ संप्रदाय तथा स्थानीय पंचांग के अनुसार बदलती हैं। सही तिथि और पारण के लिए अपने शहर का प्रमाणित पंचांग देखें; स्वास्थ्य के प्रतिकूल उपवास न करें।",
+      "answer_en": "Ekadashi is the eleventh lunar day in both waxing and waning fortnights. Observance, breaking-fast time and food rules vary by sampradaya and local Panchang. Check a reliable local Panchang and do not fast against medical needs.",
+      "answer_sa": "एकादशी शुक्लकृष्णपक्षयोः एकादशी तिथिः अस्ति। व्रतविधिः पारणकालश्च सम्प्रदायं स्थानीयपञ्चाङ्गं च आश्रित्य भिद्येते।",
+      "review_required": true
+    },
+    {
+      "id": "pradosh-general",
+      "category": "vrata",
+      "title": "प्रदोष व्रत का सामान्य परिचय",
+      "keywords": [
+        "प्रदोष",
+        "प्रदोष व्रत",
+        "प्रदोष पूजा",
+        "pradosh",
+        "pradosh vrat"
+      ],
+      "answer": "प्रदोष व्रत सामान्यतः त्रयोदशी तिथि और सायंकालीन पूजा से जुड़ा शिव-उपासना का व्रत है। व्रत की तिथि और पूजा का स्थानीय समय सूर्योदय, सूर्यास्त तथा पंचांग-परंपरा पर निर्भर करता है। सटीक समय स्थानीय पंचांग से जाँचें।",
+      "answer_en": "Pradosha vrata is commonly associated with Shiva worship on Trayodashi and an evening observance. The date and local worship window depend on the Panchang and local sunrise and sunset; verify the timing locally.",
+      "answer_sa": "प्रदोषव्रतं सामान्यतः त्रयोदश्यां शिवोपासनया सायंकालीनपूजया च सम्बद्धम् अस्ति। निश्चितकालः स्थानीयपञ्चाङ्गेन ज्ञातव्यः।",
+      "review_required": true
+    },
+    {
+      "id": "navratri-general",
+      "category": "festival",
+      "title": "नवरात्रि का सामान्य परिचय",
+      "keywords": [
+        "नवरात्रि",
+        "नवरात्र",
+        "दुर्गा पूजा",
+        "navratri",
+        "navaratri",
+        "durga puja"
+      ],
+      "answer": "नवरात्रि देवी-उपासना का पर्व है, जिसमें नौ रातों तक देवी के विभिन्न रूपों की पूजा की जाती है। घटस्थापना, उपवास, पाठ और पूजन के नियम क्षेत्र, पंचांग और कुलपरंपरा के अनुसार बदलते हैं। घटस्थापना का सटीक मुहूर्त स्थानीय पंचांग से लें।",
+      "answer_en": "Navaratri is a festival of devotion to the Goddess, commonly observed over nine nights. Kalash sthapana, fasting, recitation and worship practices vary by region, Panchang and family tradition; use a local Panchang for the exact muhurta.",
+      "answer_sa": "नवरात्रिः देव्याः उपासनायाः पर्व अस्ति। घटस्थापनादिविधयः प्रदेशं पञ्चाङ्गं कुलपरम्परां च आश्रित्य भिन्नाः भवन्ति।",
+      "review_required": true
+    },
+    {
+      "id": "janmashtami-general",
+      "category": "festival",
+      "title": "जन्माष्टमी का सामान्य परिचय",
+      "keywords": [
+        "जन्माष्टमी",
+        "कृष्ण जन्माष्टमी",
+        "कृष्णाष्टमी",
+        "janmashtami",
+        "krishna janmashtami"
+      ],
+      "answer": "जन्माष्टमी भगवान श्रीकृष्ण के जन्मोत्सव के रूप में मनाई जाती है। व्रत, निशीथ पूजा और उत्सव की तिथि/घड़ी स्थानीय पंचांग और परंपरा के अनुसार निर्धारित होती है; अलग-अलग स्थानों पर पालन का दिन भिन्न हो सकता है।",
+      "answer_en": "Janmashtami celebrates the birth of Krishna. Fasting, midnight worship and the observance date are determined according to local Panchang rules and tradition, so dates can differ by place.",
+      "answer_sa": "जन्माष्टमी श्रीकृष्णजन्मोत्सवरूपेण आचर्यते। व्रतस्य पूजायाश्च कालः स्थानीयपञ्चाङ्गपरम्पराभ्यां निर्धारितः भवति।",
+      "review_required": true
+    },
+    {
+      "id": "kundli-basics",
+      "category": "jyotish",
+      "title": "जन्मकुंडली का सामान्य परिचय",
+      "keywords": [
+        "कुंडली क्या है",
+        "जन्म कुंडली",
+        "जन्मकुंडली",
+        "कुंडली",
+        "कुण्डली",
+        "kundli",
+        "janam kundli",
+        "birth chart"
+      ],
+      "answer": "जन्मकुंडली जन्म की तारीख, सटीक समय और स्थान के आधार पर ग्रहों की निरूपित स्थिति का ज्योतिषीय मानचित्र है। जन्मसमय में कुछ मिनट का अंतर लग्न और भावों को प्रभावित कर सकता है। गणना में अयनांश, ग्रह-स्थिति स्रोत और भाव-पद्धति स्पष्ट होनी चाहिए। ज्योतिषीय व्याख्याएँ परंपरागत मान्यताएँ हैं, वैज्ञानिक रूप से निश्चित भविष्यवाणी नहीं।",
+      "answer_en": "A birth chart is an astrological map calculated from date, exact time and place of birth. A difference of a few minutes can affect the ascendant and houses. The ayanamsa, planetary ephemeris and house system should be stated. Astrological interpretations are traditional beliefs, not scientifically certain predictions.",
+      "answer_sa": "जन्मकुण्डली जन्मतिथेः, सूक्ष्मजन्मसमयस्य, जन्मस्थानस्य च आधारेण निर्मितः ज्योतिषीयमानचित्रः अस्ति। ज्योतिषव्याख्याः परम्परागताः मान्यताः सन्ति, न तु वैज्ञानिकनिश्चितभविष्यवाण्यः।",
+      "review_required": true
+    },
+    {
+      "id": "muhurta-basics",
+      "category": "jyotish",
+      "title": "मुहूर्त का सामान्य परिचय",
+      "keywords": [
+        "मुहूर्त",
+        "शुभ मुहूर्त",
+        "विवाह मुहूर्त",
+        "muhurat",
+        "muhurta",
+        "auspicious time"
+      ],
+      "answer": "मुहूर्त का चयन कार्य, तिथि, नक्षत्र, योग, करण, स्थान और संबंधित परंपरा को देखकर किया जाता है। विवाह, गृहप्रवेश या अन्य महत्वपूर्ण कार्य के लिए केवल सामान्य सूची पर निर्भर न रहें; वर्ष और शहर के अनुसार गणना कर योग्य आचार्य से पुष्टि करें।",
+      "answer_en": "A muhurta is selected by considering the activity, lunar day, nakshatra, yoga, karana, location and tradition. For weddings, housewarmings or other important events, use a calculation for the specific year and city and confirm it with a qualified acharya.",
+      "answer_sa": "मुहूर्तनिर्णये कार्यविशेषः, तिथिः, नक्षत्रम्, योगः, करणम्, स्थानं परम्परा च विचार्यन्ते। महत्वपूर्णकार्याय योग्याचार्येण पुष्टि: करणीया।",
+      "review_required": true
+    },
+    {
+      "id": "mantra-japa-basics",
+      "category": "mantra",
+      "title": "मंत्र-जप का सामान्य परिचय",
+      "keywords": [
+        "मंत्र जाप",
+        "मंत्र जप",
+        "जप कैसे करें",
+        "माला जप",
+        "mantra jap",
+        "mantra japa",
+        "chanting mantra"
+      ],
+      "answer": "मंत्र-जप में मंत्र का श्रद्धापूर्वक, स्पष्ट उच्चारण या मानसिक स्मरण किया जाता है। मंत्र, दीक्षा, संख्या, माला और नियम गुरु-परंपरा तथा मंत्र-विशेष के अनुसार अलग हो सकते हैं। किसी बीजमंत्र या दीक्षा-संबंधी मंत्र का अभ्यास योग्य गुरु के निर्देश से करें।",
+      "answer_en": "Mantra japa is the devotional repetition or mental remembrance of a mantra. The mantra, initiation, count, rosary and rules vary by lineage and mantra. Practice bija or initiation-specific mantras under a qualified teacher's guidance.",
+      "answer_sa": "मन्त्रजपे श्रद्धया मन्त्रस्य उच्चारणं मानसिकस्मरणं वा क्रियते। मन्त्रविशेषस्य नियमाः गुरुपरम्परानुसारं भिन्नाः भवन्ति।",
+      "review_required": true
     }
   ]
 }
