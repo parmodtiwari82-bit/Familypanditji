@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from math import floor
 
-from vedic_calc import NAKSHATRAS, norm, nakshatra_name, tropical_longitudes, ayanamsa_lahiri_approx
+from vedic_calc import NAKSHATRAS, norm, nakshatra_name, tropical_longitudes, ayanamsa_lahiri_approx, mean_node_longitudes
 
 DASHA_LORDS = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"]
 DASHA_YEARS = {"Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7,
@@ -156,7 +156,12 @@ def calculate_advanced_jyotish(local_birth: datetime, latitude: float, longitude
                                tropical_override: dict[str, float] | None = None) -> dict:
     """Return selected varga charts and a birth-anchored Vimshottari sequence."""
     uses_supplied_ephemeris = tropical_override is not None
-    tropical = tropical_override if uses_supplied_ephemeris else tropical_longitudes(local_birth)
+    tropical = dict(tropical_override) if uses_supplied_ephemeris else tropical_longitudes(local_birth)
+    if uses_supplied_ephemeris:
+        # The JPL kernel provides planetary positions; lunar nodes use the documented mean-node model.
+        rahu, ketu = mean_node_longitudes(local_birth)
+        tropical.setdefault("Rahu", rahu)
+        tropical.setdefault("Ketu", ketu)
     ayan = ayanamsa_lahiri_approx(local_birth)
     sidereal = {name: norm(value - ayan) for name, value in tropical.items()}
     navamsa = {
