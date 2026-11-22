@@ -1530,3 +1530,55 @@ def test_jpl_kundli_and_advanced_endpoints_wire_ephemeris_and_ascendant(monkeypa
     assert {"Sun", "Moon", "Rahu", "Ketu"} <= set(advanced["navamsa_d9"])
     assert advanced["vimshottari"]["mahadasha_periods"]
     assert advanced["data_retention"] == "not_stored_by_this_endpoint"
+
+
+
+def test_complete_kundli_api_flow_returns_rashi_houses_varga_and_dasha():
+    """The free engine must return a complete, clearly-labelled chart through both APIs."""
+    payload = {
+        "birth_date": "1982-01-01",
+        "birth_time": "00:30",
+        "latitude": 26.4499,
+        "longitude": 80.3319,
+        "timezone": "Asia/Kolkata",
+        "engine": "approximate",
+    }
+
+    chart_response = client.post("/api/kundli/calculate", json=payload)
+    assert chart_response.status_code == 200
+    chart = chart_response.json()
+    assert chart["engine"]["id"] == "free_approximate"
+    assert chart["calculation"] == "free_low_precision_orbital_approximation"
+    assert len(chart["houses"]) == 12
+    assert len(chart["planets"]) >= 9
+    assert all(planet["rashi"] and planet["nakshatra"] for planet in chart["planets"].values())
+    assert chart["data_retention"] == "not_stored_by_this_endpoint"
+
+    advanced_response = client.post("/api/jyotish/advanced", json=payload)
+    assert advanced_response.status_code == 200
+    advanced = advanced_response.json()
+    assert advanced["engine"]["id"] == "free_approximate"
+    assert advanced["lagna"] == chart["lagna"]
+    assert {"Sun", "Moon", "Rahu", "Ketu", "Lagna"} <= set(advanced["navamsa_d9"])
+    assert {"d2_hora", "d3_drekkana", "d7_saptamsa", "d10_dashamsa", "d12_dwadasamsa"} <= set(advanced["divisional_charts"])
+    periods = advanced["vimshottari"]["mahadasha_periods"]
+    assert len(periods) == 9
+    assert all(len(period["antardashas"]) == 9 for period in periods)
+    assert all(
+        len(antardasha["pratyantardashas"]) == 9
+        for period in periods for antardasha in period["antardashas"]
+    )
+    assert advanced["data_retention"] == "not_stored_by_this_endpoint"
+
+
+def test_kundli_api_rejects_unknown_timezone_without_server_error():
+    payload = {
+        "birth_date": "1982-01-01",
+        "birth_time": "00:30",
+        "latitude": 26.4499,
+        "longitude": 80.3319,
+        "timezone": "Not/A_Real_Zone",
+        "engine": "approximate",
+    }
+    response = client.post("/api/kundli/calculate", json=payload)
+    assert response.status_code == 422
