@@ -3,7 +3,7 @@ services:
     name: family-panditji-staging
     runtime: docker
     plan: free
-    branch: deploy/render-staging-blueprint
+    branch: main
     autoDeploy: true
     healthCheckPath: /health
     envVars:
