@@ -75,7 +75,10 @@ def test_jpl_mode_kundli_and_advanced_charts_include_mean_rahu_ketu():
     ) < 0.001
 
     advanced = calculate_advanced_jyotish(
-        birth, 26.4499, 80.3319, tropical_override=tropical
+        birth, 26.4499, 80.3319, tropical_override=tropical,
+        ascendant_sidereal_override=45.0,
     )
-    assert {"Rahu", "Ketu"} <= set(advanced["navamsa_d9"])
-    assert {"Rahu", "Ketu"} <= set(advanced["divisional_charts"]["d10_dashamsa"])
+    assert {"Rahu", "Ketu", "Lagna"} <= set(advanced["navamsa_d9"])
+    assert {"Rahu", "Ketu", "Lagna"} <= set(advanced["divisional_charts"]["d10_dashamsa"])
+    assert advanced["navamsa_d9"]["Lagna"]["rashi"] == navamsa_sign(45.0)
+    assert advanced["lagna_sidereal_longitude_degrees"] == 45.0

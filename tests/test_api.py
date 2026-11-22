@@ -835,7 +835,7 @@ def test_advanced_jyotish_returns_d9_and_birth_anchored_vimshottari_without_stor
     })
     assert response.status_code == 200
     payload = response.json()
-    assert len(payload["navamsa_d9"]) == 9
+    assert len(payload["navamsa_d9"]) == 10  # nine grahas plus Lagna
     assert len(payload["vimshottari"]["mahadasha_periods"]) == 9
     assert payload["vimshottari"]["birth_period"] == payload["vimshottari"]["mahadasha_periods"][0]["lord"]
     assert payload["data_retention"] == "not_stored_by_this_endpoint"
@@ -873,7 +873,7 @@ def test_advanced_jyotish_returns_supported_divisional_charts():
     charts = payload["divisional_charts"]
     assert set(charts) == {"d2_hora", "d3_drekkana", "d7_saptamsa", "d10_dashamsa", "d12_dwadasamsa"}
     for chart in charts.values():
-        assert len(chart) == 9
+        assert len(chart) == 10  # nine grahas plus Lagna
         assert all(item["rashi"] for item in chart.values())
         assert all(0 <= item["source_longitude_degrees"] < 360 for item in chart.values())
 

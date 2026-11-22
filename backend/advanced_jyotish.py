@@ -153,7 +153,8 @@ def calculate_divisional_charts(sidereal: dict[str, float]) -> dict:
 
 
 def calculate_advanced_jyotish(local_birth: datetime, latitude: float, longitude: float,
-                               tropical_override: dict[str, float] | None = None) -> dict:
+                               tropical_override: dict[str, float] | None = None,
+                               ascendant_sidereal_override: float | None = None) -> dict:
     """Return selected varga charts and a birth-anchored Vimshottari sequence."""
     uses_supplied_ephemeris = tropical_override is not None
     tropical = dict(tropical_override) if uses_supplied_ephemeris else tropical_longitudes(local_birth)
@@ -164,6 +165,8 @@ def calculate_advanced_jyotish(local_birth: datetime, latitude: float, longitude
         tropical.setdefault("Ketu", ketu)
     ayan = ayanamsa_lahiri_approx(local_birth)
     sidereal = {name: norm(value - ayan) for name, value in tropical.items()}
+    if ascendant_sidereal_override is not None:
+        sidereal["Lagna"] = norm(ascendant_sidereal_override)
     navamsa = {
         name: {
             "longitude_degrees": round(value, 4),
@@ -174,6 +177,7 @@ def calculate_advanced_jyotish(local_birth: datetime, latitude: float, longitude
     }
     return {
         "birth_datetime_local": local_birth.isoformat(),
+        "lagna_sidereal_longitude_degrees": round(sidereal["Lagna"], 4) if "Lagna" in sidereal else None,
         "navamsa_d9": navamsa,
         "divisional_charts": calculate_divisional_charts(sidereal),
         "vimshottari": calculate_vimshottari(local_birth, sidereal["Moon"]),
