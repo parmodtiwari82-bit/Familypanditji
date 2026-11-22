@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: family-panditji-staging
+    runtime: docker
+    plan: free
+    branch: deploy/render-staging-blueprint
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: staging
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: AI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: AI_TIMEOUT_SECONDS
+        value: "25"
+      - key: ASK_RATE_LIMIT_MAX
+        value: "20"
+      - key: ASK_RATE_LIMIT_WINDOW_SECONDS
+        value: "60"
