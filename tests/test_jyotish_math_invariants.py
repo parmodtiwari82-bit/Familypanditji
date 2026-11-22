@@ -53,3 +53,29 @@ def test_divisional_chart_rejects_invalid_division(division):
 def test_divisional_chart_rejects_unknown_method():
     with pytest.raises(ValueError, match="unsupported varga method"):
         divisional_sign(12.0, 9, "unknown")
+
+
+def test_jpl_mode_kundli_and_advanced_charts_include_mean_rahu_ketu():
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    from vedic_calc import calculate_kundli
+    from advanced_jyotish import calculate_advanced_jyotish
+
+    birth = datetime(1982, 1, 1, 0, 30, tzinfo=ZoneInfo("Asia/Kolkata"))
+    tropical = {
+        "Sun": 280.0, "Moon": 100.0, "Mercury": 275.0,
+        "Venus": 300.0, "Mars": 210.0, "Jupiter": 190.0, "Saturn": 200.0,
+    }
+
+    chart = calculate_kundli(birth, 26.4499, 80.3319, tropical_override=tropical)
+    assert {"Rahu", "Ketu"} <= set(chart["planets"])
+    assert abs(
+        (chart["planets"]["Ketu"]["longitude_degrees"]
+         - chart["planets"]["Rahu"]["longitude_degrees"]) % 360 - 180
+    ) < 0.001
+
+    advanced = calculate_advanced_jyotish(
+        birth, 26.4499, 80.3319, tropical_override=tropical
+    )
+    assert {"Rahu", "Ketu"} <= set(advanced["navamsa_d9"])
+    assert {"Rahu", "Ketu"} <= set(advanced["divisional_charts"]["d10_dashamsa"])
