@@ -92,3 +92,19 @@ def test_advanced_jyotish_marks_low_precision_fallback_when_no_override():
 
     result = calculate_advanced_jyotish(datetime(1990, 12, 10, 0, 40), 26.45, 80.33)
     assert result["calculation"] == "advanced_derivations_from_low_precision_starter_ephemeris"
+
+
+
+def test_birth_mahadasha_exposes_full_cycle_and_remaining_balance_separately():
+    birth = datetime(1990, 12, 10, 0, 40)
+    result = calculate_vimshottari(birth, 42.5)
+    first = result["mahadasha_periods"][0]
+
+    assert first["is_birth_balance"] is True
+    assert datetime.fromisoformat(first["start"]) == birth
+    assert datetime.fromisoformat(first["full_start"]) < birth
+    assert datetime.fromisoformat(first["full_end"]) > birth
+    assert first["full_duration_years_approx"] == 7.0
+    assert datetime.fromisoformat(first["antardashas"][0]["start"]) == datetime.fromisoformat(first["full_start"])
+    antardasha_total = sum(item["duration_years_approx"] for item in first["antardashas"])
+    assert abs(antardasha_total - first["full_duration_years_approx"]) < 0.0001
