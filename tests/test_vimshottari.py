@@ -82,7 +82,9 @@ def test_advanced_jyotish_uses_supplied_ephemeris_and_discloses_limits():
         "advanced_derivations_from_supplied_ephemeris_with_approximate_lahiri"
     )
     assert "JPL DE440s" in result["accuracy_note_hi"]
-    assert result["navamsa_d9"]["Moon"]["longitude_degrees"] != 0
+    from vedic_calc import ayanamsa_lahiri_approx, norm
+    expected_moon = norm(42.5 - ayanamsa_lahiri_approx(birth))
+    assert result["navamsa_d9"]["Moon"]["longitude_degrees"] == round(expected_moon, 4)
 
 
 def test_advanced_jyotish_marks_low_precision_fallback_when_no_override():
