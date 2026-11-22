@@ -80,11 +80,17 @@ def calculate_vimshottari(local_birth: datetime, moon_sidereal_longitude: float)
         years = first_balance if offset == 0 else float(DASHA_YEARS[lord])
         md_origin = first_md_origin if offset == 0 else cursor
         md_end = cursor + timedelta(days=years * YEAR_DAYS)
+        full_md_end = md_origin + timedelta(days=float(DASHA_YEARS[lord]) * YEAR_DAYS)
         period = {
             "lord": lord,
+            # start/end describe the remaining period from birth for the first
+            # Mahadasha, and the complete period for all subsequent Mahadashas.
             "start": cursor.isoformat(),
             "end": md_end.isoformat(),
             "duration_years_approx": round(years, 4),
+            "full_start": md_origin.isoformat(),
+            "full_end": full_md_end.isoformat(),
+            "full_duration_years_approx": round(float(DASHA_YEARS[lord]), 4),
             "is_birth_balance": offset == 0,
             "active_at_birth": cursor <= local_birth < md_end,
             "antardashas": _subperiods(md_origin, lord, float(DASHA_YEARS[lord]), local_birth, 1),
