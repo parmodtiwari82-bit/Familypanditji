@@ -232,12 +232,27 @@ def calculate_kundli(local_dt: datetime, latitude: float, longitude: float,
     asc = (norm(ascendant_tropical_override) if ascendant_tropical_override is not None
            else norm(degrees(atan2(-cos(lst), sin(lst)*cos(eps)+tan(lat)*sin(eps)))))
     asc_sidereal = norm(asc-ayan)
-    planets = {name: {"longitude_degrees": round(value,4), "rashi": sign_name(value), "nakshatra": nakshatra_name(value)} for name,value in sidereal.items()}
+    lagna_sign_index = int(asc_sidereal // 30)
+    planets = {}
+    houses = [
+        {"number": house_number, "rashi": SIGNS[(lagna_sign_index + house_number - 1) % 12], "planets": []}
+        for house_number in range(1, 13)
+    ]
+    for name, value in sidereal.items():
+        planet_sign_index = int(norm(value) // 30)
+        house_number = ((planet_sign_index - lagna_sign_index) % 12) + 1
+        planets[name] = {
+            "longitude_degrees": round(value, 4),
+            "rashi": sign_name(value),
+            "nakshatra": nakshatra_name(value),
+            "house": house_number,
+        }
+        houses[house_number - 1]["planets"].append(name)
     return {
         "birth_datetime_local": local_dt.isoformat(), "latitude": latitude, "longitude": longitude,
         "ayanamsa": "Lahiri-style approximate", "ayanamsa_degrees": round(ayan,5),
         "lagna": {"longitude_degrees": round(asc_sidereal,4), "rashi": sign_name(asc_sidereal)},
-        "planets": planets,
+        "planets": planets,\n        "houses": houses,
         "house_system": ("whole_sign_from_skyfield_apparent_sidereal_time_approximate_obliquity" if ascendant_tropical_override is not None else "whole_sign_from_approximate_ascendant"),
         "ascendant_calculation": ("Skyfield_apparent_GMST_plus_approximate_obliquity" if ascendant_tropical_override is not None else "approximate_GMST_and_obliquity"),
         "calculation": ("JPL_DE440s_planetary_positions_with_Skyfield_sidereal_time_and_approximate_Vedic_conventions" if tropical_override is not None else "free_low_precision_orbital_approximation"),
