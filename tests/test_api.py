@@ -1516,6 +1516,11 @@ def test_jpl_kundli_and_advanced_endpoints_wire_ephemeris_and_ascendant(monkeypa
     assert chart["ascendant_calculation"] == "Skyfield_apparent_GMST_plus_approximate_obliquity"
     assert chart["lagna"]["longitude_degrees"] != 45.0
     assert {"Sun", "Moon", "Rahu", "Ketu"} <= set(chart["planets"])
+    assert len(chart["houses"]) == 12
+    assert [house["number"] for house in chart["houses"]] == list(range(1, 13))
+    assert sum(len(house["planets"]) for house in chart["houses"]) == len(chart["planets"])
+    for planet in chart["planets"].values():
+        assert 1 <= planet["house"] <= 12
 
     advanced_response = client.post("/api/jyotish/advanced", json=payload)
     assert advanced_response.status_code == 200
