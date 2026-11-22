@@ -982,13 +982,16 @@ def calculate_advanced_birth_chart(payload: BirthChartRequest):
     try:
         local_dt = parse_local_datetime(payload.birth_date, payload.birth_time, payload.timezone)
         tropical, engine_info = resolve_astronomy_engine(local_dt, payload.engine)
-        result = calculate_advanced_jyotish(local_dt, payload.latitude, payload.longitude, tropical_override=tropical)
         ascendant = resolve_ascendant(local_dt, payload.latitude, payload.longitude, engine_info)
-        if ascendant is not None:
-            kundli = calculate_kundli(local_dt, payload.latitude, payload.longitude, tropical_override=tropical, ascendant_tropical_override=ascendant)
-            result["lagna"] = kundli["lagna"]
-            result["house_system"] = kundli["house_system"]
-            result["ascendant_calculation"] = kundli["ascendant_calculation"]
+        kundli = calculate_kundli(local_dt, payload.latitude, payload.longitude, tropical_override=tropical, ascendant_tropical_override=ascendant)
+        result = calculate_advanced_jyotish(
+            local_dt, payload.latitude, payload.longitude,
+            tropical_override=tropical,
+            ascendant_sidereal_override=kundli["lagna"]["longitude_degrees"],
+        )
+        result["lagna"] = kundli["lagna"]
+        result["house_system"] = kundli["house_system"]
+        result["ascendant_calculation"] = kundli["ascendant_calculation"]
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
     result["timezone"] = payload.timezone
