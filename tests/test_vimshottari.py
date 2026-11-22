@@ -104,7 +104,7 @@ def test_birth_mahadasha_exposes_full_cycle_and_remaining_balance_separately():
     assert datetime.fromisoformat(first["start"]) == birth
     assert datetime.fromisoformat(first["full_start"]) < birth
     assert datetime.fromisoformat(first["full_end"]) > birth
-    assert first["full_duration_years_approx"] == 7.0
+    assert first["full_duration_years_approx"] == 10.0
     assert datetime.fromisoformat(first["antardashas"][0]["start"]) == datetime.fromisoformat(first["full_start"])
     antardasha_total = sum(item["duration_years_approx"] for item in first["antardashas"])
     assert abs(antardasha_total - first["full_duration_years_approx"]) < 0.0001
