@@ -1426,12 +1426,15 @@ async def ask(payload: AskRequest):
         )
 
     fallback = {
-        "hi": "आपका प्रश्न प्राप्त हुआ। इस बीटा में सीमित प्रारंभिक ज्ञान-संग्रह उपलब्ध है। कृपया प्रश्न को पूजा, मंत्र, संस्कार, व्रत या पंचांग के संदर्भ में स्पष्ट करें। विशिष्ट धार्मिक निर्णय की पुष्टि योग्य आचार्य से करें।",
-        "sa": "अस्मिन् प्रारम्भिक संस्करणे सीमितं ज्ञानसङ्ग्रहं उपलब्धम् अस्ति। कृपया प्रश्नं अधिकं स्पष्टं कुरुत। विशेषधार्मिकनिर्णयाय योग्याचार्यस्य परामर्शं स्वीकरोतु।",
-        "en": "Your question was received. This beta has a limited starter knowledge library. Please add context about puja, mantra, samskara, vrata or Panchang. Confirm consequential religious decisions with a qualified acharya.",
+        "hi": "आपका प्रश्न प्राप्त हुआ। इस बीटा के सीमित ज्ञान-संग्रह में अभी इसका समर्थित स्रोत नहीं मिला। कृपया प्रश्न को पूजा, मंत्र, संस्कार, व्रत या पंचांग के संदर्भ में स्पष्ट करें।",
+        "sa": "प्रश्नः प्राप्तः। अस्य बीटा-संस्करणस्य सीमिते ज्ञानसङ्ग्रहे अद्यापि समर्थकः स्रोतः न प्राप्तः। कृपया प्रश्नं अधिकं स्पष्टं कुरुत।",
+        "en": "Your question was received, but no supporting source was found in this beta's limited knowledge library. Please add context about puja, mantra, samskara, vrata or Panchang.",
     }[payload.language]
     return AskResponse(
         answer=fallback,
         mode="curated-beta-fallback",
-        source_status="no_matching_reviewed_source",
+        needs_acharya_review=False,
+        requires_human_approval=False,
+        evidence_status="no_source_match",
+        source_status="no_matching_source",
     )
