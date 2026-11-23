@@ -1663,3 +1663,54 @@ def test_ai_provider_rejects_malformed_or_non_text_response(monkeypatch):
     monkeypatch.setattr(backend_main.httpx, "AsyncClient", FakeAsyncClient)
 
     assert asyncio.run(backend_main.ask_ai("प्रश्न", "hi", "")) is None
+
+
+def test_ai_prompt_does_not_require_human_acharya_and_forbids_invented_citations(monkeypatch):
+    import asyncio
+    import main as backend_main
+
+    captured = {}
+
+    class FakeResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"choices": [{"message": {"content": "स्रोत उपलब्ध नहीं है।"}}]}
+
+    class FakeAsyncClient:
+        def __init__(self, timeout):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, traceback):
+            return False
+
+        async def post(self, url, json, headers):
+            captured["messages"] = json["messages"]
+            return FakeResponse()
+
+    monkeypatch.setattr(backend_main, "AI_API_KEY", "test-secret")
+    monkeypatch.setattr(backend_main, "AI_MODEL", "test-model")
+    monkeypatch.setattr(backend_main.httpx, "AsyncClient", FakeAsyncClient)
+
+    answer = asyncio.run(backend_main.ask_ai("धर्म क्या है?", "hi", ""))
+    system_prompt = captured["messages"][0]["content"].lower()
+
+    assert answer == "स्रोत उपलब्ध नहीं है।"
+    assert "do not invent a scripture title" in system_prompt
+    assert "do not claim that a passage was checked" in system_prompt
+    assert "recommend confirmation by a qualified acharya" not in system_prompt
+
+
+def test_ask_api_does_not_require_acharya_approval():
+    response = client.post("/api/ask", json={"question": "गायत्री मंत्र बताइए", "language": "hi"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["needs_acharya_review"] is False
+    assert payload["source_status"] in {
+        "automated_source_attribution_pending",
+        "catalogue_source_attribution_pending",
+    }
