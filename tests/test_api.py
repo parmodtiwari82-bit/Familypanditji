@@ -1667,3 +1667,18 @@ def test_ai_provider_rejects_malformed_or_non_text_response(monkeypatch):
     monkeypatch.setattr(backend_main.httpx, "AsyncClient", FakeAsyncClient)
 
     assert asyncio.run(backend_main.ask_ai("प्रश्न", "hi", "")) is None
+
+
+
+def test_unmatched_question_reports_no_source_without_human_approval():
+    response = client.post("/api/ask", json={
+        "question": "अज्ञात विषय पर कोई समर्थित स्रोत बताइए",
+        "language": "hi",
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["requires_human_approval"] is False
+    assert payload["needs_acharya_review"] is False
+    assert payload["evidence_status"] == "no_source_match"
+    assert payload["source_status"] == "no_matching_source"
+    assert "समर्थित स्रोत नहीं मिला" in payload["answer"]
