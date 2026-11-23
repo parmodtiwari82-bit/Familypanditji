@@ -227,12 +227,23 @@ def localized_answer(entry: dict[str, Any], language: str) -> str:
 
 def normalize_search_text(value: str) -> str:
     """Normalize Unicode and punctuation for Hindi, Sanskrit and English lookup."""
-    import re
     import unicodedata
 
     normalized = unicodedata.normalize("NFKC", value).casefold()
-    normalized = re.sub(r"[\u200b\u200c\u200d\ufeff]", "", normalized)
-    normalized = re.sub(r"[^\w\s]", " ", normalized, flags=re.UNICODE)
+    normalized = "".join(
+        character for character in normalized
+        if character not in {"\u200b", "\u200c", "\u200d", "\ufeff"}
+    )
+    # Python's Unicode \w class omits combining marks used by Devanagari.
+    # Preserve those marks so Hindi matras and nukta remain searchable.
+    normalized = "".join(
+        character if (
+            character.isalnum()
+            or character.isspace()
+            or unicodedata.category(character).startswith("M")
+        ) else " "
+        for character in normalized
+    )
     return " ".join(normalized.split())
 
 
