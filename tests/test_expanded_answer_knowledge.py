@@ -61,3 +61,26 @@ def test_curated_matcher_normalizes_romanized_hindi_spacing_and_punctuation():
     entry = find_curated_answer("  Ekadashi—vrat ke niyam!!! ")
     assert entry is not None
     assert entry["id"] == "ekadashi-general"
+
+
+
+def test_ask_retrieves_puja_guide_content_instead_of_knowledge_only():
+    response = client.post("/api/ask", json={
+        "question": "दैनिक गृह पूजा की विधि बताइए", "language": "hi"
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["matched_topic"] == "दैनिक गृह पूजा"
+    assert "पूजा-स्थान" in payload["answer"]
+    assert payload["source_status"] == "draft_requires_acharya_review"
+
+
+def test_ask_retrieves_samskara_content_with_english_localization():
+    response = client.post("/api/ask", json={
+        "question": "Explain Namakarana", "language": "en"
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["matched_topic"] == "नामकरण"
+    assert "naming ceremony" in payload["answer"].lower()
+    assert payload["needs_acharya_review"] is True
