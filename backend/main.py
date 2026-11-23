@@ -237,16 +237,36 @@ def normalize_search_text(value: str) -> str:
 
 
 def find_curated_answer(question: str) -> dict[str, Any] | None:
-    folded = f" {normalize_search_text(question)} "
-    matches: list[tuple[int, dict[str, Any]]] = []
+    normalized_question = normalize_search_text(question)
+    if not normalized_question:
+        return None
+    folded = f" {normalized_question} "
+    best_by_topic: dict[str, tuple[tuple[int, int, int], dict[str, Any]]] = {}
     for entry in load_knowledge():
-        keywords = entry.get("keywords", [])
-        for keyword in keywords:
+        topic_id = str(entry.get("id", entry.get("title", "")))
+        for keyword in entry.get("keywords", []):
             normalized_keyword = normalize_search_text(str(keyword))
-            if normalized_keyword and f" {normalized_keyword} " in folded:
-                matches.append((len(normalized_keyword), entry))
-    # Prefer the most specific phrase when a question contains multiple aliases.
-    return max(matches, key=lambda item: item[0])[1] if matches else None
+            if not normalized_keyword or f" {normalized_keyword} " not in folded:
+                continue
+            # Prefer multi-word and longer aliases; an exact question/alias match
+            # outranks a keyword that is merely contained in a longer question.
+            score = (
+                len(normalized_keyword.split()),
+                len(normalized_keyword),
+                int(normalized_keyword == normalized_question),
+            )
+            current = best_by_topic.get(topic_id)
+            if current is None or score > current[0]:
+                best_by_topic[topic_id] = (score, entry)
+
+    if not best_by_topic:
+        return None
+    ranked = sorted(best_by_topic.values(), key=lambda item: item[0], reverse=True)
+    # If different topics have the same best score, do not guess which one
+    # the user intended. The normal fallback or AI clarification can handle it.
+    if len(ranked) > 1 and ranked[0][0] == ranked[1][0]:
+        return None
+    return ranked[0][1]
 
 def language_instruction(language: str) -> str:
     return {
