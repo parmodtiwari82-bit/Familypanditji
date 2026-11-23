@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Validate the integrity and review-state of the starter content catalogues.
+"""Validate catalogue structure and publication-safety metadata.
 
 This checks structural integrity only. It does not verify scripture, translations,
-ritual correctness, reviewer identity, or approval evidence.
+ritual correctness, temple operating hours, reviewer identity, or source accuracy.
 """
 from __future__ import annotations
 
 import json
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -19,6 +21,7 @@ FILES = (
     "samskaras.json",
     "ecosystem_modules.json",
     "pandit_directory.json",
+    "temples.json",
 )
 
 
@@ -59,6 +62,31 @@ def check_records(records: Any, label: str, errors: list[str], required: tuple[s
             errors.append(f"{where}: starter content must retain review_required=true")
 
 
+def check_temple_records(records: Any, errors: list[str]) -> None:
+    """Require traceable source metadata without claiming current operating details."""
+    required = (
+        "name_hi", "name_en", "deity", "city", "state", "country", "address",
+        "official_website", "official_information_url", "source_status", "last_checked_on",
+    )
+    check_records(records, "temples.temples", errors, required, require_review=False)
+    if not isinstance(records, list):
+        return
+    for index, temple in enumerate(records):
+        if not isinstance(temple, dict):
+            continue
+        where = f"temples.temples[{index}]"
+        for key in ("official_website", "official_information_url"):
+            value = temple.get(key)
+            parsed = urlparse(value) if isinstance(value, str) else None
+            if parsed is None or parsed.scheme != "https" or not parsed.netloc:
+                errors.append(f"{where}: {key} must be an absolute HTTPS URL")
+        checked = temple.get("last_checked_on")
+        try:
+            date.fromisoformat(checked)
+        except (TypeError, ValueError):
+            errors.append(f"{where}: last_checked_on must be an ISO date (YYYY-MM-DD)")
+
+
 def validate() -> list[str]:
     errors: list[str] = []
     catalogues = {name: load_json(DATA / name, errors) for name in FILES}
@@ -69,7 +97,8 @@ def validate() -> list[str]:
             errors.append("knowledge_hi.json: starter status must remain draft_requires_acharya_review")
         if knowledge.get("language") != "hi":
             errors.append("knowledge_hi.json: language must be hi")
-        check_records(knowledge.get("entries"), "knowledge_hi.entries", errors, ("title", "answer", "category"))
+        check_records(knowledge.get("entries"), "knowledge_hi.entries", errors,
+                      ("title", "answer", "category", "answer_en", "answer_sa"))
 
     puja = catalogues["puja_guides.json"]
     if puja is not None:
@@ -110,6 +139,10 @@ def validate() -> list[str]:
         if pandits.get("status") != "directory_beta_no_booking":
             errors.append("pandit_directory.json: do not imply booking or verification is live")
 
+    temples = catalogues["temples.json"]
+    if temples is not None:
+        check_temple_records(temples.get("temples"), errors)
+
     schema_path = ROOT / "schemas" / "content-review.schema.json"
     load_json(schema_path, errors)
     return errors
@@ -123,4 +156,4 @@ if __name__ == "__main__":
             print(f"- {problem}")
         sys.exit(1)
     print(f"Content catalogue validation passed: {len(FILES)} data catalogues and review schema are structurally valid.")
-    print("Note: this is not Acharya review or religious-source verification.")
+    print("Note: this is not Acharya review, temple-hours verification, or religious-source verification.")
