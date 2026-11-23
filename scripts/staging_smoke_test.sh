@@ -47,7 +47,7 @@ request() {
   echo "PASS $method $path -> $status"
 }
 
-for path in /health /ready /api/trust/status /api/release/readiness /api/modules \
+for path in /health /ready /api/trust/status /api/release/readiness /api/astronomy/status /api/modules \
   /api/panchang/overview /api/jyotish/guide /api/pandits /api/temples /api/search?q=Gayatri\&language=en \
   /api/mantras /api/puja-guides /api/samskaras /api/content/review-policy \
   /manifest.webmanifest /sw.js /icons/panditji.svg /privacy /terms; do
@@ -73,12 +73,16 @@ grep -qi '^x-content-type-options: nosniff' "$TMP_DIR/headers.txt" || {
 grep -qi '^x-frame-options: DENY' "$TMP_DIR/headers.txt" || {
   echo "FAIL /api/release/readiness: X-Frame-Options missing" >&2; exit 1;
 }
-python3 - "$TMP_DIR/readiness.json" "$TMP_DIR/ask.json" <<'PY'
+python3 - "$TMP_DIR/readiness.json" "$TMP_DIR/ask.json" "$TMP_DIR/_api_astronomy_status" <<'PY'
 import json, sys
 with open(sys.argv[1], encoding="utf-8") as f:
     readiness = json.load(f)
 with open(sys.argv[2], encoding="utf-8") as f:
     answer = json.load(f)
+with open(sys.argv[3], encoding="utf-8") as f:
+    astronomy = json.load(f)
+assert isinstance(astronomy.get("jpl_ready"), bool), "astronomy status missing JPL readiness flag"
+assert astronomy.get("certified_vedic_engine") is False, "staging must not claim certified Vedic calculations"
 assert "production_release_ready" in readiness, "readiness response missing release status"
 assert isinstance(readiness.get("checks"), dict), "readiness checks missing"
 assert isinstance(answer.get("answer"), str) and answer["answer"].strip(), "ask response missing answer"
