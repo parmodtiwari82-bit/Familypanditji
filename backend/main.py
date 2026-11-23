@@ -225,6 +225,61 @@ def localized_answer(entry: dict[str, Any], language: str) -> str:
     return str(entry.get(field) or entry.get("answer", ""))
 
 
+def load_answer_sources() -> list[dict[str, Any]]:
+    """Load answerable draft content across knowledge, puja guides and samskaras."""
+    sources = list(load_knowledge())
+
+    guides_path = PROJECT_ROOT / "data" / "puja_guides.json"
+    try:
+        with guides_path.open(encoding="utf-8") as handle:
+            guides = json.load(handle).get("guides", [])
+    except (OSError, json.JSONDecodeError):
+        guides = []
+    for guide in guides:
+        steps_hi = guide.get("steps_hi", [])
+        steps_en = guide.get("steps_en", [])
+        summary_hi = str(guide.get("summary_hi", ""))
+        summary_en = str(guide.get("summary_en", ""))
+        sources.append({
+            "id": str(guide.get("id", "")),
+            "category": "puja-guide",
+            "title": str(guide.get("title_hi") or guide.get("title_en") or "पूजा मार्गदर्शिका"),
+            "keywords": [
+                guide.get("title_hi", ""), guide.get("title_en", ""),
+                guide.get("category", ""),
+            ],
+            "answer": "\n".join([summary_hi, *[
+                f"{index}. {step}" for index, step in enumerate(steps_hi, 1)
+            ]]).strip(),
+            "answer_en": "\n".join([summary_en, *[
+                f"{index}. {step}" for index, step in enumerate(steps_en, 1)
+            ]]).strip(),
+            "review_required": guide.get("review_required", True),
+        })
+
+    samskaras_path = PROJECT_ROOT / "data" / "samskaras.json"
+    try:
+        with samskaras_path.open(encoding="utf-8") as handle:
+            samskaras = json.load(handle).get("samskaras", [])
+    except (OSError, json.JSONDecodeError):
+        samskaras = []
+    for samskara in samskaras:
+        name_hi = str(samskara.get("name_hi", ""))
+        name_en = str(samskara.get("name_en", ""))
+        description_hi = str(samskara.get("description_hi", ""))
+        description_en = str(samskara.get("description_en", ""))
+        sources.append({
+            "id": str(samskara.get("id", "")),
+            "category": "samskara",
+            "title": name_hi or name_en or "संस्कार",
+            "keywords": [name_hi, name_en],
+            "answer": description_hi,
+            "answer_en": description_en,
+            "review_required": samskara.get("review_required", True),
+        })
+    return sources
+
+
 def normalize_search_text(value: str) -> str:
     """Normalize Unicode and punctuation for Hindi, Sanskrit and English lookup."""
     import unicodedata
@@ -253,7 +308,7 @@ def find_curated_answer(question: str) -> dict[str, Any] | None:
         return None
     folded = f" {normalized_question} "
     best_by_topic: dict[str, tuple[tuple[int, int, int], dict[str, Any]]] = {}
-    for entry in load_knowledge():
+    for entry in load_answer_sources():
         topic_id = str(entry.get("id", entry.get("title", "")))
         for keyword in entry.get("keywords", []):
             normalized_keyword = normalize_search_text(str(keyword))
