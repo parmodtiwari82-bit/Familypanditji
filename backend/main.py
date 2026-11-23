@@ -208,7 +208,10 @@ class AskRequest(BaseModel):
 class AskResponse(BaseModel):
     answer: str
     mode: str
-    needs_acharya_review: bool = True
+    # Compatibility field: the product never requires a human approval step.
+    needs_acharya_review: bool = False
+    requires_human_approval: bool = False
+    evidence_status: str
     source_status: str
     matched_topic: str | None = None
 
@@ -1404,8 +1407,10 @@ async def ask(payload: AskRequest):
         return AskResponse(
             answer=ai_answer,
             mode="ai-provider",
-            needs_acharya_review=True,
-            source_status="ai_generated_requires_review",
+            needs_acharya_review=False,
+            requires_human_approval=False,
+            evidence_status="not_source_grounded",
+            source_status="ai_generated_unverified",
             matched_topic=entry.get("title") if entry else None,
         )
 
@@ -1413,8 +1418,10 @@ async def ask(payload: AskRequest):
         return AskResponse(
             answer=localized_answer(entry, payload.language),
             mode="curated-beta",
-            needs_acharya_review=entry.get("review_required", True),
-            source_status="draft_requires_acharya_review",
+            needs_acharya_review=False,
+            requires_human_approval=False,
+            evidence_status="catalogue_source_provenance_missing",
+            source_status="curated_catalogue_unverified",
             matched_topic=entry.get("title"),
         )
 
