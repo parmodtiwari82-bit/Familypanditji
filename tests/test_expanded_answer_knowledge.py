@@ -38,3 +38,26 @@ def test_new_curated_topics_return_localized_answers():
         assert response.status_code == 200
         assert expected in response.json()["answer"]
         assert response.json()["source_status"] == "draft_requires_acharya_review"
+
+
+
+def test_curated_matcher_does_not_guess_between_equally_relevant_topics():
+    from main import find_curated_answer
+
+    assert find_curated_answer("दीपक और आरती") is None
+
+
+def test_curated_matcher_prefers_the_most_specific_phrase():
+    from main import find_curated_answer
+
+    entry = find_curated_answer("गायत्री मंत्र का अर्थ बताइए")
+    assert entry is not None
+    assert entry["id"] == "gayatri-mantra"
+
+
+def test_curated_matcher_normalizes_romanized_hindi_spacing_and_punctuation():
+    from main import find_curated_answer
+
+    entry = find_curated_answer("  Ekadashi—vrat ke niyam!!! ")
+    assert entry is not None
+    assert entry["id"] == "ekadashi-general"
