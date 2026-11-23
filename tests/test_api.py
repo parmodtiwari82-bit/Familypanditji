@@ -78,7 +78,11 @@ def test_curated_gayatri_answer_supports_english():
     response = client.post("/api/ask", json={"question": "Tell me the Gayatri mantra", "language": "en"})
     assert response.status_code == 200
     assert "We meditate" in response.json()["answer"]
-    assert response.json()["needs_acharya_review"] is True
+    payload = response.json()
+    assert payload["needs_acharya_review"] is False
+    assert payload["requires_human_approval"] is False
+    assert payload["evidence_status"] == "catalogue_source_provenance_missing"
+    assert payload["source_status"] == "curated_catalogue_unverified"
 
 
 def test_curated_panchang_answer_supports_sanskrit():
