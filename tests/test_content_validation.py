@@ -1,13 +1,22 @@
-from scripts.validate_content import check_temple_records, validate
+import importlib.util
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+VALIDATOR_PATH = ROOT / "scripts" / "validate_content.py"
+SPEC = importlib.util.spec_from_file_location("validate_content", VALIDATOR_PATH)
+assert SPEC is not None and SPEC.loader is not None
+VALIDATOR = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(VALIDATOR)
 
 
 def test_all_content_catalogues_pass_structural_validation():
-    assert validate() == []
+    assert VALIDATOR.validate() == []
 
 
 def test_temple_catalogue_requires_https_source_links_and_iso_review_date():
     errors = []
-    check_temple_records([{
+    VALIDATOR.check_temple_records([{
         "id": "sample-temple",
         "name_hi": "नमूना मंदिर",
         "name_en": "Sample Temple",
@@ -42,5 +51,5 @@ def test_temple_catalogue_rejects_duplicate_ids_and_missing_provenance():
         "source_status": "official_source",
         "last_checked_on": "2026-11-23",
     }
-    check_temple_records([record, record], errors)
+    VALIDATOR.check_temple_records([record, record], errors)
     assert any("duplicate id 'same-temple'" in item for item in errors)
