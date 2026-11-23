@@ -225,28 +225,114 @@ def localized_answer(entry: dict[str, Any], language: str) -> str:
     return str(entry.get(field) or entry.get("answer", ""))
 
 
+def load_answer_sources() -> list[dict[str, Any]]:
+    """Load answerable draft content across knowledge, puja guides and samskaras."""
+    sources = list(load_knowledge())
+
+    guides_path = PROJECT_ROOT / "data" / "puja_guides.json"
+    try:
+        with guides_path.open(encoding="utf-8") as handle:
+            guides = json.load(handle).get("guides", [])
+    except (OSError, json.JSONDecodeError):
+        guides = []
+    for guide in guides:
+        steps_hi = guide.get("steps_hi", [])
+        steps_en = guide.get("steps_en", [])
+        summary_hi = str(guide.get("summary_hi", ""))
+        summary_en = str(guide.get("summary_en", ""))
+        sources.append({
+            "id": str(guide.get("id", "")),
+            "category": "puja-guide",
+            "title": str(guide.get("title_hi") or guide.get("title_en") or "पूजा मार्गदर्शिका"),
+            "keywords": [
+                guide.get("title_hi", ""), guide.get("title_en", ""),
+                guide.get("category", ""),
+            ],
+            "answer": "\n".join([summary_hi, *[
+                f"{index}. {step}" for index, step in enumerate(steps_hi, 1)
+            ]]).strip(),
+            "answer_en": "\n".join([summary_en, *[
+                f"{index}. {step}" for index, step in enumerate(steps_en, 1)
+            ]]).strip(),
+            "review_required": guide.get("review_required", True),
+        })
+
+    samskaras_path = PROJECT_ROOT / "data" / "samskaras.json"
+    try:
+        with samskaras_path.open(encoding="utf-8") as handle:
+            samskaras = json.load(handle).get("samskaras", [])
+    except (OSError, json.JSONDecodeError):
+        samskaras = []
+    for samskara in samskaras:
+        name_hi = str(samskara.get("name_hi", ""))
+        name_en = str(samskara.get("name_en", ""))
+        description_hi = str(samskara.get("description_hi", ""))
+        description_en = str(samskara.get("description_en", ""))
+        sources.append({
+            "id": str(samskara.get("id", "")),
+            "category": "samskara",
+            "title": name_hi or name_en or "संस्कार",
+            "keywords": [name_hi, name_en],
+            "answer": description_hi,
+            "answer_en": description_en,
+            "review_required": samskara.get("review_required", True),
+        })
+    return sources
+
+
 def normalize_search_text(value: str) -> str:
     """Normalize Unicode and punctuation for Hindi, Sanskrit and English lookup."""
-    import re
     import unicodedata
 
     normalized = unicodedata.normalize("NFKC", value).casefold()
-    normalized = re.sub(r"[\u200b\u200c\u200d\ufeff]", "", normalized)
-    normalized = re.sub(r"[^\w\s]", " ", normalized, flags=re.UNICODE)
+    normalized = "".join(
+        character for character in normalized
+        if character not in {"\u200b", "\u200c", "\u200d", "\ufeff"}
+    )
+    # Python's Unicode \w class omits combining marks used by Devanagari.
+    # Preserve those marks so Hindi matras and nukta remain searchable.
+    normalized = "".join(
+        character if (
+            character.isalnum()
+            or character.isspace()
+            or unicodedata.category(character).startswith("M")
+        ) else " "
+        for character in normalized
+    )
     return " ".join(normalized.split())
 
 
 def find_curated_answer(question: str) -> dict[str, Any] | None:
-    folded = f" {normalize_search_text(question)} "
-    matches: list[tuple[int, dict[str, Any]]] = []
-    for entry in load_knowledge():
-        keywords = entry.get("keywords", [])
-        for keyword in keywords:
+    normalized_question = normalize_search_text(question)
+    if not normalized_question:
+        return None
+    folded = f" {normalized_question} "
+    best_by_topic: dict[str, tuple[tuple[int, int, int], dict[str, Any]]] = {}
+    for entry in load_answer_sources():
+        topic_id = str(entry.get("id", entry.get("title", "")))
+        for keyword in entry.get("keywords", []):
             normalized_keyword = normalize_search_text(str(keyword))
-            if normalized_keyword and f" {normalized_keyword} " in folded:
-                matches.append((len(normalized_keyword), entry))
-    # Prefer the most specific phrase when a question contains multiple aliases.
-    return max(matches, key=lambda item: item[0])[1] if matches else None
+            if not normalized_keyword or f" {normalized_keyword} " not in folded:
+                continue
+            # Prefer multi-word and longer aliases; an exact question/alias match
+            # outranks a keyword that is merely contained in a longer question.
+            score = (
+                len(normalized_keyword.split()),
+                len(normalized_keyword),
+                int(normalized_keyword == normalized_question),
+            )
+            current = best_by_topic.get(topic_id)
+            if current is None or score > current[0]:
+                best_by_topic[topic_id] = (score, entry)
+
+    if not best_by_topic:
+        return None
+    ranked = sorted(best_by_topic.values(), key=lambda item: item[0], reverse=True)
+    # If different topics have the same best score, do not guess which one
+    # the user intended. The normal fallback or AI clarification can handle it.
+    if len(ranked) > 1 and ranked[0][0] == ranked[1][0]:
+        return None
+    return ranked[0][1]
 
 def language_instruction(language: str) -> str:
     return {

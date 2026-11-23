@@ -70,8 +70,9 @@ def test_knowledge_topics_can_filter_by_category():
     response = client.get("/api/knowledge/topics", params={"category": "mantra"})
     assert response.status_code == 200
     topics = response.json()["topics"]
-    assert len(topics) == 1
-    assert topics[0]["category"] == "mantra"
+    assert len(topics) >= 1
+    assert all(topic["category"] == "mantra" for topic in topics)
+    assert {topic["id"] for topic in topics} >= {"gayatri-mantra", "mantra-japa-basics"}
 
 def test_curated_gayatri_answer_supports_english():
     response = client.post("/api/ask", json={"question": "Tell me the Gayatri mantra", "language": "en"})
