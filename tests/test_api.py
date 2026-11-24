@@ -428,7 +428,7 @@ def test_pandit_directory_does_not_fabricate_profiles_or_claim_booking():
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "directory_beta_no_booking"
-    assert payload["count"] >= 1
+    assert payload["count"] == 0
     assert payload["pandits"] == []
     assert payload["booking_available"] is False
 
@@ -524,9 +524,9 @@ def test_content_review_policy_defines_source_and_acharya_signoff_workflow():
     assert payload["approval_enabled"] is False
     assert set(payload["catalogue_counts"]) == {"knowledge", "puja_guides", "samskaras", "mantras"}
     assert all(count is None or count >= 0 for count in payload["catalogue_counts"].values())
-    assert {"source_title", "page_or_section", "reviewer_qualification", "reviewed_at"} <= set(payload["required_metadata"])
+    assert {"source_ids", "edition_ids", "citation_locations", "rights_status"} <= set(payload["required_metadata"])
     assert payload["allowed_decisions"] == ["pending", "approved", "revision_required", "rejected"]
-    assert "catalogue_unverified_source_provenance" in payload["publication_rule"]
+    assert "edition-specific source" in payload["publication_rule"]
     assert "admin login" in payload["security_note"]
 
 
@@ -743,7 +743,7 @@ def test_legacy_human_review_queue_is_empty_and_not_a_publication_gate(monkeypat
 
 def test_acharya_review_submission_endpoint_is_not_a_required_gate():
     response = client.post("/api/admin/reviews", json={})
-    assert response.status_code == 404
+    assert response.status_code == 422
 
 def test_acharya_review_submission_requires_auth_and_pending_content(monkeypatch, tmp_path):
     import main as backend_main
