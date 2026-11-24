@@ -590,7 +590,7 @@ def admin_review_queue(authorization: str | None = Header(default=None)):
         except (OSError, json.JSONDecodeError, ValueError):
             raise HTTPException(status_code=503, detail=f"{content_type} catalogue is unavailable.")
         for record in records:
-            if record.get("review_required") is True:
+            if record.get("source_provenance", {}).get("provenance_status", "missing") != "traceable":
                 items.append({
                     "content_id": record.get("id"),
                     "content_type": content_type,
@@ -631,7 +631,7 @@ def append_review_event(submission: AcharyaReviewSubmission) -> str:
         with path.open(encoding="utf-8") as handle:
             payload = json.load(handle)
         records = payload.get(collection_key, [])
-        if not any(item.get("id") == submission.content_id and item.get("review_required") is True for item in records):
+        if not any(item.get("id") == submission.content_id and item.get("source_provenance", {}).get("provenance_status", "missing") != "traceable" for item in records):
             raise HTTPException(status_code=404, detail="Pending draft content was not found.")
     except (OSError, json.JSONDecodeError, TypeError):
         raise HTTPException(status_code=503, detail="Content catalogue is unavailable.")
