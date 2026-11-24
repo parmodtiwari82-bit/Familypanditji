@@ -1105,7 +1105,7 @@ def panchang_overview():
         "summary_sa": entry.get("answer_sa", ""),
         "limbs": limbs,
         "live_calculation_available": False,
-        "source_provenance_status": "missing",
+        "source_provenance": entry.get("source_provenance", {"provenance_status": "missing"}),
         "note": "यह स्थिर शैक्षिक परिचय है, आज का पंचांग या मुहूर्त गणना नहीं। सटीक विवरण के लिए स्थान, समय-क्षेत्र, सूर्योदय और मान्य गणना-पद्धति आवश्यक हैं।",
     }
 
