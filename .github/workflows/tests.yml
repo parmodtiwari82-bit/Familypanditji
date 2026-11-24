@@ -42,6 +42,8 @@ jobs:
         run: bash scripts/check_frontend.sh
       - name: Validate religious content catalogues
         run: python scripts/validate_content.py
+      - name: Validate scripture source registry and rights-safe ingestion policy
+        run: python scripts/validate_source_registry.py
       - name: Run API tests
         working-directory: backend
         run: PYTHONPATH=. pytest -q ../tests
