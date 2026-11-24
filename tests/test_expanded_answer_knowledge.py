@@ -4,7 +4,7 @@ from main import app
 client = TestClient(app)
 
 
-def test_expanded_knowledge_catalogue_has_fifteen_review_labelled_topics():
+def test_expanded_knowledge_catalogue_has_fifteen_topics_without_mandatory_review():
     response = client.get("/api/knowledge")
     assert response.status_code == 200
     payload = response.json()
@@ -24,7 +24,7 @@ def test_new_topics_are_retrievable_by_hindi_and_english_aliases():
         response = client.post("/api/ask", json={"question": question, "language": "hi"})
         assert response.status_code == 200
         assert expected_topic in response.json()["matched_topic"]
-        assert response.json()["needs_acharya_review"] is True
+        assert response.json()["needs_acharya_review"] is False
 
 
 def test_new_curated_topics_return_localized_answers():
@@ -37,7 +37,7 @@ def test_new_curated_topics_return_localized_answers():
         response = client.post("/api/ask", json={"question": question, "language": language})
         assert response.status_code == 200
         assert expected in response.json()["answer"]
-        assert response.json()["source_status"] == "draft_requires_acharya_review"
+        assert response.json()["source_status"] == "curated_catalogue_unverified"
 
 
 
@@ -72,7 +72,7 @@ def test_ask_retrieves_puja_guide_content_instead_of_knowledge_only():
     payload = response.json()
     assert payload["matched_topic"] == "दैनिक गृह पूजा"
     assert "पूजा-स्थान" in payload["answer"]
-    assert payload["source_status"] == "draft_requires_acharya_review"
+    assert payload["source_status"] == "curated_catalogue_unverified"
 
 
 def test_ask_retrieves_samskara_content_with_english_localization():
@@ -83,4 +83,4 @@ def test_ask_retrieves_samskara_content_with_english_localization():
     payload = response.json()
     assert payload["matched_topic"] == "नामकरण"
     assert "naming ceremony" in payload["answer"].lower()
-    assert payload["needs_acharya_review"] is True
+    assert payload["needs_acharya_review"] is False
