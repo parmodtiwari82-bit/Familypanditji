@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://familypanditji.example/schemas/content-provenance.schema.json",
+  "title": "AI Family Pandit Ji Source Provenance Metadata",
+  "description": "Metadata shape for tracing a content record to an edition-specific source. Schema validity does not prove source accuracy, rights, or citation truth.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "provenance_status",
+    "source_ids",
+    "edition_ids",
+    "citation_locations",
+    "rights_status",
+    "automated_validation_status"
+  ],
+  "properties": {
+    "provenance_status": {
+      "enum": [
+        "missing",
+        "partial",
+        "traceable"
+      ]
+    },
+    "source_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "edition_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "citation_locations": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "rights_status": {
+      "enum": [
+        "not_assessed",
+        "unknown",
+        "cleared",
+        "restricted"
+      ]
+    },
+    "automated_validation_status": {
+      "enum": [
+        "structural_only",
+        "passed",
+        "failed"
+      ]
+    }
+  }
+}
