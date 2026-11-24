@@ -1,16 +1,16 @@
 # Launch handoff — AI Family Pandit Ji
 
 **Release decision: NOT APPROVED FOR PUBLIC PRODUCTION LAUNCH.**  
-This file is the execution handoff for the remaining work. A green test suite and a successful Docker build validate code/build steps only; they do not prove that external services, legal duties, religious review or production operations are ready.
+A green test suite and successful container build validate code/build steps only. They do not prove source accuracy, rights clearance, legal compliance, security, or production operations.
 
-## 1. Ready in the repository (verify again on the release commit)
+## 1. Implemented in the repository (verify again on the release commit)
 
 - FastAPI application and multilingual starter experience (Hindi, Sanskrit, English).
-- Draft knowledge, mantra, puja-guide and samskara catalogues with review-required status.
+- Starter knowledge, mantra, puja-guide and samskara catalogues with explicit source-provenance state. Current entries are marked as missing primary-source provenance, not as scripture-verified.
 - Search, chat adapter/fallback, browser speech integration and device-local Sadhana tracker.
-- Read-only trust, release-readiness and Acharya-review policy endpoints/panels.
+- Read-only trust, release-readiness and content status endpoints/panels.
 - Baseline security headers, production configuration checks, Docker image and GitHub Actions tests/build.
-- Preliminary privacy and terms notices, explicitly requiring legal replacement/review.
+- Preliminary privacy and terms notices, requiring legal review before public launch.
 
 ## 2. External decisions and purchases — do not fake or bypass
 
@@ -18,8 +18,8 @@ This file is the execution handoff for the remaining work. A green test suite an
 |---|---|---|
 | Hosting + domain | Hosting account, domain, DNS access, production HTTPS origin | Staging and production URLs; health check; rollback tested |
 | AI provider | Provider account, API key, approved model, budget/usage limits | Secret stored only in host; Hindi/Sanskrit/English quality and safety test report |
-| Live Panchang/Jyotish | Licensed/approved calculation source or validated ephemeris, calculation convention, timezone/location policy | Golden test cases checked by qualified domain experts; documented accuracy limits |
-| Acharya review | Named qualified reviewers, traditions/regions covered, source editions and review time | Signed review records for every item promoted from draft |
+| Scripture corpus + rights | Public-domain or licensed source editions, provenance metadata, permitted digitization/redistribution scope | Edition register, rights evidence, source-file checksums and reproducible ingestion report |
+| Live Panchang/Jyotish | Calculation conventions, validated ephemeris, timezone/location policy | Reproducible golden vectors, independent reference comparisons and documented accuracy limits |
 | Pandit directory/booking | Verification operator, identity/qualification process, consent, availability and cancellation policy | Real verified profiles, test booking lifecycle, support and dispute process |
 | Store + payments | Merchant account, gateway, tax/invoice policy, shipping/returns/refunds | Sandbox-to-live payment test, signed webhook verification, refund/reconciliation tests |
 | Voice | Chosen speech vendor/voice rights, languages, usage pricing and consent | Supported-device audio QA; clear fallback and disclosure |
@@ -34,8 +34,9 @@ This file is the execution handoff for the remaining work. A green test suite an
 - [ ] Rate limiting/abuse controls implemented at a trusted gateway or application layer and load-tested.
 - [ ] Security review covers authentication, authorization, CSRF, injection, dependency vulnerabilities and sensitive-data handling.
 - [ ] Privacy notice, terms, consent and retention/deletion flows approved for the actual operator/providers.
-- [ ] Every public religious answer/catalogue item has traceable source provenance and documented qualified Acharya approval, or remains clearly marked draft.
-- [ ] Panchang/Jyotish results are not shown as live until calculation conventions and test vectors are independently validated.
+- [ ] Every scripture-grounded public claim has a resolvable source, edition and verse/section citation; source rights are cleared for the intended use. Unsupported content remains explicitly ungrounded or is withheld from source-grounded answers.
+- [ ] Automated regression tests cover source resolution, unsupported-source behavior, citation integrity and prompt-injection attempts. Human feedback may be collected but is not a mandatory release gate.
+- [ ] Panchang/Jyotish results are not shown as live until calculation conventions and golden vectors pass reproducible validation.
 - [ ] Pandit listings are real and verified; booking, payments and commerce are not advertised as active until end-to-end tests pass.
 - [ ] Mobile/desktop accessibility, browser speech, install/PWA behavior and failure states tested on supported devices.
 - [ ] Staging smoke test, backup/restore test, monitoring/alerts and rollback completed.
@@ -43,7 +44,7 @@ This file is the execution handoff for the remaining work. A green test suite an
 
 ## 4. Safe launch scope if dependencies are not purchased yet
 
-A restricted private demo may show the current beta with clear draft/review labels and no claims of live Panchang, Kundli, verified pandit booking, payments or production-grade spiritual voice. Do not collect sensitive birth details or payments in this scope. Do not call this a public production launch.
+A restricted private demo may show the current beta with clear source-provenance labels and no claims of scripture-verified answers, live Panchang, verified pandit booking, payments or production-grade spiritual voice. Do not collect sensitive birth details or payments in this scope. Do not call this a public production launch.
 
 ## 5. Release procedure
 
@@ -51,7 +52,8 @@ A restricted private demo may show the current beta with clear draft/review labe
 2. Run API tests and container build on that exact commit.
 3. Deploy to staging with production-like settings and non-production credentials.
 4. Execute API/UI smoke tests, mobile device QA, security checks and restore/rollback drill.
-5. Obtain Acharya, legal, operations and product-owner approvals.
-6. Deploy production, verify health and key user journeys, monitor error rates, and retain rollback capability.
+5. Verify source editions, rights evidence, citation resolution and automated answer-regression results; collect optional expert feedback where useful, without making it a mandatory approval gate.
+6. Obtain legal, operations/security and product-owner approvals.
+7. Deploy production, verify health and key user journeys, monitor error rates, and retain rollback capability.
 
 **No credentials belong in Git, issues, chat transcripts or this handoff.** Use the hosting provider's secret manager and grant least-privilege access.

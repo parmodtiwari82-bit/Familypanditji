@@ -223,7 +223,7 @@ def load_knowledge() -> list[dict[str, Any]]:
         return []
 
 def localized_answer(entry: dict[str, Any], language: str) -> str:
-    """Return a reviewed-status draft in the requested language, with Hindi fallback."""
+    """Return catalogue text with its explicit source-provenance caveat, with Hindi fallback."""
     field = {"hi": "answer", "sa": "answer_sa", "en": "answer_en"}[language]
     return str(entry.get(field) or entry.get("answer", ""))
 
@@ -257,7 +257,7 @@ def load_answer_sources() -> list[dict[str, Any]]:
             "answer_en": "\n".join([summary_en, *[
                 f"{index}. {step}" for index, step in enumerate(steps_en, 1)
             ]]).strip(),
-            "review_required": guide.get("review_required", True),
+            "source_provenance": guide.get("source_provenance", {"provenance_status": "missing"}),
         })
 
     samskaras_path = PROJECT_ROOT / "data" / "samskaras.json"
@@ -278,7 +278,7 @@ def load_answer_sources() -> list[dict[str, Any]]:
             "keywords": [name_hi, name_en],
             "answer": description_hi,
             "answer_en": description_en,
-            "review_required": samskara.get("review_required", True),
+            "source_provenance": samskara.get("source_provenance", {"provenance_status": "missing"}),
         })
     return sources
 
@@ -590,23 +590,23 @@ def admin_review_queue(authorization: str | None = Header(default=None)):
         except (OSError, json.JSONDecodeError, ValueError):
             raise HTTPException(status_code=503, detail=f"{content_type} catalogue is unavailable.")
         for record in records:
-            if record.get("review_required") is True:
+            if record.get("source_provenance", {}).get("provenance_status", "missing") != "traceable":
                 items.append({
                     "content_id": record.get("id"),
                     "content_type": content_type,
                     "title": record.get("title") or record.get("title_hi") or record.get("name_hi"),
-                    "review_status": "pending_acharya_review",
-                    "source_metadata_present": False,
-                    "reviewer_metadata_present": False,
+                    "provenance_status": record.get("source_provenance", {}).get("provenance_status", "missing"),
+                    "source_metadata_present": bool(record.get("source_provenance", {}).get("source_ids") and record.get("source_provenance", {}).get("edition_ids") and record.get("source_provenance", {}).get("citation_locations")),
+                    "human_feedback_optional": True,
                 })
     items.sort(key=lambda item: (item["content_type"], str(item["content_id"] or "")))
     return {
         "access": "authenticated_admin_read_only",
-        "status": "review_required",
+        "status": "provenance_gap_report",
         "count": len(items),
         "items": items,
         "write_enabled": False,
-        "note_hi": "यह केवल सुरक्षित समीक्षा-कतार है। इस API से सामग्री स्वीकृत, अस्वीकृत या प्रकाशित नहीं की जा सकती।",
+        "note_hi": "यह पुरानी वैकल्पिक feedback सूची है, प्रकाशन की अनिवार्य शर्त नहीं।",
     }
 
 
@@ -631,7 +631,7 @@ def append_review_event(submission: AcharyaReviewSubmission) -> str:
         with path.open(encoding="utf-8") as handle:
             payload = json.load(handle)
         records = payload.get(collection_key, [])
-        if not any(item.get("id") == submission.content_id and item.get("review_required") is True for item in records):
+        if not any(item.get("id") == submission.content_id and item.get("source_provenance", {}).get("provenance_status", "missing") != "traceable" for item in records):
             raise HTTPException(status_code=404, detail="Pending draft content was not found.")
     except (OSError, json.JSONDecodeError, TypeError):
         raise HTTPException(status_code=503, detail="Content catalogue is unavailable.")
@@ -658,7 +658,7 @@ def submit_acharya_review(submission: AcharyaReviewSubmission, authorization: st
     event_id = append_review_event(submission)
     return {"event_id": event_id, "content_id": submission.content_id,
             "decision_recorded": submission.decision,
-            "catalogue_status": "draft_requires_acharya_review", "published": False}
+            "catalogue_status": "catalogue_unverified_source_provenance", "published": False}
 
 
 @app.get("/api/admin/review-events")
@@ -698,22 +698,17 @@ def content_review_policy():
         "status": "workflow_blueprint_only",
         "approval_enabled": False,
         "catalogue_counts": counts,
-        "required_metadata": [
-            "content_id", "content_type", "language", "tradition_or_sampradaya",
-            "source_title", "source_author_or_tradition", "edition_or_publication",
-            "page_or_section", "reviewer_name", "reviewer_qualification",
-            "reviewed_at", "decision", "review_notes",
-        ],
+        "required_metadata": ["source_ids", "edition_ids", "citation_locations", "rights_status", "automated_validation_status"],
         "workflow": [
             {"step": 1, "status": "required", "label_hi": "स्रोत और संस्करण दर्ज करें"},
             {"step": 2, "status": "required", "label_hi": "परंपरा/संप्रदाय और क्षेत्रीय संदर्भ दर्ज करें"},
-            {"step": 3, "status": "required", "label_hi": "योग्य आचार्य द्वारा समीक्षा"},
+            {"step": 3, "status": "optional", "label_hi": "वैकल्पिक परंपरा/विशेषज्ञ feedback; रिलीज़ की अनिवार्य शर्त नहीं"},
             {"step": 4, "status": "required", "label_hi": "मंत्र, विधि और अनुवाद का अलग-अलग सत्यापन"},
-            {"step": 5, "status": "required", "label_hi": "निर्णय, समीक्षा-तिथि और टिप्पणी दर्ज करें"},
+            {"step": 5, "status": "required", "label_hi": "स्वचालित citation resolution और regression tests चलाएँ"},
             {"step": 6, "status": "required", "label_hi": "स्वीकृति के बाद ही प्रकाशित सामग्री को verified चिह्न दें"},
         ],
         "allowed_decisions": ["pending", "approved", "revision_required", "rejected"],
-        "publication_rule": "जब तक स्रोत-संदर्भ और योग्य आचार्य की दर्ज स्वीकृति न हो, सामग्री draft_requires_acharya_review ही रहे।",
+        "publication_rule": "सामग्री को source-grounded तभी दिखाएँ जब edition-specific source, citation location और rights evidence दर्ज हों; automated checks metadata consistency जाँचते हैं, सत्यता की गारंटी नहीं।",
         "security_note": "यह सार्वजनिक नीति/ढाँचा है, admin login या submission endpoint नहीं। समीक्षा अधिकार सुरक्षित admin प्रणाली बनने के बाद ही जोड़े जाएँ।",
     }
 
@@ -832,7 +827,7 @@ def trust_status():
         "environment": APP_ENV,
         "ai_provider_configured": bool(AI_API_KEY and AI_MODEL),
         "content_review": {
-            "status": "acharya_review_required",
+            "status": "source_provenance_required",
             "knowledge_entries": len(entries),
             "puja_guides": len(guides),
             "samskara_entries": len(samskaras),
@@ -1110,7 +1105,7 @@ def panchang_overview():
         "summary_sa": entry.get("answer_sa", ""),
         "limbs": limbs,
         "live_calculation_available": False,
-        "review_required": True,
+        "source_provenance": entry.get("source_provenance", {"provenance_status": "missing"}),
         "note": "यह स्थिर शैक्षिक परिचय है, आज का पंचांग या मुहूर्त गणना नहीं। सटीक विवरण के लिए स्थान, समय-क्षेत्र, सूर्योदय और मान्य गणना-पद्धति आवश्यक हैं।",
     }
 
@@ -1132,7 +1127,7 @@ def jyotish_guide():
             "कोई ग्रह-स्थिति, लग्न, दशा, गुण-मिलान या भविष्यवाणी गणना नहीं की जाती।",
             "गणना इंजन, पंचांग/अयनांश पद्धति और विशेषज्ञ सत्यापन अभी एकीकृत नहीं हैं।",
         ],
-        "review_required": True,
+        "source_provenance_status": "missing",
     }
 
 
@@ -1186,7 +1181,7 @@ def puja_guides(category: str | None = None, q: str | None = None):
             )
         ]
     return {
-        "status": payload.get("status", "draft_requires_acharya_review"),
+        "status": payload.get("status", "catalogue_unverified_source_provenance"),
         "note": payload.get("note", ""),
         "count": len(guides),
         "guides": guides,
@@ -1206,7 +1201,7 @@ def puja_guide_detail(guide_id: str):
     if guide is None:
         raise HTTPException(status_code=404, detail="Puja guide was not found.")
     return {
-        "status": payload.get("status", "draft_requires_acharya_review"),
+        "status": payload.get("status", "catalogue_unverified_source_provenance"),
         "note": payload.get("note", ""),
         "guide": guide,
     }
@@ -1237,7 +1232,7 @@ def samskara_detail(samskara_id: str):
     if item is None:
         raise HTTPException(status_code=404, detail="Samskara was not found.")
     return {
-        "status": payload.get("status", "draft_requires_acharya_review"),
+        "status": payload.get("status", "catalogue_unverified_source_provenance"),
         "note_hi": payload.get("note_hi", ""),
         "note_en": payload.get("note_en", ""),
         "samskara": item,
@@ -1258,7 +1253,7 @@ def mantra_library(q: str | None = None):
             or query in normalize_search_text(entry.get("answer_en", ""))
         ]
     return {
-        "status": "draft_requires_acharya_review",
+        "status": "catalogue_unverified_source_provenance",
         "count": len(entries),
         "mantras": [
             {
@@ -1268,7 +1263,7 @@ def mantra_library(q: str | None = None):
                 "text_hi": entry.get("answer", ""),
                 "text_en": entry.get("answer_en", ""),
                 "text_sa": entry.get("answer_sa", ""),
-                "review_required": entry.get("review_required", True),
+                "source_provenance": entry.get("source_provenance", {"provenance_status": "missing"}),
             }
             for entry in entries
         ],
@@ -1293,7 +1288,7 @@ def knowledge_topics(category: str | None = None, q: str | None = None):
             or query in normalize_search_text(str(entry.get("answer_sa", "")))
         ]
     return {
-        "status": "draft_requires_acharya_review",
+        "status": "catalogue_unverified_source_provenance",
         "count": len(entries),
         "topics": [
             {
@@ -1304,7 +1299,7 @@ def knowledge_topics(category: str | None = None, q: str | None = None):
                 "answer": entry.get("answer", ""),
                 "answer_en": entry.get("answer_en", ""),
                 "answer_sa": entry.get("answer_sa", ""),
-                "review_required": entry.get("review_required", True),
+                "source_provenance": entry.get("source_provenance", {"provenance_status": "missing"}),
             }
             for entry in entries
         ],
@@ -1334,8 +1329,9 @@ def unified_search(q: str, language: str = "hi", limit: int = 20):
                 "id": item_id,
                 "title": title,
                 "snippet": snippet[:280],
-                "review_required": True,
-                "status": "draft_requires_acharya_review",
+                "source_provenance_status": "missing",
+                "source_provenance": {"provenance_status": "missing", "source_ids": [], "edition_ids": [], "citation_locations": [], "rights_status": "not_assessed", "automated_validation_status": "structural_only"},
+                "status": "catalogue_unverified_source_provenance",
             })
 
     for entry in load_knowledge():
@@ -1378,7 +1374,7 @@ def unified_search(q: str, language: str = "hi", limit: int = 20):
         "language": language,
         "count": min(len(results), limit),
         "total_matches": len(results),
-        "status": "draft_requires_acharya_review",
+        "status": "catalogue_unverified_source_provenance",
         "results": results[:limit],
     }
 
@@ -1388,7 +1384,7 @@ def knowledge_status():
     entries = load_knowledge()
     return {
         "count": len(entries),
-        "status": "draft_requires_acharya_review",
+        "status": "catalogue_unverified_source_provenance",
         "categories": sorted({entry.get("category", "general") for entry in entries}),
     }
 

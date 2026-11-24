@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Validate catalogue structure and publication-safety metadata.
+"""Validate catalogue structure and explicit source-provenance state.
 
-This checks structural integrity only. It does not verify scripture, translations,
-ritual correctness, temple operating hours, reviewer identity, or source accuracy.
+Passing this validator proves metadata consistency only. It never proves that a
+scripture, translation, ritual instruction, rights claim, or citation is correct.
 """
 from __future__ import annotations
 
@@ -23,6 +23,9 @@ FILES = (
     "pandit_directory.json",
     "temples.json",
 )
+PROVENANCE_STATUSES = {"missing", "partial", "traceable"}
+RIGHTS_STATUSES = {"not_assessed", "unknown", "cleared", "restricted"}
+AUTOMATION_STATUSES = {"structural_only", "passed", "failed"}
 
 
 def load_json(path: Path, errors: list[str]) -> dict[str, Any] | None:
@@ -37,7 +40,40 @@ def load_json(path: Path, errors: list[str]) -> dict[str, Any] | None:
     return value
 
 
-def check_records(records: Any, label: str, errors: list[str], required: tuple[str, ...], require_review: bool = True) -> None:
+def check_source_provenance(record: Any, label: str, errors: list[str]) -> None:
+    """Check provenance metadata shape; do not infer source accuracy."""
+    provenance = record.get("source_provenance") if isinstance(record, dict) else None
+    if not isinstance(provenance, dict):
+        errors.append(f"{label}: missing source_provenance object")
+        return
+    status = provenance.get("provenance_status")
+    rights = provenance.get("rights_status")
+    automation = provenance.get("automated_validation_status")
+    if status not in PROVENANCE_STATUSES:
+        errors.append(f"{label}: invalid provenance_status")
+    if rights not in RIGHTS_STATUSES:
+        errors.append(f"{label}: invalid rights_status")
+    if automation not in AUTOMATION_STATUSES:
+        errors.append(f"{label}: invalid automated_validation_status")
+    for key in ("source_ids", "edition_ids", "citation_locations"):
+        value = provenance.get(key)
+        if not isinstance(value, list) or any(not isinstance(x, str) or not x.strip() for x in value):
+            errors.append(f"{label}: {key} must be an array of non-empty strings")
+        elif len(value) != len(set(value)):
+            errors.append(f"{label}: {key} must not contain duplicates")
+    if status == "missing":
+        if any(provenance.get(key) for key in ("source_ids", "edition_ids", "citation_locations")):
+            errors.append(f"{label}: missing provenance must not claim source or citation identifiers")
+        if rights != "not_assessed":
+            errors.append(f"{label}: missing provenance must use rights_status=not_assessed")
+    if status == "traceable":
+        if not all(provenance.get(key) for key in ("source_ids", "edition_ids", "citation_locations")):
+            errors.append(f"{label}: traceable provenance requires source, edition and citation location identifiers")
+        if rights != "cleared":
+            errors.append(f"{label}: traceable provenance requires rights_status=cleared")
+
+
+def check_records(records: Any, label: str, errors: list[str], required: tuple[str, ...], require_provenance: bool = False) -> None:
     if not isinstance(records, list):
         errors.append(f"{label}: expected an array")
         return
@@ -58,8 +94,10 @@ def check_records(records: Any, label: str, errors: list[str], required: tuple[s
             value = record.get(key)
             if not isinstance(value, str) or not value.strip():
                 errors.append(f"{where}: missing non-empty {key}")
-        if require_review and record.get("review_required") is not True:
-            errors.append(f"{where}: starter content must retain review_required=true")
+        if "review_required" in record or "needs_acharya_review" in record:
+            errors.append(f"{where}: human review flags are not publication gates; use source_provenance metadata")
+        if require_provenance:
+            check_source_provenance(record, where, errors)
 
 
 def check_temple_records(records: Any, errors: list[str]) -> None:
@@ -68,7 +106,7 @@ def check_temple_records(records: Any, errors: list[str]) -> None:
         "name_hi", "name_en", "deity", "city", "state", "country", "address",
         "official_website", "official_information_url", "source_status", "last_checked_on",
     )
-    check_records(records, "temples.temples", errors, required, require_review=False)
+    check_records(records, "temples.temples", errors, required)
     if not isinstance(records, list):
         return
     for index, temple in enumerate(records):
@@ -80,11 +118,18 @@ def check_temple_records(records: Any, errors: list[str]) -> None:
             parsed = urlparse(value) if isinstance(value, str) else None
             if parsed is None or parsed.scheme != "https" or not parsed.netloc:
                 errors.append(f"{where}: {key} must be an absolute HTTPS URL")
-        checked = temple.get("last_checked_on")
         try:
-            date.fromisoformat(checked)
+            date.fromisoformat(temple.get("last_checked_on"))
         except (TypeError, ValueError):
             errors.append(f"{where}: last_checked_on must be an ISO date (YYYY-MM-DD)")
+
+
+def check_catalogue_policy(catalogue: dict[str, Any], label: str, errors: list[str]) -> None:
+    if catalogue.get("status") != "catalogue_unverified_source_provenance":
+        errors.append(f"{label}: status must explicitly disclose unverified source provenance")
+    policy = catalogue.get("source_provenance_policy")
+    if not isinstance(policy, str) or not policy.strip():
+        errors.append(f"{label}: source_provenance_policy must be documented")
 
 
 def validate() -> list[str]:
@@ -93,19 +138,19 @@ def validate() -> list[str]:
 
     knowledge = catalogues["knowledge_hi.json"]
     if knowledge is not None:
-        if knowledge.get("status") != "draft_requires_acharya_review":
-            errors.append("knowledge_hi.json: starter status must remain draft_requires_acharya_review")
+        check_catalogue_policy(knowledge, "knowledge_hi.json", errors)
         if knowledge.get("language") != "hi":
             errors.append("knowledge_hi.json: language must be hi")
         check_records(knowledge.get("entries"), "knowledge_hi.entries", errors,
-                      ("title", "answer", "category", "answer_en", "answer_sa"))
+                      ("title", "answer", "category", "answer_en", "answer_sa"), require_provenance=True)
 
     puja = catalogues["puja_guides.json"]
     if puja is not None:
-        if puja.get("status") != "draft_requires_acharya_review":
-            errors.append("puja_guides.json: starter status must remain draft_requires_acharya_review")
-        check_records(puja.get("guides"), "puja_guides.guides", errors, ("title_hi", "title_en", "summary_hi"))
-        for index, guide in enumerate(puja.get("guides", []) if isinstance(puja.get("guides"), list) else []):
+        check_catalogue_policy(puja, "puja_guides.json", errors)
+        guides = puja.get("guides")
+        check_records(guides, "puja_guides.guides", errors,
+                      ("title_hi", "title_en", "summary_hi"), require_provenance=True)
+        for index, guide in enumerate(guides if isinstance(guides, list) else []):
             if isinstance(guide, dict):
                 for language in ("hi", "en"):
                     steps = guide.get(f"steps_{language}")
@@ -114,10 +159,10 @@ def validate() -> list[str]:
 
     samskaras = catalogues["samskaras.json"]
     if samskaras is not None:
-        if samskaras.get("status") != "draft_requires_acharya_review":
-            errors.append("samskaras.json: starter status must remain draft_requires_acharya_review")
+        check_catalogue_policy(samskaras, "samskaras.json", errors)
         records = samskaras.get("samskaras")
-        check_records(records, "samskaras.samskaras", errors, ("name_hi", "name_en", "description_hi"))
+        check_records(records, "samskaras.samskaras", errors,
+                      ("name_hi", "name_en", "description_hi"), require_provenance=True)
         if isinstance(records, list):
             numbers = [item.get("number") for item in records if isinstance(item, dict)]
             if numbers != list(range(1, 17)):
@@ -125,7 +170,7 @@ def validate() -> list[str]:
 
     modules = catalogues["ecosystem_modules.json"]
     if modules is not None:
-        check_records(modules.get("modules"), "ecosystem_modules.modules", errors, ("name_hi", "name_en", "group", "status", "description"), require_review=False)
+        check_records(modules.get("modules"), "ecosystem_modules.modules", errors, ("name_hi", "name_en", "group", "status", "description"))
         if isinstance(modules.get("modules"), list):
             allowed = {"beta", "planned", "in_development", "paused", "retired"}
             for index, module in enumerate(modules["modules"]):
@@ -143,7 +188,7 @@ def validate() -> list[str]:
     if temples is not None:
         check_temple_records(temples.get("temples"), errors)
 
-    schema_path = ROOT / "schemas" / "content-review.schema.json"
+    schema_path = ROOT / "schemas" / "content-provenance.schema.json"
     load_json(schema_path, errors)
     return errors
 
@@ -155,5 +200,5 @@ if __name__ == "__main__":
         for problem in problems:
             print(f"- {problem}")
         sys.exit(1)
-    print(f"Content catalogue validation passed: {len(FILES)} data catalogues and review schema are structurally valid.")
-    print("Note: this is not Acharya review, temple-hours verification, or religious-source verification.")
+    print(f"Content catalogue validation passed: {len(FILES)} data catalogues and provenance schema are structurally valid.")
+    print("Note: this validates metadata shape only; it does not verify scripture, translation, rights, ritual accuracy, or citation truth.")

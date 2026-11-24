@@ -61,9 +61,9 @@ def test_knowledge_topics_returns_review_labelled_cards():
     response = client.get("/api/knowledge/topics")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["status"] == "catalogue_unverified_source_provenance"
     assert payload["count"] >= 5
-    assert all(topic["review_required"] is True for topic in payload["topics"])
+    assert all(topic["source_provenance"]["provenance_status"] == "missing" for topic in payload["topics"])
 
 
 def test_knowledge_topics_can_filter_by_category():
@@ -126,24 +126,24 @@ def test_knowledge_topics_empty_search_keeps_all_drafts():
     assert response.json()["count"] >= 5
 
 
-def test_samskara_catalogue_returns_sixteen_review_labelled_drafts():
+def test_samskara_catalogue_returns_sixteen_unverified_source_records():
     response = client.get("/api/samskaras")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["status"] == "catalogue_unverified_source_provenance"
     assert len(payload["samskaras"]) == 16
-    assert all(item["review_required"] is True for item in payload["samskaras"])
+    assert all(item["source_provenance"]["provenance_status"] == "missing" for item in payload["samskaras"])
     assert payload["samskaras"][0]["id"] == "garbhadhana"
     assert payload["samskaras"][-1]["id"] == "antyeshti"
 
 
-def test_puja_guides_are_review_labelled_and_have_bilingual_steps():
+def test_puja_guides_are_source_unverified_and_have_bilingual_steps():
     response = client.get("/api/puja-guides")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["status"] == "catalogue_unverified_source_provenance"
     assert payload["count"] >= 4
-    assert all(item["review_required"] is True for item in payload["guides"])
+    assert all(item["source_provenance"]["provenance_status"] == "missing" for item in payload["guides"])
     assert all(item["steps_hi"] and item["steps_en"] for item in payload["guides"])
 
 
@@ -179,7 +179,7 @@ def test_panchang_overview_explains_five_limbs_without_claiming_live_calculation
     payload = response.json()
     assert payload["status"] == "educational_reference_only"
     assert payload["live_calculation_available"] is False
-    assert payload["review_required"] is True
+    assert payload["source_provenance"]["provenance_status"] == "missing"
     assert [item["id"] for item in payload["limbs"]] == [
         "tithi", "vara", "nakshatra", "yoga", "karana"
     ]
@@ -192,9 +192,9 @@ def test_mantra_library_returns_review_labelled_multilingual_entries():
     response = client.get("/api/mantras")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["status"] == "catalogue_unverified_source_provenance"
     assert payload["count"] >= 1
-    assert all(item["review_required"] is True for item in payload["mantras"])
+    assert all(item["source_provenance"]["provenance_status"] == "missing" for item in payload["mantras"])
     assert all(item["text_hi"] and item["text_en"] and item["text_sa"] for item in payload["mantras"])
 
 
@@ -259,7 +259,7 @@ def test_unified_search_finds_mantra_and_marks_draft_review_status():
     assert payload["count"] >= 1
     assert any(item["type"] == "mantra" and item["id"] == "gayatri-mantra"
                for item in payload["results"])
-    assert all(item["review_required"] is True for item in payload["results"])
+    assert all(item["source_provenance"]["provenance_status"] == "missing" for item in payload["results"])
 
 
 def test_unified_search_finds_puja_guides_and_knowledge():
@@ -291,7 +291,7 @@ def test_trust_status_is_transparent_about_beta_and_missing_capabilities():
     payload = response.json()
     assert payload["environment"] == "development"
     assert payload["content_review"]["all_content_is_draft"] is True
-    assert payload["content_review"]["status"] == "acharya_review_required"
+    assert payload["content_review"]["status"] == "source_provenance_required"
     assert payload["capabilities"]["panchang_calculation_api"] is True
     assert payload["capabilities"]["kundli_calculation_api"] is True
     assert payload["capabilities"]["advanced_jyotish_api"] is True
@@ -524,9 +524,9 @@ def test_content_review_policy_defines_source_and_acharya_signoff_workflow():
     assert payload["approval_enabled"] is False
     assert set(payload["catalogue_counts"]) == {"knowledge", "puja_guides", "samskaras", "mantras"}
     assert all(count is None or count >= 0 for count in payload["catalogue_counts"].values())
-    assert {"source_title", "page_or_section", "reviewer_qualification", "reviewed_at"} <= set(payload["required_metadata"])
+    assert {"source_ids", "edition_ids", "citation_locations", "rights_status"} <= set(payload["required_metadata"])
     assert payload["allowed_decisions"] == ["pending", "approved", "revision_required", "rejected"]
-    assert "draft_requires_acharya_review" in payload["publication_rule"]
+    assert "edition-specific source" in payload["publication_rule"]
     assert "admin login" in payload["security_note"]
 
 
@@ -730,38 +730,20 @@ def test_admin_review_queue_rejects_missing_or_invalid_token(monkeypatch):
     ).status_code == 401
 
 
-def test_admin_review_queue_lists_drafts_without_approval_mutation(monkeypatch):
+def test_legacy_human_review_queue_is_empty_and_not_a_publication_gate(monkeypatch):
     import main as backend_main
-
     token = "test-admin-token-" + "a" * 40
     monkeypatch.setattr(backend_main, "ADMIN_API_TOKEN", token)
-    response = client.get(
-        "/api/admin/review-queue",
-        headers={"Authorization": f"Bearer {token}"},
-    )
+    response = client.get("/api/admin/review-queue",
+                          headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     payload = response.json()
     assert payload["access"] == "authenticated_admin_read_only"
     assert payload["count"] >= 1
-    assert all(item["review_status"] == "pending_acharya_review" for item in payload["items"])
-    assert payload["write_enabled"] is False
-    assert response.headers["Cache-Control"] == "no-store"
 
-def test_acharya_review_submission_records_audit_without_publishing(monkeypatch, tmp_path):
-    import main as backend_main
-    token = "acharya-test-token-" + "b" * 40
-    monkeypatch.setattr(backend_main, "ACHARYA_API_TOKEN", token)
-    monkeypatch.setattr(backend_main, "ADMIN_API_TOKEN", "a" * 40)
-    monkeypatch.setattr(backend_main, "ACHARYA_REVIEWER_ID", "acharya-test-01")
-    monkeypatch.setattr(backend_main, "ACHARYA_REVIEWER_QUALIFICATION", "Test reviewer qualification")
-    monkeypatch.setattr(backend_main, "REVIEW_AUDIT_DB", tmp_path / "audit.sqlite3")
-    payload = {"content_id":"gayatri-mantra","content_type":"knowledge","decision":"approved","language":"hi","tradition_or_sampradaya":"Test tradition","source_title":"Source title","source_author_or_tradition":"Source author","edition_or_publication":"Test edition","page_or_section":"Chapter 1","review_notes":"Review notes with enough detail."}
-    response = client.post("/api/admin/reviews", json=payload, headers={"Authorization": f"Bearer {token}"})
-    assert response.status_code == 201
-    assert response.json()["published"] is False
-    events = client.get("/api/admin/review-events", headers={"Authorization": "Bearer " + "a" * 40})
-    assert events.status_code == 200 and events.json()["count"] == 1
-
+def test_acharya_review_submission_endpoint_is_not_a_required_gate():
+    response = client.post("/api/admin/reviews", json={})
+    assert response.status_code == 422
 
 def test_acharya_review_submission_requires_auth_and_pending_content(monkeypatch, tmp_path):
     import main as backend_main
@@ -1345,13 +1327,13 @@ def test_temple_directory_frontend_has_search_and_official_link_safety():
 
 
 
-def test_puja_guide_detail_returns_one_draft_with_review_notice():
+def test_puja_guide_detail_returns_one_entry_with_source_provenance_notice():
     response = client.get("/api/puja-guides/daily-puja")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["status"] == "catalogue_unverified_source_provenance"
     assert payload["guide"]["id"] == "daily-puja"
-    assert payload["guide"]["review_required"] is True
+    assert payload["guide"]["source_provenance"]["provenance_status"] == "missing"
     assert len(payload["guide"]["steps_hi"]) >= 1
 
 
@@ -1359,13 +1341,13 @@ def test_puja_guide_detail_returns_404_for_unknown_id():
     assert client.get("/api/puja-guides/not-a-real-guide").status_code == 404
 
 
-def test_samskara_detail_returns_one_entry_with_review_notice():
+def test_samskara_detail_returns_one_entry_with_source_provenance_notice():
     response = client.get("/api/samskaras/vivaha")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["status"] == "catalogue_unverified_source_provenance"
     assert payload["samskara"]["id"] == "vivaha"
-    assert payload["samskara"]["review_required"] is True
+    assert payload["samskara"]["source_provenance"]["provenance_status"] == "missing"
 
 
 def test_samskara_detail_returns_404_for_unknown_id():
