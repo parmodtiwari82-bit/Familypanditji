@@ -63,7 +63,7 @@ def test_knowledge_topics_returns_review_labelled_cards():
     payload = response.json()
     assert payload["status"] == "catalogue_unverified_source_provenance"
     assert payload["count"] >= 5
-    assert all(topic["review_required"] is True for topic in payload["topics"])
+    assert all(topic["source_provenance_status"] == "missing" for topic in payload["topics"])
 
 
 def test_knowledge_topics_can_filter_by_category():
@@ -132,7 +132,7 @@ def test_samskara_catalogue_returns_sixteen_unverified_source_records():
     payload = response.json()
     assert payload["status"] == "catalogue_unverified_source_provenance"
     assert len(payload["samskaras"]) == 16
-    assert all(item["review_required"] is True for item in payload["samskaras"])
+    assert all(item["source_provenance_status"] == "missing" for item in payload["samskaras"])
     assert payload["samskaras"][0]["id"] == "garbhadhana"
     assert payload["samskaras"][-1]["id"] == "antyeshti"
 
@@ -143,7 +143,7 @@ def test_puja_guides_are_source_unverified_and_have_bilingual_steps():
     payload = response.json()
     assert payload["status"] == "catalogue_unverified_source_provenance"
     assert payload["count"] >= 4
-    assert all(item["review_required"] is True for item in payload["guides"])
+    assert all(item["source_provenance_status"] == "missing" for item in payload["guides"])
     assert all(item["steps_hi"] and item["steps_en"] for item in payload["guides"])
 
 
@@ -179,7 +179,7 @@ def test_panchang_overview_explains_five_limbs_without_claiming_live_calculation
     payload = response.json()
     assert payload["status"] == "educational_reference_only"
     assert payload["live_calculation_available"] is False
-    assert payload["review_required"] is True
+    assert payload["source_provenance_status"] == "missing"
     assert [item["id"] for item in payload["limbs"]] == [
         "tithi", "vara", "nakshatra", "yoga", "karana"
     ]
@@ -194,7 +194,7 @@ def test_mantra_library_returns_review_labelled_multilingual_entries():
     payload = response.json()
     assert payload["status"] == "catalogue_unverified_source_provenance"
     assert payload["count"] >= 1
-    assert all(item["review_required"] is True for item in payload["mantras"])
+    assert all(item["source_provenance_status"] == "missing" for item in payload["mantras"])
     assert all(item["text_hi"] and item["text_en"] and item["text_sa"] for item in payload["mantras"])
 
 
@@ -259,7 +259,7 @@ def test_unified_search_finds_mantra_and_marks_draft_review_status():
     assert payload["count"] >= 1
     assert any(item["type"] == "mantra" and item["id"] == "gayatri-mantra"
                for item in payload["results"])
-    assert all(item["review_required"] is True for item in payload["results"])
+    assert all(item["source_provenance_status"] == "missing" for item in payload["results"])
 
 
 def test_unified_search_finds_puja_guides_and_knowledge():
