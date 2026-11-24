@@ -1,6 +1,6 @@
 {
-  "status": "draft_requires_acharya_review",
-  "note": "These are introductory, non-sectarian outlines only. Procedures, offerings, timings and mantras vary by sampradaya, region and family tradition. Confirm the complete vidhi with a qualified acharya before practice.",
+  "status": "catalogue_unverified_source_provenance",
+  "note": "These are introductory, non-sectarian outlines only. Procedures, offerings, timings and mantras vary by sampradaya, region and family tradition. Primary-source provenance is currently missing for these records; do not present them as source-verified ritual instructions.",
   "guides": [
     {
       "id": "daily-puja",
@@ -21,7 +21,14 @@
         "Offer a lamp, flowers, water or other items as prescribed in your tradition.",
         "Conclude with prayer and gratitude; handle remaining offerings respectfully."
       ],
-      "review_required": true
+      "source_provenance": {
+        "provenance_status": "missing",
+        "source_ids": [],
+        "edition_ids": [],
+        "citation_locations": [],
+        "rights_status": "not_assessed",
+        "automated_validation_status": "structural_only"
+      }
     },
     {
       "id": "deepavali-puja-overview",
@@ -42,7 +49,14 @@
         "Perform Lakshmi-Ganesha worship and prayers according to family tradition.",
         "Use lamps safely and never leave an open flame unattended."
       ],
-      "review_required": true
+      "source_provenance": {
+        "provenance_status": "missing",
+        "source_ids": [],
+        "edition_ids": [],
+        "citation_locations": [],
+        "rights_status": "not_assessed",
+        "automated_validation_status": "structural_only"
+      }
     },
     {
       "id": "aarti-etiquette",
@@ -63,7 +77,14 @@
         "Move the lamp carefully and keep children away from the open flame.",
         "Place the lamp safely afterwards and supervise it until the flame is extinguished."
       ],
-      "review_required": true
+      "source_provenance": {
+        "provenance_status": "missing",
+        "source_ids": [],
+        "edition_ids": [],
+        "citation_locations": [],
+        "rights_status": "not_assessed",
+        "automated_validation_status": "structural_only"
+      }
     },
     {
       "id": "puja-preparation",
@@ -84,7 +105,15 @@
         "Keep water, seating and materials within easy reach.",
         "Consult trusted family or acharya guidance for procedure, mantras and timing."
       ],
-      "review_required": true
+      "source_provenance": {
+        "provenance_status": "missing",
+        "source_ids": [],
+        "edition_ids": [],
+        "citation_locations": [],
+        "rights_status": "not_assessed",
+        "automated_validation_status": "structural_only"
+      }
     }
-  ]
+  ],
+  "source_provenance_policy": "No record is represented as scripture-grounded until edition-specific source locations and rights are recorded. Missing provenance is explicit and is not a publication approval."
 }
