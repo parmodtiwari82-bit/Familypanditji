@@ -61,7 +61,7 @@ def test_knowledge_topics_returns_review_labelled_cards():
     response = client.get("/api/knowledge/topics")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["status"] == "draft_requires_acharya_review"
+    assert payload["status"] == "catalogue_unverified_source_provenance"
     assert payload["count"] >= 5
     assert all(topic["review_required"] is True for topic in payload["topics"])
 
@@ -126,7 +126,7 @@ def test_knowledge_topics_empty_search_keeps_all_drafts():
     assert response.json()["count"] >= 5
 
 
-def test_samskara_catalogue_returns_sixteen_review_labelled_drafts():
+def test_samskara_catalogue_returns_sixteen_unverified_source_records():
     response = client.get("/api/samskaras")
     assert response.status_code == 200
     payload = response.json()
@@ -137,7 +137,7 @@ def test_samskara_catalogue_returns_sixteen_review_labelled_drafts():
     assert payload["samskaras"][-1]["id"] == "antyeshti"
 
 
-def test_puja_guides_are_review_labelled_and_have_bilingual_steps():
+def test_puja_guides_are_source_unverified_and_have_bilingual_steps():
     response = client.get("/api/puja-guides")
     assert response.status_code == 200
     payload = response.json()
@@ -730,22 +730,16 @@ def test_admin_review_queue_rejects_missing_or_invalid_token(monkeypatch):
     ).status_code == 401
 
 
-def test_admin_review_queue_lists_drafts_without_approval_mutation(monkeypatch):
+def test_legacy_human_review_queue_is_empty_and_not_a_publication_gate(monkeypatch):
     import main as backend_main
-
     token = "test-admin-token-" + "a" * 40
     monkeypatch.setattr(backend_main, "ADMIN_API_TOKEN", token)
-    response = client.get(
-        "/api/admin/review-queue",
-        headers={"Authorization": f"Bearer {token}"},
-    )
+    response = client.get("/api/admin/review-queue",
+                          headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     payload = response.json()
     assert payload["access"] == "authenticated_admin_read_only"
-    assert payload["count"] >= 1
-    assert all(item["review_status"] == "pending_acharya_review" for item in payload["items"])
-    assert payload["write_enabled"] is False
-    assert response.headers["Cache-Control"] == "no-store"
+    assert payload["count"] == 0
 
 def test_acharya_review_submission_records_audit_without_publishing(monkeypatch, tmp_path):
     import main as backend_main
@@ -1345,13 +1339,13 @@ def test_temple_directory_frontend_has_search_and_official_link_safety():
 
 
 
-def test_puja_guide_detail_returns_one_draft_with_review_notice():
+def test_puja_guide_detail_returns_one_entry_with_source_provenance_notice():
     response = client.get("/api/puja-guides/daily-puja")
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "draft_requires_acharya_review"
     assert payload["guide"]["id"] == "daily-puja"
-    assert payload["guide"]["review_required"] is True
+    assert payload["guide"]["source_provenance"]["provenance_status"] == "missing"
     assert len(payload["guide"]["steps_hi"]) >= 1
 
 
@@ -1359,13 +1353,13 @@ def test_puja_guide_detail_returns_404_for_unknown_id():
     assert client.get("/api/puja-guides/not-a-real-guide").status_code == 404
 
 
-def test_samskara_detail_returns_one_entry_with_review_notice():
+def test_samskara_detail_returns_one_entry_with_source_provenance_notice():
     response = client.get("/api/samskaras/vivaha")
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "draft_requires_acharya_review"
     assert payload["samskara"]["id"] == "vivaha"
-    assert payload["samskara"]["review_required"] is True
+    assert payload["samskara"]["source_provenance"]["provenance_status"] == "missing"
 
 
 def test_samskara_detail_returns_404_for_unknown_id():
