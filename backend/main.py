@@ -1330,6 +1330,7 @@ def unified_search(q: str, language: str = "hi", limit: int = 20):
                 "title": title,
                 "snippet": snippet[:280],
                 "source_provenance_status": "missing",
+                "source_provenance": {"provenance_status": "missing", "source_ids": [], "edition_ids": [], "citation_locations": [], "rights_status": "not_assessed", "automated_validation_status": "structural_only"},
                 "status": "catalogue_unverified_source_provenance",
             })
 
