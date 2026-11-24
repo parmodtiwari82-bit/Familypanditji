@@ -223,7 +223,7 @@ def load_knowledge() -> list[dict[str, Any]]:
         return []
 
 def localized_answer(entry: dict[str, Any], language: str) -> str:
-    """Return a reviewed-status draft in the requested language, with Hindi fallback."""
+    """Return catalogue text with its explicit source-provenance caveat, with Hindi fallback."""
     field = {"hi": "answer", "sa": "answer_sa", "en": "answer_en"}[language]
     return str(entry.get(field) or entry.get("answer", ""))
 
@@ -257,7 +257,7 @@ def load_answer_sources() -> list[dict[str, Any]]:
             "answer_en": "\n".join([summary_en, *[
                 f"{index}. {step}" for index, step in enumerate(steps_en, 1)
             ]]).strip(),
-            "review_required": guide.get("review_required", True),
+            "source_provenance": guide.get("source_provenance", {"provenance_status": "missing"}),
         })
 
     samskaras_path = PROJECT_ROOT / "data" / "samskaras.json"
@@ -278,7 +278,7 @@ def load_answer_sources() -> list[dict[str, Any]]:
             "keywords": [name_hi, name_en],
             "answer": description_hi,
             "answer_en": description_en,
-            "review_required": samskara.get("review_required", True),
+            "source_provenance": samskara.get("source_provenance", {"provenance_status": "missing"}),
         })
     return sources
 
@@ -658,7 +658,7 @@ def submit_acharya_review(submission: AcharyaReviewSubmission, authorization: st
     event_id = append_review_event(submission)
     return {"event_id": event_id, "content_id": submission.content_id,
             "decision_recorded": submission.decision,
-            "catalogue_status": "draft_requires_acharya_review", "published": False}
+            "catalogue_status": "catalogue_unverified_source_provenance", "published": False}
 
 
 @app.get("/api/admin/review-events")
@@ -1268,7 +1268,7 @@ def mantra_library(q: str | None = None):
                 "text_hi": entry.get("answer", ""),
                 "text_en": entry.get("answer_en", ""),
                 "text_sa": entry.get("answer_sa", ""),
-                "review_required": entry.get("review_required", True),
+                "source_provenance": entry.get("source_provenance", {"provenance_status": "missing"}),
             }
             for entry in entries
         ],
