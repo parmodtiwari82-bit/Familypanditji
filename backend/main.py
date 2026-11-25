@@ -1154,6 +1154,18 @@ def pandit_directory(status: str = "verified"):
     }
 
 
+@app.get("/api/puja-katha/satyanarayan")
+def satyanarayan_katha_demo():
+    """Return the Hindi narration demo; browser speech is initiated by the user."""
+    catalog_path = PROJECT_ROOT / "data" / "satyanarayan_katha_demo.json"
+    try:
+        with catalog_path.open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        raise HTTPException(status_code=503, detail="Satyanarayan Katha demo is unavailable.")
+    return payload
+
+
 @app.get("/api/puja-guides")
 def puja_guides(category: str | None = None, q: str | None = None):
     """Return introductory puja/aarti guides, all explicitly marked as drafts."""
