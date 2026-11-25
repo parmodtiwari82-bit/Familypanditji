@@ -39,7 +39,7 @@ def test_rights_clearance_requires_evidence():
         "script":"Devanagari","source_type":"primary_text","access_status":"accessible",
         "rights_status":"public_domain","rights_evidence":"","ingestion_status":"metadata_only"
     }],"editions":[]}
-    assert any("rights_evidence required" in e for e in VALIDATOR.validate_registry(data))
+    assert any("cleared/open rights require rights_evidence" in e for e in VALIDATOR.validate_registry(data))
 
 
 def test_ingestion_ready_rejects_unknown_rights():
