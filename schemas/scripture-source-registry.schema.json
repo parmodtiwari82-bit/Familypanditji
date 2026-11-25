@@ -1,0 +1,40 @@
+{
+ "$schema":"https://json-schema.org/draft/2020-12/schema",
+ "title":"Family Pandit Ji Scripture Source Registry",
+ "description":"Metadata contract only; it does not prove textual accuracy or legal rights.",
+ "type":"object","additionalProperties":false,
+ "required":["registry_version","status","sources","editions"],
+ "properties":{
+  "registry_version":{"type":"string","minLength":1},
+  "status":{"enum":["empty_scaffold","candidate_sources","ingestion_ready","ingestion_in_progress"]},
+  "sources":{"type":"array","items":{"$ref":"#/$defs/source"}},
+  "editions":{"type":"array","items":{"$ref":"#/$defs/edition"}}
+ },
+ "$defs":{
+  "source":{"type":"object","additionalProperties":false,
+   "required":["source_id","work_title","tradition","language","script","source_type","access_status","rights_status","rights_evidence","ingestion_status"],
+   "properties":{
+    "source_id":{"type":"string","pattern":"^[a-z0-9][a-z0-9._-]+$"},
+    "work_title":{"type":"string","minLength":1},"tradition":{"type":"string","minLength":1},
+    "language":{"type":"string","minLength":1},"script":{"type":"string","minLength":1},
+    "source_type":{"enum":["primary_text","critical_edition","manuscript_catalogue","reference_metadata"]},
+    "access_url":{"type":"string","format":"uri"},
+    "access_status":{"enum":["not_assessed","accessible","unavailable","restricted"]},
+    "rights_status":{"enum":["unknown","public_domain","open_licence","permission_granted","restricted","not_for_redistribution"]},
+    "rights_evidence":{"type":"string"},"rights_notes":{"type":"string"},
+    "ingestion_status":{"enum":["not_started","metadata_only","text_ingested","blocked"]}
+   }},
+  "edition":{"type":"object","additionalProperties":false,
+   "required":["edition_id","source_id","edition_label","publisher_or_repository","publication_year","language","text_status","rights_status","rights_evidence"],
+   "properties":{
+    "edition_id":{"type":"string","pattern":"^[a-z0-9][a-z0-9._-]+$"},
+    "source_id":{"type":"string","minLength":1},"edition_label":{"type":"string","minLength":1},
+    "publisher_or_repository":{"type":"string","minLength":1},
+    "publication_year":{"type":["integer","null"],"minimum":1},
+    "isbn_or_catalogue_id":{"type":"string"},"language":{"type":"string","minLength":1},
+    "text_status":{"enum":["not_acquired","metadata_only","digitized","transcribed","ocr_pending","ocr_complete"]},
+    "rights_status":{"enum":["unknown","public_domain","open_licence","permission_granted","restricted","not_for_redistribution"]},
+    "rights_evidence":{"type":"string"},"rights_url":{"type":"string","format":"uri"},"notes":{"type":"string"}
+   }}
+ }
+}

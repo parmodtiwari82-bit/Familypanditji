@@ -1,0 +1,7 @@
+{
+ "registry_version":"1.0.0",
+ "status":"empty_scaffold",
+ "sources":[],
+ "editions":[],
+ "policy":"No source is treated as ingested or cleared until edition-level and rights evidence are recorded. Empty registry is intentional; no URLs, editions, or licences are fabricated."
+}
