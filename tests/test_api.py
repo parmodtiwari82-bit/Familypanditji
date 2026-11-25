@@ -5,6 +5,18 @@ from main import app
 
 client = TestClient(app)
 
+def test_satyanarayan_katha_demo_has_five_chapters_and_discloses_narration_status():
+    response = client.get("/api/puja-katha/satyanarayan")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["id"] == "shri-satyanarayan-vrata-katha-demo"
+    assert len(payload["chapters"]) == 5
+    assert payload["audio_mode"] == "browser_speech_synthesis"
+    assert payload["source_status"] == "not_primary_source_verified"
+    assert "शब्दशः पाठ नहीं" in payload["note_hi"]
+    assert all(chapter["text_hi"] for chapter in payload["chapters"])
+
+
 def test_health_reports_service_and_ai_configuration():
     response = client.get("/health")
     assert response.status_code == 200
