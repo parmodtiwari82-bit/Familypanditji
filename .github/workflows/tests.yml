@@ -44,6 +44,8 @@ jobs:
         run: python scripts/validate_content.py
       - name: Validate scripture source registry and rights-safe ingestion policy
         run: python scripts/validate_source_registry.py
+      - name: Verify scripture artifact bytes and passage references
+        run: python scripts/verify_scripture_artifacts.py
       - name: Run API tests
         working-directory: backend
         run: PYTHONPATH=. pytest -q ../tests
