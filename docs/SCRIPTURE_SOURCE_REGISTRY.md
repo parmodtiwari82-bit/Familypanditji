@@ -39,11 +39,11 @@ Automated resolver tests cover an empty corpus, edition-specific resolution, unk
 
 ## First candidate source: Bhagavad Gita Sanskrit Wikisource
 
-The registry now contains one **candidate digital transcription**, not an ingested corpus:
+The registry now contains one **rights-evidenced landing-page candidate**, not an ingested corpus:
 - Work: भगवद्गीता, original Sanskrit base text.
-- Digital edition: Sanskrit Wikisource page, stable revision `oldid=407843` (page revision dated 2025-03-24).
+- Digital record: Sanskrit Wikisource landing/index page, stable revision `oldid=407843` (page revision dated 2025-03-24). This page is a table of contents; it is not the full verse corpus.
 - Page footer states CC BY-SA; reuse requires attribution, a link to the licence, indication of changes, and ShareAlike for adaptations.
 - Scope is restricted to the base Sanskrit verse text. Commentaries, translations, introductions and other page material are excluded from this source record.
-- This is a community digital transcription, not a named print edition or critical edition. Its textual accuracy has not yet been independently cross-checked.
+- This is a community-maintained index page, not a named print edition or critical edition. Each chapter subpage has its own revision and must be pinned separately before acquisition. No verse text has been ingested or cross-checked.
 
 The source and edition remain `metadata_only`; no artifact or passage has been acquired. The next step is to obtain the exact machine-readable verse text from this revision, record the acquisition and checksum, retain chapter/verse locations, and run automated structure and text-integrity checks before creating passage records. No source-grounded answer may cite it until those steps complete.
