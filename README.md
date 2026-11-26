@@ -136,3 +136,11 @@ The public `GET /api/pandits` endpoint and mobile-first directory search UI retu
 ### Pandit application data retention and erasure
 
 The admin-only `POST /api/admin/pandits/{profile_id}/erase` endpoint permanently deletes an unverified pending or rejected application from the active SQLite database. It requires a bearer admin token, a reason and explicit `confirm_delete: true`; it refuses verified profiles. This is a manual erasure control, not an automatic retention scheduler or a self-service applicant identity-verification process. Set and publish a lawful retention schedule before collecting real applications, handle valid data-subject requests through an appropriately verified process, and define separate retention/deletion for backups, logs and hosting-provider copies. Do not collect identity-document uploads in this beta.
+
+## Shri Satyanarayan Katha listening demo
+
+The browser app includes a Hindi narration demo at `GET /api/puja-katha/satyanarayan`. It provides five chapter sections with Play, Pause, Resume and Stop controls, including chapter-level playback. The current narration is a simplified Hindi adaptation for demonstration; it is **not** a word-for-word verified edition of the canonical Katha and must not be presented as one.
+
+Playback uses the speech synthesis voices available in the user's browser/device. Voice quality and Hindi voice availability vary by device. Where supported, the app requests a screen Wake Lock while narration is active and exposes Media Session play/pause/stop controls. These are best-effort browser features: they do not guarantee continuous playback after the screen is locked, the app is backgrounded, the browser is suspended, or the operating system stops it. Test on each supported mobile browser before promising background listening.
+
+This is repository functionality, not proof of a production deployment or that audio has started on a user's device. A user must open the app and start playback. No audio is automatically played by the server or by this README.
