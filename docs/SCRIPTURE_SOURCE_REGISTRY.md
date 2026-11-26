@@ -25,3 +25,14 @@ The manifest is intentionally empty. No source edition, public-domain status, op
 
 ## Expansion rule
 A candidate can enter the registry with unknown rights, but it cannot become ingestion-ready or be marked text-ingested until the required rights evidence is recorded. Never change a record to cleared merely to make a test pass.
+
+## Edition-aware citation resolver (implemented foundation)
+
+- `data/scripture_passages.json` stores passage records separately from source and edition metadata.
+- `schemas/scripture-passage-catalogue.schema.json` defines the passage record shape.
+- `backend/scripture_citations.py` resolves a passage only when its source, edition and acquired artifact IDs all resolve, source/edition rights are eligible, the artifact belongs to that exact edition, and extraction confidence is at least 0.90.
+- `GET /api/scripture/search?q=...` exposes resolved passage matches.
+- `POST /api/ask` now returns a structured `scripture_citations` array. When no AI provider is configured but a passage resolves, it returns the retrieved original passage with its edition-specific citation. Draft catalogue answers remain explicitly unverified when no passage resolves.
+- The passage catalogue is intentionally empty today. Therefore search currently returns `source_not_found`; this implementation does not create a scripture corpus or fabricate a verse citation.
+
+Automated resolver tests cover an empty corpus, edition-specific resolution, unknown/restricted rights, low OCR confidence, mismatched artifact editions and incomplete query matches. The 0.90 confidence threshold is a conservative product rule, not proof that OCR text is correct. Rights metadata validation is not legal advice or proof of authenticity.
