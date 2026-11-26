@@ -9,9 +9,10 @@ VALIDATOR = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(VALIDATOR)
 
 
-def test_empty_registry_scaffold_is_valid():
+def test_candidate_source_registry_is_valid():
     data = json.loads((ROOT / "data" / "scripture_source_registry.json").read_text(encoding="utf-8"))
-    assert data["sources"] == [] and data["editions"] == []
+    assert data["status"] == "candidate_sources"
+    assert len(data["sources"]) == 1 and len(data["editions"]) == 1
     assert VALIDATOR.validate_registry(data) == []
 
 
