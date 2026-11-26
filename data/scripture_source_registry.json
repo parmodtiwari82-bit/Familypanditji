@@ -1,7 +1,37 @@
 {
- "registry_version":"1.0.0",
- "status":"empty_scaffold",
- "sources":[],
- "editions":[],
- "policy":"No source is treated as ingested or cleared until edition-level and rights evidence are recorded. Empty registry is intentional; no URLs, editions, or licences are fabricated."
+  "registry_version": "1.0.0",
+  "status": "candidate_sources",
+  "sources": [
+    {
+      "source_id": "bhagavad-gita.sanskrit.wikisource",
+      "work_title": "भगवद्गीता (Sanskrit base text)",
+      "tradition": "Mahabharata; Bhagavad Gita",
+      "language": "Sanskrit",
+      "script": "Devanagari",
+      "source_type": "primary_text",
+      "access_url": "https://sa.wikisource.org/w/index.php?title=भगवद्गीता&oldid=407843",
+      "access_status": "accessible",
+      "rights_status": "open_licence",
+      "rights_evidence": "The exact Sanskrit Wikisource page revision 407843 displays a footer licensing the page text under Creative Commons Attribution-ShareAlike (CC BY-SA 4.0). License terms: https://creativecommons.org/licenses/by-sa/4.0/. Reuse must provide attribution, link the license, indicate changes, and distribute adaptations under the same or a compatible license. This record covers the Wikisource transcription; it does not certify textual accuracy or a particular printed recension.",
+      "rights_notes": "Only the original Sanskrit verse text is in scope for ingestion. Do not ingest commentaries, translations, introductions, or other page material under this record. The page is a collaborative digital transcription, not a documented critical edition; compare text against independent edition witnesses before marking any passage as cross-checked.",
+      "ingestion_status": "metadata_only"
+    }
+  ],
+  "editions": [
+    {
+      "edition_id": "bhagavad-gita.sanskrit.wikisource.rev407843",
+      "source_id": "bhagavad-gita.sanskrit.wikisource",
+      "edition_label": "Sanskrit Wikisource digital transcription, stable revision 407843 (page revision dated 2025-03-24)",
+      "publisher_or_repository": "Sanskrit Wikisource contributors",
+      "publication_year": null,
+      "isbn_or_catalogue_id": "Wikisource page revision oldid=407843",
+      "language": "Sanskrit",
+      "text_status": "metadata_only",
+      "rights_status": "open_licence",
+      "rights_evidence": "Page footer states Creative Commons Attribution-ShareAlike; exact revision: https://sa.wikisource.org/w/index.php?title=भगवद्गीता&oldid=407843. License: https://creativecommons.org/licenses/by-sa/4.0/.",
+      "rights_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "notes": "A stable digital transcription record, not a print-edition identifier or critical-edition claim. Ingest only base Sanskrit verses and preserve chapter/verse numbering as printed on the page; exclude commentary layers."
+    }
+  ],
+  "policy": "No source is treated as ingested or cleared until edition-level and rights evidence are recorded. Candidate metadata is not proof of textual authenticity or religious correctness."
 }
