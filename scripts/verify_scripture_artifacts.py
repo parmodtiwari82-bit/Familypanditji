@@ -21,7 +21,7 @@ def _safe_artifact_path(storage_ref, root):
         raise ValueError("storage_ref must be a non-empty repository-relative path")
     candidate = Path(storage_ref)
     if candidate.is_absolute() or candidate.as_posix().startswith(("..", "./")):
-        raise ValueError("storage_ref must stay inside the repository")
+        raise ValueError("storage_ref must be a repository-relative path inside the repository")
     resolved_root = root.resolve()
     resolved = (resolved_root / candidate).resolve()
     if resolved != resolved_root and resolved_root not in resolved.parents:
