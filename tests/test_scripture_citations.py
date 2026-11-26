@@ -11,13 +11,13 @@ SPEC.loader.exec_module(MODULE)
 def fixture(rights="public_domain", confidence=0.99):
     registry = {
         "sources": [{"source_id":"gita.work","work_title":"Bhagavad Gita",
-                     "script":"Devanagari","rights_status":rights,"ingestion_status":"text_ingested"}],
+                     "script":"Devanagari","rights_status":rights,"rights_evidence":"CC BY-SA 4.0","ingestion_status":"text_ingested"}],
         "editions": [{"edition_id":"gita.edition1","source_id":"gita.work",
                       "edition_label":"Test edition","publisher_or_repository":"Test archive",
-                      "language":"sa","rights_status":rights}]
+                      "language":"sa","rights_status":rights,"text_status":"transcribed","rights_evidence":"CC BY-SA 4.0"}]
     }
     manifest = {"artifacts":[{"artifact_id":"gita.artifact1","source_id":"gita.work",
-                              "edition_id":"gita.edition1"}]}
+                              "edition_id":"gita.edition1","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]}
     catalogue = {"passages":[{"passage_id":"gita.2.47","source_id":"gita.work",
         "edition_id":"gita.edition1","artifact_id":"gita.artifact1",
         "work_title":"Bhagavad Gita","location":"अध्याय 2, श्लोक 47",
@@ -61,3 +61,23 @@ def test_artifact_must_match_source_and_edition():
 def test_query_requires_all_terms_to_match():
     r, m, c = fixture()
     assert MODULE.resolve_passages("कर्म मोक्ष", r, m, c) == []
+
+def test_missing_extraction_confidence_is_not_assumed_perfect():
+    r, m, c = fixture()
+    del c["passages"][0]["extraction_confidence"]
+    assert MODULE.resolve_passages("कर्म फल", r, m, c) == []
+
+
+def test_metadata_only_source_cannot_be_cited():
+    r, m, c = fixture()
+    r["sources"][0]["ingestion_status"] = "metadata_only"
+    assert MODULE.resolve_passages("कर्म फल", r, m, c) == []
+
+
+def test_missing_artifact_checksum_or_rights_evidence_blocks_citation():
+    r, m, c = fixture()
+    del m["artifacts"][0]["sha256"]
+    assert MODULE.resolve_passages("कर्म फल", r, m, c) == []
+    r, m, c = fixture()
+    r["editions"][0]["rights_evidence"] = ""
+    assert MODULE.resolve_passages("कर्म फल", r, m, c) == []

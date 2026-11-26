@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 SAFE_RIGHTS = {"public_domain", "open_licence", "permission_granted"}
+HEX_SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
 def normalize_text(value: str) -> str:
@@ -43,6 +44,14 @@ def resolve_passages(query: str, registry: dict[str, Any],
         artifact = artifact_by_id.get(passage.get("artifact_id"))
         if not source or not edition or not artifact:
             continue
+        if source.get("ingestion_status") != "text_ingested":
+            continue
+        if edition.get("text_status") not in {"digitized", "transcribed", "ocr_complete"}:
+            continue
+        if not str(source.get("rights_evidence", "")).strip() or not str(edition.get("rights_evidence", "")).strip():
+            continue
+        if not isinstance(artifact.get("sha256"), str) or not HEX_SHA256.fullmatch(artifact["sha256"]):
+            continue
         if edition.get("source_id") != source.get("source_id"):
             continue
         if artifact.get("source_id") != source.get("source_id") or artifact.get("edition_id") != edition.get("edition_id"):
@@ -56,7 +65,7 @@ def resolve_passages(query: str, registry: dict[str, Any],
         passage_id = str(passage.get("passage_id", "")).strip()
         if not text or not location or not passage_id:
             continue
-        confidence = passage.get("extraction_confidence", 1.0)
+        confidence = passage.get("extraction_confidence")
         if not isinstance(confidence, (int, float)) or isinstance(confidence, bool) or not 0.0 <= confidence <= 1.0:
             continue
         if confidence < 0.90:
