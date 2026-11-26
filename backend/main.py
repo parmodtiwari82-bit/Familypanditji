@@ -19,6 +19,7 @@ from vedic_calc import calculate_kundli, calculate_panchang, parse_local_datetim
 from advanced_jyotish import calculate_advanced_jyotish
 from precision_ephemeris import calculate_tropical_longitudes, calculate_tropical_ascendant, calculate_sunrise_sunset, calculate_panchang_limb_transitions, mean_node_longitudes
 from pandit_directory import create_pending_profile, erase_unverified_application, get_profile_status, list_pending_profiles, list_verified_profiles, reject_pending_profile, suspend_profile, verify_profile
+from scripture_citations import load_and_resolve
 
 APP_VERSION = "0.3.0"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -214,6 +215,7 @@ class AskResponse(BaseModel):
     evidence_status: str
     source_status: str
     matched_topic: str | None = None
+    scripture_citations: list[dict[str, Any]] = Field(default_factory=list)
 
 def load_knowledge() -> list[dict[str, Any]]:
     try:
@@ -1154,6 +1156,19 @@ def pandit_directory(status: str = "verified"):
     }
 
 
+@app.get("/api/scripture/search")
+def scripture_search(q: str = Query(min_length=1, max_length=500), limit: int = Query(default=5, ge=1, le=20)):
+    """Search only ingested, rights-eligible passages with resolvable edition citations."""
+    matches = load_and_resolve(q, PROJECT_ROOT, limit)
+    return {
+        "query": q,
+        "count": len(matches),
+        "status": "citation_resolved" if matches else "source_not_found",
+        "results": matches,
+        "note_hi": "केवल स्रोत, संस्करण, अधिकार और अधिग्रहित पाठ-संदर्भ से मेल खाने वाले अंश दिखते हैं। खाली परिणाम का अर्थ है कि अभी समर्थित स्रोत नहीं मिला।",
+    }
+
+
 @app.get("/api/puja-katha/satyanarayan")
 def satyanarayan_katha_demo():
     """Return the Hindi narration demo; browser speech is initiated by the user."""
@@ -1407,9 +1422,16 @@ async def ask(payload: AskRequest):
         raise HTTPException(status_code=422, detail="Question cannot be blank.")
 
     entry = find_curated_answer(question)
+    scripture_matches = load_and_resolve(question, PROJECT_ROOT, 5)
     context = ""
     if entry:
-        context = f"Topic: {entry.get('title', '')}\nAnswer: {localized_answer(entry, payload.language)}"
+        context = f"Draft catalogue topic (not scripture-verified): {entry.get('title', '')}\nDraft answer: {localized_answer(entry, payload.language)}"
+    if scripture_matches:
+        evidence_text = "\n\n".join(
+            f"SOURCE: {item['work_title']} | EDITION: {item['edition_label']} ({item['edition_id']}) | LOCATION: {item['location']} | PASSAGE_ID: {item['passage_id']}\nORIGINAL TEXT: {item['text_original']}"
+            for item in scripture_matches
+        )
+        context += "\n\nRights-eligible, edition-resolved scripture passages retrieved for this question:\n" + evidence_text
     ai_answer = await ask_ai(question, payload.language, context)
     if ai_answer:
         return AskResponse(
@@ -1417,9 +1439,21 @@ async def ask(payload: AskRequest):
             mode="ai-provider",
             needs_acharya_review=False,
             requires_human_approval=False,
-            evidence_status="not_source_grounded",
-            source_status="ai_generated_unverified",
+            evidence_status="scripture_citations_resolved" if scripture_matches else "not_source_grounded",
+            source_status="ai_answer_with_resolved_passages" if scripture_matches else "ai_generated_unverified",
             matched_topic=entry.get("title") if entry else None,
+            scripture_citations=scripture_matches,
+        )
+
+    if scripture_matches:
+        return AskResponse(
+            answer="\n\n".join(item["text_original"] for item in scripture_matches),
+            mode="scripture-corpus-extract",
+            needs_acharya_review=False,
+            requires_human_approval=False,
+            evidence_status="scripture_citations_resolved",
+            source_status="edition_specific_passages_retrieved",
+            scripture_citations=scripture_matches,
         )
 
     if entry:
