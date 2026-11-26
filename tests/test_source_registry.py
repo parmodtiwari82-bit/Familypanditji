@@ -12,7 +12,7 @@ SPEC.loader.exec_module(VALIDATOR)
 def test_candidate_source_registry_is_valid():
     data = json.loads((ROOT / "data" / "scripture_source_registry.json").read_text(encoding="utf-8"))
     assert data["status"] == "candidate_sources"
-    assert len(data["sources"]) == 1 and len(data["editions"]) == 1
+    assert len(data["sources"]) == 1 and len(data["editions"]) == 19
     assert VALIDATOR.validate_registry(data) == []
 
 
@@ -54,16 +54,23 @@ def test_ingestion_ready_rejects_unknown_rights():
     assert any("cannot include sources" in e for e in errors)
     assert any("cannot include editions" in e for e in errors)
 
-def test_first_candidate_is_edition_specific_and_rights_evidenced_but_not_ingested():
+
+def test_chapter_revision_records_are_pinned_but_not_cleared_or_ingested():
     data = json.loads((ROOT / "data" / "scripture_source_registry.json").read_text(encoding="utf-8"))
     assert data["status"] == "candidate_sources"
-    assert len(data["sources"]) == len(data["editions"]) == 1
+    assert len(data["sources"]) == 1
+    assert len(data["editions"]) == 19
     source = data["sources"][0]
-    edition = data["editions"][0]
-    assert source["source_id"] == edition["source_id"]
-    assert source["rights_status"] == edition["rights_status"] == "open_licence"
+    landing = next(e for e in data["editions"] if e["edition_id"] == "bhagavad-gita.sanskrit.wikisource.rev407843")
+    chapter_editions = [e for e in data["editions"] if ".chapter-" in e["edition_id"]]
+    assert source["source_id"] == landing["source_id"]
+    assert source["rights_status"] == landing["rights_status"] == "open_licence"
     assert "CC BY-SA 4.0" in source["rights_evidence"]
-    assert "oldid=407843" in edition["rights_evidence"]
+    assert "oldid=407843" in landing["rights_evidence"]
     assert source["ingestion_status"] == "metadata_only"
-    assert edition["text_status"] == "metadata_only"
+    assert landing["text_status"] == "metadata_only"
+    assert len(chapter_editions) == 18
+    assert len({e["edition_id"] for e in chapter_editions}) == 18
+    assert all(e["text_status"] == "metadata_only" and e["rights_status"] == "unknown" for e in chapter_editions)
+    assert all("oldid=" in e["edition_label"] for e in chapter_editions)
     assert VALIDATOR.validate_registry(data) == []
