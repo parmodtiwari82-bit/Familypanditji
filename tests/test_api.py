@@ -1676,3 +1676,21 @@ def test_unmatched_question_reports_no_source_without_human_approval():
     assert payload["evidence_status"] == "no_source_match"
     assert payload["source_status"] == "no_matching_source"
     assert "समर्थित स्रोत नहीं मिला" in payload["answer"]
+
+def test_scripture_search_empty_registry_returns_source_not_found():
+    response = client.get("/api/scripture/search", params={"q": "कर्म"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "source_not_found"
+    assert payload["count"] == 0
+    assert payload["results"] == []
+
+
+def test_ask_exposes_empty_scripture_citation_list_without_fabricating_sources():
+    response = client.post("/api/ask", json={"question": "कर्म का अर्थ बताइए", "language": "hi"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["scripture_citations"] == []
+    assert payload["source_status"] in {
+        "no_matching_source", "curated_catalogue_unverified", "ai_generated_unverified"
+    }
