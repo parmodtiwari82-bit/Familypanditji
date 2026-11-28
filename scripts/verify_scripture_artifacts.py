@@ -88,7 +88,7 @@ def main():
     errors = validate_artifact_files(manifest, registry, catalogue, ROOT)
     if errors:
         print("Scripture artifact integrity validation failed:")
-        print("\\n".join(f"- {error}" for error in errors))
+        print("\n".join(f"- {error}" for error in errors))
         return 1
     print("Scripture artifact integrity validation passed (rights gates, byte checksums and references).")
     print("No claim is made about authenticity, OCR correctness or religious accuracy.")
