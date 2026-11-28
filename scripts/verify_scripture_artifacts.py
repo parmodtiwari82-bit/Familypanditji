@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Verify acquired scripture artifact bytes against manifest SHA-256 records.
+"""Verify scripture artifact bytes, provenance and rights-safe eligibility.
 
-This checks byte integrity and provenance links only; it cannot establish
-textual authenticity, OCR correctness, religious correctness or legal rights.
+This checks byte integrity and metadata gates only; it cannot establish textual
+authenticity, OCR correctness, religious correctness or legal rights itself.
 """
 import hashlib
 import json
@@ -14,6 +14,8 @@ MANIFEST = ROOT / "data/scripture_ingestion_manifest.json"
 REGISTRY = ROOT / "data/scripture_source_registry.json"
 CATALOGUE = ROOT / "data/scripture_passages.json"
 HEX_SHA256 = re.compile(r"^[0-9a-f]{64}$")
+ELIGIBLE_RIGHTS = {"public_domain", "open_licence", "permission_granted"}
+TEXT_READY = {"digitized", "transcribed", "ocr_complete"}
 
 
 def _safe_artifact_path(storage_ref, root):
@@ -48,6 +50,13 @@ def validate_artifact_files(manifest, registry, catalogue, root):
         edition = editions.get(item.get("edition_id"))
         if not source or not edition or edition.get("source_id") != item.get("source_id"):
             errors.append(f"{label}: source/edition provenance does not resolve")
+        else:
+            if source.get("rights_status") not in ELIGIBLE_RIGHTS:
+                errors.append(f"{label}: source rights are not cleared for ingestion")
+            if edition.get("rights_status") not in ELIGIBLE_RIGHTS:
+                errors.append(f"{label}: edition rights are not cleared for ingestion")
+            if edition.get("text_status") not in TEXT_READY:
+                errors.append(f"{label}: edition text is not marked digitized/transcribed/OCR-complete")
         digest = item.get("sha256")
         if not isinstance(digest, str) or not HEX_SHA256.fullmatch(digest):
             errors.append(f"{label}: invalid SHA-256")
@@ -81,8 +90,8 @@ def main():
         print("Scripture artifact integrity validation failed:")
         print("\\n".join(f"- {error}" for error in errors))
         return 1
-    print("Scripture artifact integrity validation passed (byte checksums and references only).")
-    print("No claim is made about authenticity, OCR correctness, religious accuracy or legal rights.")
+    print("Scripture artifact integrity validation passed (rights gates, byte checksums and references).")
+    print("No claim is made about authenticity, OCR correctness or religious accuracy.")
     return 0
 
 

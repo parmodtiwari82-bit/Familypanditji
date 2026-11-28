@@ -15,7 +15,8 @@ def fixture(tmp_path):
     (tmp_path / "data" / "chapter.txt").write_bytes(payload)
     registry = {
         "sources":[{"source_id":"gita","rights_status":"open_licence"}],
-        "editions":[{"edition_id":"gita.rev1","source_id":"gita"}]
+        "editions":[{"edition_id":"gita.rev1","source_id":"gita",
+                     "rights_status":"open_licence","text_status":"transcribed"}]
     }
     manifest = {"artifacts":[{"artifact_id":"gita.ch1","source_id":"gita","edition_id":"gita.rev1",
         "storage_ref":"data/chapter.txt","sha256":hashlib.sha256(payload).hexdigest()}]}
@@ -26,6 +27,24 @@ def fixture(tmp_path):
 def test_valid_artifact_checksum_and_passage_reference(tmp_path):
     m,r,c=fixture(tmp_path)
     assert MODULE.validate_artifact_files(m,r,c,tmp_path)==[]
+
+
+def test_unknown_source_rights_block_artifact(tmp_path):
+    m,r,c=fixture(tmp_path)
+    r["sources"][0]["rights_status"]="unknown"
+    assert any("source rights are not cleared" in e for e in MODULE.validate_artifact_files(m,r,c,tmp_path))
+
+
+def test_unknown_edition_rights_block_artifact(tmp_path):
+    m,r,c=fixture(tmp_path)
+    r["editions"][0]["rights_status"]="unknown"
+    assert any("edition rights are not cleared" in e for e in MODULE.validate_artifact_files(m,r,c,tmp_path))
+
+
+def test_metadata_only_edition_cannot_back_artifact(tmp_path):
+    m,r,c=fixture(tmp_path)
+    r["editions"][0]["text_status"]="metadata_only"
+    assert any("text is not marked" in e for e in MODULE.validate_artifact_files(m,r,c,tmp_path))
 
 
 def test_tampered_artifact_bytes_are_rejected(tmp_path):
